@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">オートスプライト</string>
+    <string name="btn_accept">同意する</string>
+    <string name="btn_decline">拒否する</string>
+    <string name="disclaimers_title">免責事項</string>
+    <string name="disclaimer_content">"    本アプリおよびその開発者/運営者は、通常の機能と安定したサービスの提供に努めますが、本アプリの使用に起因するいかなる直接的または間接的な損失についても責任を負いません。\n    ユーザーは本アプリの使用に際して、データ損失、財産損害、機器の破損その他の関連リスクを含むすべてのリスクを自己の責任で負うものとします。\n    開発者は、第三者サービス、システム互換性、ネットワーク環境、またはユーザーの不適切な操作による損害について責任を負いません。\n    本アプリの使用により、ユーザーは本免責事項の内容を十分に理解し、同意したものとみなされます。"</string>
+    <string name="btn_accept_count">%1$s (%2$d 秒)</string>
+</resources>

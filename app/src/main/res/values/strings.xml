@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Auto Sprite</string>
+    <string name="btn_accept">Accept</string>
+    <string name="btn_decline">Decline</string>
+    <string name="disclaimers_title">Disclaimers</string>
+    <string name="disclaimer_content">"    This application and its developers/operators strive to provide normal functionality and stable services, but are not responsible for any direct or indirect losses resulting from the use of this application.\n    Users should assume their own risks while using this application, including but not limited to data loss, property damage, device damage, or other related risks.\n    The developers are not responsible for any damage caused by third-party services, system compatibility, network environment, or improper user operations.\n    Using this application indicates that users have fully understood and agreed to the contents of this disclaimer."</string>
+    <string name="btn_accept_count">%1$s (%2$d sec)</string>
+</resources>

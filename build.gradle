@@ -1,0 +1,36 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0"
+    }
+}
+
+plugins {
+    alias(libs.plugins.android.application) apply false
+}
+
+allprojects {
+    configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.tensorflow' &&
+                    details.requested.name == 'tensorflow-lite-metadata') {
+                details.useVersion '0.2.1'
+            }
+            if (details.requested.group == 'com.google.j2objc' &&
+                    details.requested.name == 'j2objc-annotations') {
+                details.useVersion '2.8'
+            }
+            if (details.requested.group == 'org.codehaus.mojo' &&
+                    details.requested.name == 'animal-sniffer-annotations') {
+                details.useVersion '1.23'
+            }
+        }
+    }
+}
