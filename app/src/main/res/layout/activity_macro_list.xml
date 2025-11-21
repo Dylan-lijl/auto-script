@@ -7,16 +7,16 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end">
+        android:gravity="end"
+        android:orientation="horizontal">
 
         <pub.carzy.auto_script.ui.ExtImageButton
             android:id="@+id/btnRecord"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:background="@android:color/transparent"
-            android:padding="0dp"
+            android:background="@drawable/button_bg"
+            android:padding="2dp"
             android:scaleType="centerInside"
             android:src="@drawable/record"
             android:tint="@color/danger"
@@ -27,22 +27,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:background="@android:color/transparent"
-            android:padding="0dp"
+            android:background="@drawable/button_bg"
+            android:padding="2dp"
             android:scaleType="centerInside"
             android:src="@drawable/start"
             android:tint="@color/safe"
+            android:visibility="gone"
             app:tooltipText="@string/help_script_list_run" />
 
         <pub.carzy.auto_script.ui.ExtImageButton
             android:id="@+id/btnPause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:padding="0dp"
+            android:background="@drawable/button_bg"
+            android:padding="2dp"
             android:scaleType="centerInside"
             android:src="@drawable/pause"
             android:tint="@color/danger"
+            android:visibility="gone"
             app:tooltipText="@string/help_script_list_pause" />
 
         <pub.carzy.auto_script.ui.ExtImageButton
@@ -50,11 +52,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:background="@android:color/transparent"
-            android:padding="0dp"
+            android:background="@drawable/button_bg"
+            android:padding="2dp"
             android:scaleType="centerInside"
             android:src="@drawable/stop"
             android:tint="@color/danger"
+            android:visibility="gone"
             app:tooltipText="@string/help_script_list_stop" />
     </LinearLayout>
+    <!--表格-->
+    <include
+        android:id="@+id/empty"
+        layout="@layout/empty" />
+    <!--加载条-->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

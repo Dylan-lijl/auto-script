@@ -1,15 +1,31 @@
 package pub.carzy.auto_script.activities;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+
+import java.util.function.Consumer;
 
 import pub.carzy.auto_script.R;
+import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.controller.MacroListController;
+import pub.carzy.auto_script.service.ScriptAccessibilityService;
+import pub.carzy.auto_script.ui.ExtImageButton;
 
 /**
  * @author admin
  */
 public class MacroListActivity extends BaseActivity {
+    private MacroListController controller;
+    private ScriptAccessibilityService service;
+    private Boolean ok = false;
+
     @Override
     protected Integer getActionBarTitle() {
         return R.string.script_list_title;
@@ -19,5 +35,80 @@ public class MacroListActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_macro_list);
+        controller = new MacroListController();
+        service = BeanFactory.getInstance().get(ScriptAccessibilityService.class);
+        ExtImageButton btnRecord = findViewById(R.id.btnRecord);
+        btnRecord.setOnClickListener((e) -> openService());
+    }
+
+    private void openService() {
+        Runnable runnable = ()->{
+            Intent intent = new Intent(this, ScriptAccessibilityService.class);
+            startService(intent);
+        };
+        if (ok){
+            runnable.run();
+        }else{
+            checkPermission(ok -> {
+                if (ok) {
+                    runnable.run();
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        checkPermission();
+    }
+
+    private void checkPermission() {
+        checkPermission(null);
+    }
+
+    private void checkPermission(Consumer<Boolean> callback) {
+        service.checkOpenAccessibility((enabled) -> {
+            if (!enabled) {
+                //打开提示
+                promptAccessibility();
+                return;
+            }
+            //检查悬浮窗权限
+            service.checkOpenFloatWindow((e) -> {
+                if (!e) {
+                    promptOverlay();
+                    return;
+                }
+                ok = true;
+                if (callback != null) {
+                    callback.accept(ok);
+                }
+            });
+        });
+    }
+
+    private void promptOverlay() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.permission_prompt)
+                .setMessage(R.string.float_button_permission)
+                .setPositiveButton(R.string.go_to_open, (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                    startActivity(intent);
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void promptAccessibility() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.permission_prompt)
+                .setMessage(R.string.permission_content)
+                .setPositiveButton(R.string.go_to_open, (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                    startActivity(intent);
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
     }
 }

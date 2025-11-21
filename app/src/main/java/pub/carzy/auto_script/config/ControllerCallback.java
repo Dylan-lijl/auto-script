@@ -1,5 +1,7 @@
 package pub.carzy.auto_script.config;
 
+import android.util.Log;
+
 /**
  * @author admin
  */
@@ -7,11 +9,12 @@ package pub.carzy.auto_script.config;
 public interface ControllerCallback<T> {
     void complete(T result);
 
-    default void catchMethod(Exception e){
-
+    default void catchMethod(Exception e) {
+        Log.e("ControllerCallback", "catchMethod: ", e);
+        throw new RuntimeException(e);
     }
 
-    default void finallyMethod(){
+    default void finallyMethod() {
 
     }
 }

@@ -3,6 +3,7 @@ package pub.carzy.auto_script.controller;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.util.Log;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -108,7 +109,7 @@ public class BaseController extends AbstractController {
                         }
                         LOCALE_MAP = map;
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.d(BaseController.class.getCanonicalName(), "getLocaleMap: " + e.getMessage());
                     }
                 }
             }

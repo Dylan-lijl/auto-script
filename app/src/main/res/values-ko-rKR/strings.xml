@@ -17,4 +17,12 @@
     <string name="help_script_list_run">스크립트 실행</string>
     <string name="help_script_list_pause">스크립트 일시정지</string>
     <string name="help_script_list_stop">스크립트 중지</string>
+    <string name="accessibility_service_description">스크립트 녹음 서비스</string>
+    <string name="permission_prompt">권한 프롬프트</string>
+    <string name="permission_content">스크립트 녹화를 지원하려면 보조 기능을 활성화하세요</string>
+    <string name="go_to_open">열러 가기</string>
+    <string name="cancel">취소</string>
+    <string name="float_button_permission">제어 버튼을 표시하려면 플로팅 윈도우 권한을 활성화하세요</string>
+    <string name="empty">비어 있음</string>
+    <string name="empty_message">데이터 없음</string>
 </resources>

@@ -17,4 +17,12 @@
     <string name="help_script_list_run">Run the script</string>
     <string name="help_script_list_pause">Pause script</string>
     <string name="help_script_list_stop">Stop script</string>
+    <string name="accessibility_service_description">Script Recording Service</string>
+    <string name="permission_prompt">Permission prompt</string>
+    <string name="permission_content">Please enable auxiliary functions to support script recording</string>
+    <string name="go_to_open">Go to open</string>
+    <string name="cancel">Cancel</string>
+    <string name="float_button_permission">Please enable floating window permission to display control buttons</string>
+    <string name="empty">Empty</string>
+    <string name="empty_message">No data</string>
 </resources>

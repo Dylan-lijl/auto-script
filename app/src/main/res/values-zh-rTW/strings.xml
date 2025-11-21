@@ -17,4 +17,12 @@
     <string name="help_script_list_run">執行腳本</string>
     <string name="help_script_list_pause">暫停腳本</string>
     <string name="help_script_list_stop">停止腳本</string>
+    <string name="accessibility_service_description">腳本錄製服務</string>
+    <string name="permission_prompt">權限提示</string>
+    <string name="permission_content">請啟用輔助功能以支援腳本錄製</string>
+    <string name="go_to_open">去打開</string>
+    <string name="cancel">取消</string>
+    <string name="float_button_permission">請啟用懸浮窗權限以顯示控制按鈕</string>
+    <string name="empty">空</string>
+    <string name="empty_message">無資料</string>
 </resources>

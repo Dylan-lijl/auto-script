@@ -17,4 +17,12 @@
     <string name="help_script_list_run">スクリプトを実行</string>
     <string name="help_script_list_pause">スクリプトを一時停止</string>
     <string name="help_script_list_stop">スクリプトを停止</string>
+    <string name="accessibility_service_description">スクリプト録音サービス</string>
+    <string name="permission_prompt">権限プロンプト</string>
+    <string name="permission_content">スクリプト録画をサポートするために補助機能を有効にしてください</string>
+    <string name="go_to_open">開きに行く</string>
+    <string name="cancel">キャンセル</string>
+    <string name="float_button_permission">コントロールボタンを表示するために、フローティングウィンドウ権限を有効にしてください</string>
+    <string name="empty">空</string>
+    <string name="empty_message">データなし</string>
 </resources>
