@@ -5,4 +5,16 @@
     <string name="disclaimers_title">Disclaimers</string>
     <string name="disclaimer_content">"    This application and its developers/operators strive to provide normal functionality and stable services, but are not responsible for any direct or indirect losses resulting from the use of this application.\n    Users should assume their own risks while using this application, including but not limited to data loss, property damage, device damage, or other related risks.\n    The developers are not responsible for any damage caused by third-party services, system compatibility, network environment, or improper user operations.\n    Using this application indicates that users have fully understood and agreed to the contents of this disclaimer."</string>
     <string name="btn_accept_count">%1$s (%2$d sec)</string>
+    <string name="decline_exit_message">You have rejected the agreement, and the application will now exit.</string>
+    <string name="menu_setting">Settings</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+    <string name="menu_language">Language</string>
+    <string name="language">English</string>
+    <string name="no_language_support">No available languages detected</string>
+    <string name="script_list_title">Script List</string>
+    <string name="help_script_list_record">Recording Script</string>
+    <string name="help_script_list_run">Run the script</string>
+    <string name="help_script_list_pause">Pause script</string>
+    <string name="help_script_list_stop">Stop script</string>
 </resources>

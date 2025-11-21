@@ -10,4 +10,8 @@ public interface Setting extends Serializable {
 
     boolean isAccepted();
     void reset();
+
+    void setLanguage(String language);
+
+    String getLanguage();
 }

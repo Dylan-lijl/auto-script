@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="link">#1677ff</color>
     <color name="danger">#ff4d4f</color>
+    <color name="safe">#4CAF50</color>
+    <color name="disabled">#0A000000</color>
 </resources>

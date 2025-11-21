@@ -1,35 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 顶部应用栏 -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:titleTextColor="@android:color/white" />
-
-    <!-- 宏列表 -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMacros"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp"
-        android:layout_marginTop="?attr/actionBarSize"
-        android:clipToPadding="false"
-        android:scrollbars="vertical" />
-
-    <!-- 添加宏按钮 -->
-    <!--<com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddMacro"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        app:tint="@android:color/white" />-->
+        android:orientation="horizontal"
+        android:gravity="end">
 
+        <pub.carzy.auto_script.ui.ExtImageButton
+            android:id="@+id/btnRecord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:background="@android:color/transparent"
+            android:padding="0dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/record"
+            android:tint="@color/danger"
+            app:tooltipText="@string/help_script_list_record" />
+
+        <pub.carzy.auto_script.ui.ExtImageButton
+            android:id="@+id/btnRun"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:background="@android:color/transparent"
+            android:padding="0dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/start"
+            android:tint="@color/safe"
+            app:tooltipText="@string/help_script_list_run" />
+
+        <pub.carzy.auto_script.ui.ExtImageButton
+            android:id="@+id/btnPause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:padding="0dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/pause"
+            android:tint="@color/danger"
+            app:tooltipText="@string/help_script_list_pause" />
+
+        <pub.carzy.auto_script.ui.ExtImageButton
+            android:id="@+id/btnStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:background="@android:color/transparent"
+            android:padding="0dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/stop"
+            android:tint="@color/danger"
+            app:tooltipText="@string/help_script_list_stop" />
+    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -17,8 +17,9 @@ import pub.carzy.auto_script.config.Setting;
 
 /**
  * 主页面
+ * @author admin
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

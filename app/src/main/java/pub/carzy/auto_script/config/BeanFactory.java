@@ -9,25 +9,34 @@ public class BeanFactory {
 
     private static final BeanFactory instance = new BeanFactory();
 
-    /** 名字 -> bean 对象 */
+    /**
+     * 名字 -> bean 对象
+     */
     private final Map<String, Object> nameMap = new ConcurrentHashMap<>();
 
-    /** 类型 -> bean 名称集合（可能有多个实现） */
+    /**
+     * 类型 -> bean 名称集合（可能有多个实现）
+     */
     private final Map<Class<?>, Set<String>> typeMap = new ConcurrentHashMap<>();
 
-    private BeanFactory() {}
+    private BeanFactory() {
+    }
 
     public static BeanFactory getInstance() {
         return instance;
     }
 
-    /** 注册对象（自动使用类名作为默认名字） */
-    public <T> void register(T instance) {
-        register(instance.getClass().getName(), instance);
+    /**
+     * 注册对象（自动使用类名作为默认名字）
+     */
+    public <T> BeanFactory register(T instance) {
+        return register(instance.getClass().getName(), instance);
     }
 
-    /** 注册对象（指定名字） */
-    public <T> void register(String name, T instance) {
+    /**
+     * 注册对象（指定名字）
+     */
+    public <T> BeanFactory register(String name, T instance) {
         Objects.requireNonNull(name, "Bean name cannot be null");
         Objects.requireNonNull(instance, "Bean instance cannot be null");
 
@@ -37,9 +46,12 @@ public class BeanFactory {
         for (Class<?> type : getAllTypes(instance.getClass())) {
             typeMap.computeIfAbsent(type, k -> new HashSet<>()).add(name);
         }
+        return this;
     }
 
-    /** 获取对象（按名字+类型） */
+    /**
+     * 获取对象（按名字+类型）
+     */
     @SuppressWarnings("unchecked")
     public <T> T get(String name, Class<T> type) {
         Object obj = nameMap.get(name);
@@ -52,7 +64,9 @@ public class BeanFactory {
         return (T) obj;
     }
 
-    /** 获取对象（按名字） */
+    /**
+     * 获取对象（按名字）
+     */
     @SuppressWarnings("unchecked")
     public <T> T get(String name) {
         Object obj = nameMap.get(name);
@@ -62,7 +76,9 @@ public class BeanFactory {
         return (T) obj;
     }
 
-    /** 获取对象（按类型，唯一实现） */
+    /**
+     * 获取对象（按类型，唯一实现）
+     */
     @SuppressWarnings("unchecked")
     public <T> T get(Class<T> type) {
         Set<String> names = typeMap.get(type);
@@ -76,12 +92,16 @@ public class BeanFactory {
         return (T) nameMap.get(name);
     }
 
-    /** 获取对象（按类型+名字） */
+    /**
+     * 获取对象（按类型+名字）
+     */
     public <T> T get(Class<T> type, String name) {
         return get(name, type);
     }
 
-    /** 注销对象 */
+    /**
+     * 注销对象
+     */
     public void unregister(String name) {
         Object obj = nameMap.remove(name);
         if (obj != null) {
@@ -97,13 +117,17 @@ public class BeanFactory {
         }
     }
 
-    /** 清空所有对象 */
+    /**
+     * 清空所有对象
+     */
     public void clear() {
         nameMap.clear();
         typeMap.clear();
     }
 
-    /** 获取类的所有接口和父类（不包括 Object） */
+    /**
+     * 获取类的所有接口和父类（不包括 Object）
+     */
     private Set<Class<?>> getAllTypes(Class<?> clazz) {
         Set<Class<?>> types = new HashSet<>();
         while (clazz != null && clazz != Object.class) {

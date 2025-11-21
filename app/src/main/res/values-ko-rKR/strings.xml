@@ -5,4 +5,16 @@
     <string name="disclaimers_title">면책 조항</string>
     <string name="disclaimer_content">"    이 애플리케이션 및 개발자/운영자는 정상적인 기능과 안정적인 서비스를 제공하기 위해 노력하지만, 본 애플리케이션 사용으로 인해 발생하는 직·간접적 손실에 대해 책임을 지지 않습니다.\n    사용자는 본 애플리케이션 사용 중 데이터 손실, 재산 손해, 장치 손상 또는 기타 관련 위험을 포함한 모든 위험을 스스로 부담해야 합니다.\n    개발자는 제3자 서비스, 시스템 호환성, 네트워크 환경 또는 사용자의 부적절한 조작으로 인한 손해에 대해 책임을 지지 않습니다.\n    본 애플리케이션을 사용함으로써 사용자는 본 면책 조항의 내용을 충분히 이해하고 동의한 것으로 간주됩니다."</string>
     <string name="btn_accept_count">%1$s (%2$d 초)</string>
+    <string name="decline_exit_message">계약을 거부했으며 이제 응용 프로그램이 종료됩니다.</string>
+    <string name="menu_setting">설정</string>
+    <string name="menu_help">도움말</string>
+    <string name="menu_about">정보</string>
+    <string name="menu_language">언어</string>
+    <string name="language">한국어</string>
+    <string name="no_language_support">사용 가능한 언어가 없습니다</string>
+    <string name="script_list_title">스크립트 목록</string>
+    <string name="help_script_list_record">녹음 스크립트</string>
+    <string name="help_script_list_run">스크립트 실행</string>
+    <string name="help_script_list_pause">스크립트 일시정지</string>
+    <string name="help_script_list_stop">스크립트 중지</string>
 </resources>

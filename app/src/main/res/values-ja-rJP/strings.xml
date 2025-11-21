@@ -5,4 +5,16 @@
     <string name="disclaimers_title">免責事項</string>
     <string name="disclaimer_content">"    本アプリおよびその開発者/運営者は、通常の機能と安定したサービスの提供に努めますが、本アプリの使用に起因するいかなる直接的または間接的な損失についても責任を負いません。\n    ユーザーは本アプリの使用に際して、データ損失、財産損害、機器の破損その他の関連リスクを含むすべてのリスクを自己の責任で負うものとします。\n    開発者は、第三者サービス、システム互換性、ネットワーク環境、またはユーザーの不適切な操作による損害について責任を負いません。\n    本アプリの使用により、ユーザーは本免責事項の内容を十分に理解し、同意したものとみなされます。"</string>
     <string name="btn_accept_count">%1$s (%2$d 秒)</string>
+    <string name="decline_exit_message">契約を拒否したので、アプリケーションは終了します。</string>
+    <string name="menu_setting">設定</string>
+    <string name="menu_help">ヘルプ</string>
+    <string name="menu_about">アバウト</string>
+    <string name="menu_language">言語</string>
+    <string name="language">日本語</string>
+    <string name="no_language_support">利用可能な言語が見つかりません</string>
+    <string name="script_list_title">スクリプト一覧</string>
+    <string name="help_script_list_record">録音スクリプト</string>
+    <string name="help_script_list_run">スクリプトを実行</string>
+    <string name="help_script_list_pause">スクリプトを一時停止</string>
+    <string name="help_script_list_stop">スクリプトを停止</string>
 </resources>
