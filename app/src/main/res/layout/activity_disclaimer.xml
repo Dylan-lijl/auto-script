@@ -1,61 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:id="@+id/disclaimerRoot"
-    android:padding="24dp">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
-        android:id="@+id/disclaimerTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/disclaimers_title"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        android:textSize="24sp"
-        android:visibility="gone"
-        android:textStyle="bold" />
+    <data>
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp">
+        <import type="pub.carzy.auto_script.model.DisclaimerStatus" />
 
-        <TextView
-            android:id="@+id/tvDisclaimer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:text="@string/disclaimer_content"
-            android:textColor="@color/cardview_dark_background"
-            android:textSize="20sp" />
-    </ScrollView>
+        <variable
+            name="status"
+            type="DisclaimerStatus" />
+    </data>
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:id="@+id/disclaimerRoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="24dp">
 
-        <Button
-            android:id="@+id/btnDecline"
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/tvDisclaimer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="@string/disclaimer_content"
+                android:textColor="@color/cardview_dark_background"
+                android:textSize="20sp" />
+        </ScrollView>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="?android:attr/buttonBarButtonStyle"
-            android:textColor="@color/danger"
-            android:text="@string/btn_decline" />
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btnAccept"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:textColor="@color/link"
-            android:text="@string/btn_accept" />
+            <pub.carzy.auto_script.ui.SpinLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:spinning="@={status.declining}"
+                app:tint="@color/danger">
+
+                <Button
+                    android:id="@+id/btnDecline"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:enabled="@{!status.accepting}"
+                    android:text="@string/btn_decline"
+                    android:textColor="@color/danger" />
+            </pub.carzy.auto_script.ui.SpinLayout>
+
+            <pub.carzy.auto_script.ui.SpinLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:spinning="@={status.accepting}"
+                app:tint="@color/link">
+
+                <Button
+                    android:id="@+id/btnAccept"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:enabled="@{!status.declining}"
+                    android:text="@string/btn_accept"
+                    android:textColor="@color/link" />
+            </pub.carzy.auto_script.ui.SpinLayout>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</layout>

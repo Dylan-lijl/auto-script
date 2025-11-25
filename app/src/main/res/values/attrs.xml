@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="ExtImageButton">
-        <attr name="tooltipText" format="string"/>
+        <attr name="tooltipText" format="string" />
+    </declare-styleable>
+    <declare-styleable name="SpinLayout">
+        <attr name="indicator" format="reference"/>
+        <attr name="tips" format="reference|string"/>
+        <attr name="tint" format="color" />
     </declare-styleable>
 </resources>

@@ -3,18 +3,16 @@ package pub.carzy.auto_script.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
-import android.widget.Button;
+import android.view.LayoutInflater;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.config.BeanFactory;
-import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.controller.DisclaimerController;
-import pub.carzy.auto_script.utils.ActivityUtils;
+import pub.carzy.auto_script.databinding.ActivityDisclaimerBinding;
+import pub.carzy.auto_script.model.DisclaimerStatus;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -24,9 +22,10 @@ import pub.carzy.auto_script.utils.ThreadUtil;
  */
 public class DisclaimerActivity extends BaseActivity {
 
-    private Button btnAccept;
     private CountDownTimer timer;
     private static DisclaimerController CONTROLLER;
+    private final DisclaimerStatus status = new DisclaimerStatus();
+    private ActivityDisclaimerBinding binding;
 
     @Override
     protected Integer getActionBarTitle() {
@@ -36,18 +35,22 @@ public class DisclaimerActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_disclaimer);
+        binding.setStatus(status);
         CONTROLLER = new DisclaimerController();
-        setContentView(R.layout.activity_disclaimer);
-        btnAccept = findViewById(R.id.btnAccept);
-        Button btnDecline = findViewById(R.id.btnDecline);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         //获取配置
         CONTROLLER.isAccepted((isAccepted) -> {
             if (isAccepted) {
                 jump();
                 return;
             }
-            btnAccept.setOnClickListener((e) -> this.accept());
-            btnDecline.setOnClickListener(e -> this.decline());
+            binding.btnAccept.setOnClickListener((e) -> this.accept());
+            binding.btnDecline.setOnClickListener(e -> this.decline());
             //启动倒计时
             startCountDown();
         });
@@ -58,36 +61,53 @@ public class DisclaimerActivity extends BaseActivity {
         CONTROLLER.getTick((tick) -> timer = new CountDownTimer(tick * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                btnAccept.setText(getString(R.string.btn_accept_count,
-                        getString(R.string.btn_accept),
+                binding.btnDecline.setText(getString(R.string.btn_decline_count,
+                        getString(R.string.btn_decline),
                         millisUntilFinished / 1000));
             }
 
             @Override
             public void onFinish() {
-                btnAccept.setText(R.string.btn_accept);
-                accept();
+                binding.btnDecline.setText(R.string.btn_decline);
+                decline();
             }
         }.start());
     }
 
     public void accept() {
-        CONTROLLER.setAccepted((r) -> {
-            timer.cancel();
-            jump();
+        status.setAccepting(true);
+        stopTimer();
+        CONTROLLER.setAccepted(new ControllerCallback<>() {
+            @Override
+            public void complete(Void result) {
+                timer.cancel();
+                jump();
+            }
+
+            @Override
+            public void finallyMethod() {
+                status.setAccepting(false);
+            }
         });
     }
 
     public void decline() {
-        timer.cancel();
+        status.setDeclining(true);
+        stopTimer();
         //提示退出
         Toast.makeText(this, R.string.decline_exit_message, Toast.LENGTH_SHORT).show();
 
         // 延迟退出（避免 Toast 还没显示就退出了）
         ThreadUtil.runOnUi(() -> {
+            status.setDeclining(false);
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(0);
         }, 1000);
+    }
+
+    private void stopTimer() {
+        timer.cancel();
+        binding.btnDecline.setText(R.string.btn_decline);
     }
 
     private void jump() {

@@ -4,7 +4,7 @@
     <string name="btn_decline">拒绝</string>
     <string name="disclaimers_title">免责声明</string>
     <string name="disclaimer_content">"    本应用及其开发者/运营方致力于提供正常功能和稳定服务，但不对因使用本应用所产生的任何直接或间接损失承担责任。\n    用户在使用本应用的过程中，应自行承担风险，包括但不限于数据丢失、财产损失、设备损坏或其他相关风险。\n    开发者不对因第三方服务、系统兼容性、网络环境或用户操作不当造成的任何损害负责。\n    使用本应用即表示用户已充分理解并同意本免责声明的内容。"</string>
-    <string name="btn_accept_count">%1$s (%2$d  秒)</string>
+    <string name="btn_decline_count">%1$s (%2$d  秒)</string>
     <string name="decline_exit_message">您已拒绝该协议，应用程序现在将退出。</string>
     <string name="menu_setting">设置</string>
     <string name="menu_help">帮助</string>
@@ -25,4 +25,5 @@
     <string name="float_button_permission">请启用悬浮窗权限以显示控制按钮</string>
     <string name="empty">空</string>
     <string name="empty_message">无数据</string>
+    <string name="loading">加载中</string>
 </resources>

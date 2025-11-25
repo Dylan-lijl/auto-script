@@ -1,11 +1,8 @@
 package pub.carzy.auto_script.activities;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.View;
-import android.widget.Button;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -23,7 +20,6 @@ import pub.carzy.auto_script.ui.ExtImageButton;
  */
 public class MacroListActivity extends BaseActivity {
     private MacroListController controller;
-    private ScriptAccessibilityService service;
     private Boolean ok = false;
 
     @Override
@@ -36,25 +32,37 @@ public class MacroListActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_macro_list);
         controller = new MacroListController();
-        service = BeanFactory.getInstance().get(ScriptAccessibilityService.class);
         ExtImageButton btnRecord = findViewById(R.id.btnRecord);
         btnRecord.setOnClickListener((e) -> openService());
     }
 
     private void openService() {
-        Runnable runnable = ()->{
-            Intent intent = new Intent(this, ScriptAccessibilityService.class);
-            startService(intent);
+        Runnable runnable = () -> {
+            ScriptAccessibilityService service = BeanFactory.getInstance().get(ScriptAccessibilityService.class);
+            if (service == null) {
+                return;
+            }
+            service.open();
         };
-        if (ok){
+        if (ok) {
             runnable.run();
-        }else{
+        } else {
             checkPermission(ok -> {
                 if (ok) {
                     runnable.run();
                 }
             });
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ScriptAccessibilityService service = BeanFactory.getInstance().get(ScriptAccessibilityService.class);
+        if (service == null) {
+            return;
+        }
+        service.close();
     }
 
     @Override
@@ -68,14 +76,14 @@ public class MacroListActivity extends BaseActivity {
     }
 
     private void checkPermission(Consumer<Boolean> callback) {
-        service.checkOpenAccessibility((enabled) -> {
+        ScriptAccessibilityService.checkOpenAccessibility((enabled) -> {
             if (!enabled) {
                 //打开提示
                 promptAccessibility();
                 return;
             }
             //检查悬浮窗权限
-            service.checkOpenFloatWindow((e) -> {
+            ScriptAccessibilityService.checkOpenFloatWindow((e) -> {
                 if (!e) {
                     promptOverlay();
                     return;

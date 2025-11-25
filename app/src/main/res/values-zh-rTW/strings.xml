@@ -4,7 +4,7 @@
     <string name="btn_decline">拒絕</string>
     <string name="disclaimers_title">免責聲明</string>
     <string name="disclaimer_content">"    本應用及其開發者/營運方致力於提供正常功能和穩定服務，但不對因使用本應用所產生的任何直接或間接損失承擔責任。\n    使用者在使用本應用的過程中，應自行承擔風險，包括但不限於資料遺失、財產損失、設備損壞或其他相關風險。\n    開發者不對因第三方服務、系統相容性、網路環境或使用者操作不當造成的任何損害負責。\n    使用本應用即表示使用者已充分理解並同意本免責聲明的內容。"</string>
-    <string name="btn_accept_count">%1$s (%2$d 秒)</string>
+    <string name="btn_decline_count">%1$s (%2$d 秒)</string>
     <string name="decline_exit_message">您已拒絕該協定，應用程序現在將退出。</string>
     <string name="menu_setting">設定</string>
     <string name="menu_help">幫助</string>
@@ -25,4 +25,5 @@
     <string name="float_button_permission">請啟用懸浮窗權限以顯示控制按鈕</string>
     <string name="empty">空</string>
     <string name="empty_message">無資料</string>
+    <string name="loading">加載中</string>
 </resources>

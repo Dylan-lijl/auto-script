@@ -16,7 +16,7 @@ public class BeanRegister {
     private static void registerSetting(Context context) {
         BeanFactory.getInstance()
                 .register(new PrefsSetting(context))
-                .register(context)
-                .register(new ScriptAccessibilityService());
+                .register(context);
+//                .register(new ScriptAccessibilityService());
     }
 }

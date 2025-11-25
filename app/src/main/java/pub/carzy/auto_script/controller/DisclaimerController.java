@@ -8,7 +8,7 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 /**
  * @author admin
  */
-public class DisclaimerController extends AbstractController{
+public class DisclaimerController extends AbstractController {
     private final Setting setting;
 
     public DisclaimerController() {
