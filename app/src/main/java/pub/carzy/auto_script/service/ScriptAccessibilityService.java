@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.service;
 
+
 import android.accessibilityservice.AccessibilityService;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -14,16 +15,30 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 
-import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.databinding.DataBindingUtil;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
+import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
+import pub.carzy.auto_script.config.IdGenerator;
+import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.databinding.FloatingButtonBinding;
 import pub.carzy.auto_script.databinding.MaskViewBinding;
+import pub.carzy.auto_script.db.ScriptActionEntity;
+import pub.carzy.auto_script.db.ScriptEntity;
+import pub.carzy.auto_script.db.ScriptPointEntity;
+import pub.carzy.auto_script.db.view.ScriptVoEntity;
+import pub.carzy.auto_script.entity.MotionEntity;
+import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.model.RecordStateModel;
+import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -38,12 +53,21 @@ public class ScriptAccessibilityService extends AccessibilityService {
     private WindowManager.LayoutParams viewParams;
     private WindowManager.LayoutParams maskParams;
 
+    private List<MotionEntity> motionList;
+    private Map<Integer, MotionEntity> motionMap;
+    private IdGenerator<Long> idWorker;
+
     @Override
+    @SuppressWarnings("unchecked")
     public void onCreate() {
         super.onCreate();
         //注册上去
         BeanFactory.getInstance().register(this);
+        Startup startup = BeanFactory.getInstance().get(Startup.class);
+        idWorker = BeanFactory.getInstance().get(IdGenerator.class);
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        motionList = new ArrayList<>();
+        motionMap = new HashMap<>();
         // 悬浮窗根布局
         view = DataBindingUtil.inflate(
                 LayoutInflater.from(this),
@@ -67,33 +91,138 @@ public class ScriptAccessibilityService extends AccessibilityService {
         processView();
     }
 
+    private final boolean tint = false;
+
     private void processView() {
         //
         View root = mask.getRoot();
-        root.setOnTouchListener((v, event) -> {
-            //这里就需要记录脚本
-            Log.d("x", "mask->onTouch:" + event.toString());
-            return true;
-        });
-
+        root.setOnTouchListener(createMaskMotionEventListener());
         View.OnTouchListener listener = createTouchListener(viewParams);
         addViewTouch(listener, view.btnFloatingPause, view.btnFloatingRecord, view.btnFloatingRun, view.btnFloatingStop);
         view.btnFloatingRecord.setOnClickListener(v -> {
-            view.getRecordState().setState(RecordStateModel.STATE_RECORDING);
+            recordStateModel.setState(RecordStateModel.STATE_RECORDING);
+            motionList.clear();
             addMaskView(true);
         });
         view.btnFloatingPause.setOnClickListener(v -> {
-            view.getRecordState().setState(RecordStateModel.STATE_PAUSED);
+            recordStateModel.setState(RecordStateModel.STATE_PAUSED);
             removeMaskView();
         });
         view.btnFloatingRun.setOnClickListener(v -> {
-            view.getRecordState().setState(RecordStateModel.STATE_RECORDING);
-            addMaskView( true);
+            recordStateModel.setState(RecordStateModel.STATE_RECORDING);
+            addMaskView(true);
         });
         view.btnFloatingStop.setOnClickListener(v -> {
-            view.getRecordState().setState(RecordStateModel.STATE_IDLE);
+            recordStateModel.setState(RecordStateModel.STATE_IDLE);
+            //这里需要打开MacroListActivity将motionList传递过去,然后清空数据
+            Intent intent = new Intent(this, MacroInfoActivity.class);
+            // **重要:** 从非 Activity 上下文 (Service) 启动 Activity 必须添加此 Flag
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            // 3. 传递 motionList
+            intent.putExtra("data", transformData(motionList));
+            // 4. 启动 Activity
+            startActivity(intent);
+            // 5. 清空 motionList 数据
+            if (motionList != null) {
+                motionList.clear();
+                // 建议在这里加上日志或调试点，确认数据被清空
+            }
             removeMaskView();
         });
+    }
+
+    private ScriptVoEntity transformData(List<MotionEntity> motionList) {
+        ScriptVoEntity entity = new ScriptVoEntity();
+        ScriptEntity root = new ScriptEntity();
+        entity.setRoot(root);
+        root.setId(idWorker.nextId());
+        root.setName("未命名");
+        root.setCount(motionList.size());
+        Long minTime = null;
+        Long maxTime = null;
+        for (MotionEntity motionEntity : motionList) {
+            if (minTime == null) {
+                minTime = motionEntity.getEventTime();
+            } else {
+                minTime = Math.min(minTime, motionEntity.getEventTime());
+            }
+            if (maxTime == null) {
+                maxTime = motionEntity.getEventTime();
+            } else {
+                maxTime = Math.max(maxTime, motionEntity.getEventTime());
+            }
+            ScriptActionEntity script = BeanHandler.copy(motionEntity, ScriptActionEntity.class);
+            script.setId(idWorker.nextId());
+            script.setParentId(root.getId());
+            script.setCount(motionEntity.getPoints().size());
+            script.setMaxTime(script.getUpTime() != null ? script.getUpTime() : script.getEventTime());
+            for (PointEntity point : motionEntity.getPoints()) {
+                ScriptPointEntity pointEntity = BeanHandler.copy(point, ScriptPointEntity.class);
+                pointEntity.setId(idWorker.nextId());
+                pointEntity.setParentId(script.getId());
+                if (point.getTime() > script.getMaxTime()) {
+                    script.setMaxTime(point.getTime());
+                }
+                minTime = Math.min(point.getTime(), minTime);
+                maxTime = Math.max(point.getTime(), maxTime);
+                entity.getPoints().add(pointEntity);
+            }
+            entity.getActions().add(script);
+        }
+        entity.getRoot().setMinTime(minTime);
+        entity.getRoot().setMaxTime(maxTime);
+        return entity;
+    }
+
+    private View.OnTouchListener createMaskMotionEventListener() {
+        return (v, event) -> {
+            //消除idea警告
+            if (tint) {
+                v.performClick();
+            }
+            if (recordStateModel.getState() != RecordStateModel.STATE_RECORDING) {
+                return true;
+            }
+            int action = event.getAction();
+            Integer maskType = getAction(action);
+            if (maskType == MotionEvent.ACTION_DOWN || maskType == MotionEvent.ACTION_POINTER_DOWN) {
+                //按下事件就记录
+                int index = getPointIndex(action);
+                MotionEntity entity = new MotionEntity();
+                motionList.add(entity);
+                entity.setIndex(index);
+                entity.setEventTime(event.getEventTime());
+                entity.setDownTime(event.getDownTime());
+                motionMap.put(index, entity);
+                entity.getPoints().add(new PointEntity(event.getX(), event.getY(), event.getEventTime(), event.getToolType(index)));
+            } else if (maskType == MotionEvent.ACTION_UP || maskType == MotionEvent.ACTION_POINTER_UP) {
+                //抬起事件就保存
+                int index = getPointIndex(action);
+                MotionEntity entity = motionMap.remove(index);
+                if (entity == null) {
+                    return true;
+                }
+                entity.setUpTime(event.getEventTime());
+                entity.getPoints().add(new PointEntity(event.getX(), event.getY(), event.getEventTime(), event.getToolType(index)));
+            } else if (maskType == MotionEvent.ACTION_MOVE) {
+                //记录触点的x,y坐标
+                for (int i = 0; i < event.getPointerCount(); i++) {
+                    MotionEntity entity = motionMap.get(i);
+                    if (entity == null) {
+                        continue;
+                    }
+                    event.getX(i);
+                    entity.getPoints().add(new PointEntity(event.getX(i), event.getY(i), event.getEventTime(), event.getToolType(i)));
+                }
+            } else if (maskType == MotionEvent.ACTION_CANCEL) {
+                //这里如何处理
+            }
+            return true;
+        };
+    }
+
+    private int getPointIndex(Integer action) {
+        return action == MotionEvent.ACTION_DOWN ? 0 : ((action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT);
     }
 
     private void addViewTouch(View.OnTouchListener listener, View... views) {
@@ -109,6 +238,37 @@ public class ScriptAccessibilityService extends AccessibilityService {
     private void addFloatingView() {
         removeFloatingView();
         windowManager.addView(view.getRoot(), viewParams);
+    }
+
+    public static Integer getAction(Integer action) {
+        if (action == null) {
+            return null;
+        }
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                return MotionEvent.ACTION_DOWN;
+            case MotionEvent.ACTION_UP:
+                return MotionEvent.ACTION_UP;
+            case MotionEvent.ACTION_CANCEL:
+                return MotionEvent.ACTION_CANCEL;
+            case MotionEvent.ACTION_OUTSIDE:
+                return MotionEvent.ACTION_OUTSIDE;
+            case MotionEvent.ACTION_MOVE:
+                return MotionEvent.ACTION_MOVE;
+            case MotionEvent.ACTION_HOVER_MOVE:
+                return MotionEvent.ACTION_HOVER_MOVE;
+            case MotionEvent.ACTION_SCROLL:
+                return MotionEvent.ACTION_SCROLL;
+            case MotionEvent.ACTION_HOVER_ENTER:
+                return MotionEvent.ACTION_HOVER_ENTER;
+            case MotionEvent.ACTION_HOVER_EXIT:
+                return MotionEvent.ACTION_HOVER_EXIT;
+            case MotionEvent.ACTION_BUTTON_PRESS:
+                return MotionEvent.ACTION_BUTTON_PRESS;
+            case MotionEvent.ACTION_BUTTON_RELEASE:
+                return MotionEvent.ACTION_BUTTON_RELEASE;
+        }
+        return action & MotionEvent.ACTION_MASK;
     }
 
     private void removeMaskView() {

@@ -41,4 +41,6 @@ dependencies {
     androidTestImplementation libs.espresso.core
     compileOnly libs.lombok
     annotationProcessor libs.lombok
+    implementation libs.hutool.all
+
 }

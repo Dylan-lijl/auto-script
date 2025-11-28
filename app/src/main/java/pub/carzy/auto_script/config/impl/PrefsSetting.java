@@ -12,6 +12,9 @@ import com.google.gson.JsonSyntaxException;
 
 import pub.carzy.auto_script.config.AbstractSetting;
 
+/**
+ * @author admin
+ */
 public class PrefsSetting extends AbstractSetting {
     private static final String PREFS_NAME = "auto_script_prefs";
     private final SharedPreferences prefs;

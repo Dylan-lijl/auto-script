@@ -5,6 +5,7 @@ pluginManagement {
         mavenCentral()
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/spring' }
     }
 }
 
@@ -13,9 +14,9 @@ dependencyResolutionManagement {
     repositories {
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/spring' }
         google()
         mavenCentral()
-        jcenter() // 可选
     }
 }
 

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="pub.carzy.auto_script.db.ScriptEntity" />
+
+        <variable
+            name="entity"
+            type="ScriptEntity" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+            <!--总时长-->
+            <TextView
+                android:id="@+id/time_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="时长:" />
+
+            <TextView
+                android:id="@+id/time_element"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{entity==null||entity.minTime==null||entity.maxTime==null?`--`:(entity.maxTime-entity.minTime)+``}" />
+            <!--脚本数量-->
+            <TextView
+                android:id="@+id/step_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="步骤:" />
+
+            <TextView
+                android:id="@+id/step_element"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{entity==null||entity.count==null?`--`:entity.count+``}" />
+            <!--脚本名称-->
+            <TextView
+                android:id="@+id/name_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="名称:" />
+
+            <TextView
+                android:id="@+id/name_element"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{entity==null||entity.name==null?`--`:entity.name}" />
+            <!--脚本状态-->
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Spinner
+                android:id="@+id/header_toolbar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/info_header_toolbar_btn_name" />
+        </LinearLayout>
+    </LinearLayout>
+</layout>

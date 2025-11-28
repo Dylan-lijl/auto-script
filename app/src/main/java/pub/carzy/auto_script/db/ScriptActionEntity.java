@@ -1,0 +1,267 @@
+package pub.carzy.auto_script.db;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+import androidx.databinding.BaseObservable;
+import androidx.databinding.Bindable;
+
+import pub.carzy.auto_script.BR;
+
+/**
+ * @author admin
+ */
+public class ScriptActionEntity extends BaseObservable implements Parcelable {
+    /**
+     * 主键
+     */
+    private Long id;
+    /**
+     * 父级主键
+     */
+    private Long parentId;
+    /**
+     * 手势索引
+     */
+    private Integer index;
+    /**
+     * 序列
+     */
+    private Long downTime;
+    /**
+     * 按下时间
+     */
+    private Long eventTime;
+    /**
+     * 抬起时间
+     */
+    private Long upTime;
+    /**
+     * 最大的时间,一般来说这个时间是upTime,但是有的时候upTime为null,这个时候就需要遍历points
+     */
+    private Long maxTime;
+    /**
+     * 移动点数量
+     */
+    private Integer count;
+    /**
+     * 类型,当point小于等于2,说明是点击时间,大于2说明是滑动
+     */
+    private Integer type;
+
+    public ScriptActionEntity() {
+    }
+    protected ScriptActionEntity(Parcel in) {
+        if (in.readByte() == 0) {
+            id = null;
+        } else {
+            id = in.readLong();
+        }
+        if (in.readByte() == 0) {
+            parentId = null;
+        } else {
+            parentId = in.readLong();
+        }
+        if (in.readByte() == 0) {
+            index = null;
+        } else {
+            index = in.readInt();
+        }
+        if (in.readByte() == 0) {
+            downTime = null;
+        } else {
+            downTime = in.readLong();
+        }
+        if (in.readByte() == 0) {
+            eventTime = null;
+        } else {
+            eventTime = in.readLong();
+        }
+        if (in.readByte() == 0) {
+            upTime = null;
+        } else {
+            upTime = in.readLong();
+        }
+        if (in.readByte() == 0) {
+            maxTime = null;
+        } else {
+            maxTime = in.readLong();
+        }
+        if (in.readByte() == 0) {
+            count = null;
+        } else {
+            count = in.readInt();
+        }
+        if (in.readByte() == 0) {
+            type = null;
+        } else {
+            type = in.readInt();
+        }
+    }
+
+    public static final Creator<ScriptActionEntity> CREATOR = new Creator<ScriptActionEntity>() {
+        @Override
+        public ScriptActionEntity createFromParcel(Parcel in) {
+            return new ScriptActionEntity(in);
+        }
+
+        @Override
+        public ScriptActionEntity[] newArray(int size) {
+            return new ScriptActionEntity[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        if (id == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(id);
+        }
+        if (parentId == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(parentId);
+        }
+        if (index == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(index);
+        }
+        if (downTime == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(downTime);
+        }
+        if (eventTime == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(eventTime);
+        }
+        if (upTime == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(upTime);
+        }
+        if (maxTime == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(maxTime);
+        }
+        if (count == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(count);
+        }
+        if (type == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(type);
+        }
+    }
+
+    @Bindable
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+        notifyPropertyChanged(BR.id);
+    }
+
+    @Bindable
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
+        notifyPropertyChanged(BR.parentId);
+    }
+
+    @Bindable
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+        notifyPropertyChanged(BR.index);
+    }
+
+    @Bindable
+    public Long getDownTime() {
+        return downTime;
+    }
+
+    public void setDownTime(Long downTime) {
+        this.downTime = downTime;
+        notifyPropertyChanged(BR.downTime);
+    }
+
+    @Bindable
+    public Long getEventTime() {
+        return eventTime;
+    }
+
+    public void setEventTime(Long eventTime) {
+        this.eventTime = eventTime;
+        notifyPropertyChanged(BR.eventTime);
+    }
+
+    @Bindable
+    public Long getUpTime() {
+        return upTime;
+    }
+
+    public void setUpTime(Long upTime) {
+        this.upTime = upTime;
+        notifyPropertyChanged(BR.upTime);
+    }
+
+    @Bindable
+    public Long getMaxTime() {
+        return maxTime;
+    }
+
+    public void setMaxTime(Long maxTime) {
+        this.maxTime = maxTime;
+        notifyPropertyChanged(BR.maxTime);
+    }
+
+    @Bindable
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
+        notifyPropertyChanged(BR.count);
+    }
+
+    @Bindable
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+        notifyPropertyChanged(BR.type);
+    }
+}

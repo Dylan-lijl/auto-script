@@ -5,7 +5,10 @@
     <data>
 
         <import type="pub.carzy.auto_script.model.DisclaimerStatus" />
-
+        <import type="pub.carzy.auto_script.model.DisclaimerCount" />
+        <variable
+            name="counter"
+            type="DisclaimerCount" />
         <variable
             name="status"
             type="DisclaimerStatus" />
@@ -54,7 +57,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:enabled="@{!status.accepting}"
-                    android:text="@string/btn_decline"
+                    android:text="@{ @string/btn_decline + (counter.tick > 0 ? `(` + counter.tick + `)` : ``) }"
                     android:textColor="@color/danger" />
             </pub.carzy.auto_script.ui.SpinLayout>
 

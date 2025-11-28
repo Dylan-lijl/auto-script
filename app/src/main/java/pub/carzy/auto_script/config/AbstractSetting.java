@@ -1,9 +1,15 @@
 package pub.carzy.auto_script.config;
 
+import java.util.UUID;
+
+/**
+ * @author admin
+ */
 public abstract class AbstractSetting implements Setting {
     protected static final String KEY_ACCEPTED = "disclaimer_accepted";
     protected static final String KEY_TICK = "tick";
     protected static final String KEY_LANGUAGE = "language";
+    protected static final String KEY_UUID = "uuid";
 
     protected abstract <T> void write(String key, T value);
 
@@ -43,4 +49,13 @@ public abstract class AbstractSetting implements Setting {
         return read(KEY_LANGUAGE, null, String.class);
     }
 
+    @Override
+    public void setUUID(String uuid) {
+        write(KEY_UUID, uuid);
+    }
+
+    @Override
+    public String getUUID() {
+        return read(KEY_UUID, null, String.class);
+    }
 }

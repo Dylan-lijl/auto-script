@@ -12,6 +12,7 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.controller.DisclaimerController;
 import pub.carzy.auto_script.databinding.ActivityDisclaimerBinding;
+import pub.carzy.auto_script.model.DisclaimerCount;
 import pub.carzy.auto_script.model.DisclaimerStatus;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -24,7 +25,8 @@ public class DisclaimerActivity extends BaseActivity {
 
     private CountDownTimer timer;
     private static DisclaimerController CONTROLLER;
-    private final DisclaimerStatus status = new DisclaimerStatus();
+    private DisclaimerStatus status;
+    private DisclaimerCount counter;
     private ActivityDisclaimerBinding binding;
 
     @Override
@@ -35,8 +37,11 @@ public class DisclaimerActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        status = new DisclaimerStatus();
+        counter = new DisclaimerCount();
         binding = DataBindingUtil.setContentView(this, R.layout.activity_disclaimer);
         binding.setStatus(status);
+        binding.setCounter(counter);
         CONTROLLER = new DisclaimerController();
     }
 
@@ -58,20 +63,20 @@ public class DisclaimerActivity extends BaseActivity {
 
     private void startCountDown() {
         // 倒计时
-        CONTROLLER.getTick((tick) -> timer = new CountDownTimer(tick * 1000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                binding.btnDecline.setText(getString(R.string.btn_decline_count,
-                        getString(R.string.btn_decline),
-                        millisUntilFinished / 1000));
-            }
+        CONTROLLER.getTick((tick) -> {
+            counter.setTick(tick);
+            timer = new CountDownTimer(tick * 1000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    counter.setTick((int) (millisUntilFinished / 1000));
+                }
 
-            @Override
-            public void onFinish() {
-                binding.btnDecline.setText(R.string.btn_decline);
-                decline();
-            }
-        }.start());
+                @Override
+                public void onFinish() {
+                    decline();
+                }
+            }.start();
+        });
     }
 
     public void accept() {
@@ -107,7 +112,7 @@ public class DisclaimerActivity extends BaseActivity {
 
     private void stopTimer() {
         timer.cancel();
-        binding.btnDecline.setText(R.string.btn_decline);
+        counter.setTick(0);
     }
 
     private void jump() {

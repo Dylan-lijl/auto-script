@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="info_header_toolbar_btn_name">
+        <item>开始</item>
+        <item>暂停</item>
+        <item>停止</item>
+        <item>重命名</item>
+        <item>保存</item>
+        <item>删除</item>
+    </string-array>
+</resources>

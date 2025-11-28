@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
+
+        <import type="pub.carzy.auto_script.model.MacroInfoRefreshModel" />
+
+        <variable
+            name="model"
+            type="ScriptVoEntityModel" />
+
+        <variable
+            name="refresh"
+            type="pub.carzy.auto_script.model.MacroInfoRefreshModel" />
+    </data>
+
+    <pub.carzy.auto_script.ui.SpinLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:spinning="@{refresh.info}">
+
+        <!--甘特图-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <!--工具栏-->
+            <include
+                android:id="@+id/flow_chat_toolbar"
+                entity="@{model.root}"
+                layout="@layout/flow_chat_toolbar" />
+
+            <include
+                android:id="@+id/flow_chat_layout"
+                layout="@layout/script_flow_chat" />
+        </LinearLayout>
+    </pub.carzy.auto_script.ui.SpinLayout>
+</layout>
