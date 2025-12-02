@@ -1,5 +1,7 @@
 package pub.carzy.auto_script.service;
 
+import android.view.accessibility.AccessibilityEvent;
+
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
 
@@ -10,6 +12,8 @@ public interface ScriptAction {
     default int order() {
         return Integer.MAX_VALUE;
     }
+
+    String key();
     default String group() {
         return "default";
     }
@@ -19,4 +23,8 @@ public interface ScriptAction {
     boolean close(CloseParam param);
 
     void setContext(MyAccessibilityService service);
+
+    public void onAccessibilityEvent(AccessibilityEvent event);
+
+    public void onInterrupt();
 }

@@ -42,5 +42,5 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
     implementation libs.hutool.all
-
+    implementation libs.mpandroidchart
 }

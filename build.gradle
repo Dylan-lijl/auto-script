@@ -3,12 +3,10 @@ buildscript {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/central' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0"
+        classpath libs.gradle
+        classpath libs.kotlin.gradle.plugin
     }
 }
 
@@ -17,7 +15,7 @@ plugins {
 }
 
 allprojects {
-    configurations.all {
+    configurations.configureEach {
         resolutionStrategy.eachDependency { details ->
             if (details.requested.group == 'org.tensorflow' &&
                     details.requested.name == 'tensorflow-lite-metadata') {

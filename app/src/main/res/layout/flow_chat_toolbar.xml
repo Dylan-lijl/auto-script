@@ -32,13 +32,13 @@
                 android:id="@+id/time_element"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{entity==null||entity.minTime==null||entity.maxTime==null?`--`:(entity.maxTime-entity.minTime)+``}" />
+                android:text="@{entity==null||entity.maxTime==null?`--`:entity.maxTime+`ms`}" />
             <!--脚本数量-->
             <TextView
                 android:id="@+id/step_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
+                android:layout_marginLeft="10dp"
                 android:text="步骤:" />
 
             <TextView
@@ -51,7 +51,7 @@
                 android:id="@+id/name_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
+                android:layout_marginLeft="10dp"
                 android:text="名称:" />
 
             <TextView

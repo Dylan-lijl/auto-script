@@ -20,7 +20,6 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
     private Date createTime;
     private Date updateTime;
     private Integer count;
-    private Long minTime;
     private Long maxTime;
     private String remark;
 
@@ -38,11 +37,6 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
             count = null;
         } else {
             count = in.readInt();
-        }
-        if (in.readByte() == 0) {
-            minTime = null;
-        } else {
-            minTime = in.readLong();
         }
         if (in.readByte() == 0) {
             maxTime = null;
@@ -93,12 +87,6 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
         } else {
             dest.writeByte((byte) 1);
             dest.writeInt(count);
-        }
-        if (minTime == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeLong(minTime);
         }
         if (maxTime == null) {
             dest.writeByte((byte) 0);
@@ -169,16 +157,6 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
     public void setCount(Integer count) {
         this.count = count;
         notifyPropertyChanged(BR.count);
-    }
-
-    @Bindable
-    public Long getMinTime() {
-        return minTime;
-    }
-
-    public void setMinTime(Long minTime) {
-        this.minTime = minTime;
-        notifyPropertyChanged(BR.minTime);
     }
 
     @Bindable

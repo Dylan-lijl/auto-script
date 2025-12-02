@@ -41,7 +41,9 @@ import pub.carzy.auto_script.service.BasicAction;
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.utils.BeanHandler;
+import pub.carzy.auto_script.utils.Stopwatch;
 import pub.carzy.auto_script.utils.ThreadUtil;
+import pub.carzy.auto_script.utils.TypeToken;
 
 /**
  * @author admin
@@ -58,6 +60,13 @@ public class RecordScriptAction extends BasicAction {
     private boolean initialized = false;
     private FloatingButtonBinding binding;
     private WindowManager.LayoutParams bindingParams;
+    public static final String ACTION_KEY = "record";
+    private final Stopwatch watch = new Stopwatch();
+
+    @Override
+    public String key() {
+        return ACTION_KEY;
+    }
 
     @Override
     public boolean open(OpenParam param) {
@@ -66,7 +75,8 @@ public class RecordScriptAction extends BasicAction {
             if (!initialized) {
                 //注册上去
                 BeanFactory.getInstance().register(this);
-                idWorker = BeanFactory.getInstance().get(IdGenerator.class);
+                idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
+                });
                 motionList = new ArrayList<>();
                 motionMap = new HashMap<>();
                 binding = DataBindingUtil.inflate(
@@ -86,13 +96,15 @@ public class RecordScriptAction extends BasicAction {
                 maskParams = createMaskLayoutParams();
                 processView();
                 initialized = true;
-                return true;
             }
         } catch (Exception e) {
             return false;
         } finally {
             lock.unlock();
         }
+        //打开窗口
+        addView(binding, bindingParams);
+        return true;
     }
 
     private final boolean tint = false;
@@ -101,23 +113,28 @@ public class RecordScriptAction extends BasicAction {
         //
         View root = mask.getRoot();
         root.setOnTouchListener(createMaskMotionEventListener());
-        addViewTouch(createMoveListener(root, bindingParams), binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop);
+        addViewTouch(createMoveListener(binding.getRoot(), bindingParams), binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop);
         binding.btnFloatingRecord.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_RECORDING);
             motionList.clear();
             addView(mask, maskParams);
             reAddView(binding, bindingParams);
+            watch.reset();
+            watch.start();
         });
         binding.btnFloatingPause.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_PAUSED);
             removeView(mask);
+            watch.pause();
         });
         binding.btnFloatingRun.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_RECORDING);
             addView(mask, maskParams);
             reAddView(binding, bindingParams);
+            watch.resume();
         });
         binding.btnFloatingStop.setOnClickListener(v -> {
+            watch.stop();
             recordStateModel.setState(RecordStateModel.STATE_IDLE);
             //这里需要打开MacroListActivity将motionList传递过去,然后清空数据
             Intent intent = new Intent(service, MacroInfoActivity.class);
@@ -132,10 +149,11 @@ public class RecordScriptAction extends BasicAction {
                 motionList.clear();
                 // 建议在这里加上日志或调试点，确认数据被清空
             }
-            close(null);
+            service.close(ACTION_KEY, null);
         });
         binding.btnFloatingClose.setOnClickListener(v -> {
-            close(null);
+            watch.stop();
+            service.close(ACTION_KEY, null);
         });
     }
 
@@ -146,24 +164,16 @@ public class RecordScriptAction extends BasicAction {
         root.setId(idWorker.nextId());
         root.setName("未命名");
         root.setCount(motionList.size());
-        Long minTime = null;
-        Long maxTime = null;
+        long maxTime = 0L;
         for (MotionEntity motionEntity : motionList) {
-            if (minTime == null) {
-                minTime = motionEntity.getEventTime();
-            } else {
-                minTime = Math.min(minTime, motionEntity.getEventTime());
-            }
-            if (maxTime == null) {
-                maxTime = motionEntity.getEventTime();
-            } else {
-                maxTime = Math.max(maxTime, motionEntity.getEventTime());
+            if (motionEntity.getUpTime() != null) {
+                maxTime = Math.max(maxTime, motionEntity.getUpTime());
             }
             ScriptActionEntity script = BeanHandler.copy(motionEntity, ScriptActionEntity.class);
             script.setId(idWorker.nextId());
             script.setParentId(root.getId());
             script.setCount(motionEntity.getPoints().size());
-            script.setMaxTime(script.getUpTime() != null ? script.getUpTime() : script.getEventTime());
+            script.setMaxTime(script.getUpTime() != null ? script.getUpTime() : script.getDownTime());
             for (PointEntity point : motionEntity.getPoints()) {
                 ScriptPointEntity pointEntity = BeanHandler.copy(point, ScriptPointEntity.class);
                 pointEntity.setId(idWorker.nextId());
@@ -171,13 +181,14 @@ public class RecordScriptAction extends BasicAction {
                 if (point.getTime() > script.getMaxTime()) {
                     script.setMaxTime(point.getTime());
                 }
-                minTime = Math.min(point.getTime(), minTime);
                 maxTime = Math.max(point.getTime(), maxTime);
                 entity.getPoints().add(pointEntity);
             }
+            if (script.getUpTime() == null) {
+                script.setUpTime(script.getMaxTime());
+            }
             entity.getActions().add(script);
         }
-        entity.getRoot().setMinTime(minTime);
         entity.getRoot().setMaxTime(maxTime);
         return entity;
     }
@@ -200,9 +211,9 @@ public class RecordScriptAction extends BasicAction {
                 motionList.add(entity);
                 entity.setIndex(index);
                 entity.setEventTime(event.getEventTime());
-                entity.setDownTime(event.getDownTime());
+                entity.setDownTime(watch.getElapsedMillis());
                 motionMap.put(index, entity);
-                entity.getPoints().add(new PointEntity(event.getX(), event.getY(), event.getEventTime(), event.getToolType(index)));
+                entity.getPoints().add(new PointEntity(event.getX(), event.getY(), watch.getElapsedMillis(), event.getToolType(index)));
             } else if (maskType == MotionEvent.ACTION_UP || maskType == MotionEvent.ACTION_POINTER_UP) {
                 //抬起事件就保存
                 int index = getPointIndex(action);
@@ -210,8 +221,8 @@ public class RecordScriptAction extends BasicAction {
                 if (entity == null) {
                     return true;
                 }
-                entity.setUpTime(event.getEventTime());
-                entity.getPoints().add(new PointEntity(event.getX(), event.getY(), event.getEventTime(), event.getToolType(index)));
+                entity.setUpTime(watch.getElapsedMillis());
+                entity.getPoints().add(new PointEntity(event.getX(), event.getY(), watch.getElapsedMillis(), event.getToolType(index)));
             } else if (maskType == MotionEvent.ACTION_MOVE) {
                 //记录触点的x,y坐标
                 for (int i = 0; i < event.getPointerCount(); i++) {
@@ -220,7 +231,7 @@ public class RecordScriptAction extends BasicAction {
                         continue;
                     }
                     event.getX(i);
-                    entity.getPoints().add(new PointEntity(event.getX(i), event.getY(i), event.getEventTime(), event.getToolType(i)));
+                    entity.getPoints().add(new PointEntity(event.getX(i), event.getY(i), watch.getElapsedMillis(), event.getToolType(i)));
                 }
             } else if (maskType == MotionEvent.ACTION_CANCEL) {
                 //这里如何处理
@@ -231,12 +242,6 @@ public class RecordScriptAction extends BasicAction {
 
     private int getPointIndex(Integer action) {
         return action == MotionEvent.ACTION_DOWN ? 0 : ((action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT);
-    }
-
-    private void addViewTouch(View.OnTouchListener listener, View... views) {
-        for (View view : views) {
-            view.setOnTouchListener(listener);
-        }
     }
 
     public static Integer getAction(Integer action) {
@@ -293,56 +298,5 @@ public class RecordScriptAction extends BasicAction {
         params.x = 0;
         params.y = 0;
         return params;
-    }
-
-    public static void checkOpenAccessibility(ControllerCallback<Boolean> callback) {
-        ThreadUtil.runOnCpu(() -> {
-            boolean enabled = false;
-            try {
-                Startup context = BeanFactory.getInstance().get(Startup.class);
-                int accessibilityEnabled = 0;
-                final String service = context.getPackageName() + "/" + RecordScriptAction.class.getCanonicalName();
-                try {
-                    accessibilityEnabled = Settings.Secure.getInt(context.getContentResolver(),
-                            Settings.Secure.ACCESSIBILITY_ENABLED);
-                } catch (Settings.SettingNotFoundException e) {
-                    Log.e(RecordScriptAction.class.getCanonicalName(), "Error finding setting, default accessibility to not found", e);
-                }
-
-                TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
-                if (accessibilityEnabled == 1) {
-                    String settingValue = Settings.Secure.getString(context.getContentResolver(),
-                            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-                    if (settingValue != null) {
-                        colonSplitter.setString(settingValue);
-                        while (colonSplitter.hasNext()) {
-                            String componentName = colonSplitter.next();
-                            if (componentName.equalsIgnoreCase(service)) {
-                                enabled = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                final boolean tmp = enabled;
-                ThreadUtil.runOnUi(() -> callback.complete(tmp));
-            } catch (Exception e) {
-                ThreadUtil.runOnUi(() -> callback.catchMethod(e));
-            } finally {
-                ThreadUtil.runOnUi(callback::finallyMethod);
-            }
-        });
-    }
-
-    public static void checkOpenFloatWindow(ControllerCallback<Boolean> callback) {
-        ThreadUtil.runOnCpu(() -> {
-            try {
-                ThreadUtil.runOnUi(() -> callback.complete(Settings.canDrawOverlays(BeanFactory.getInstance().get(Startup.class))));
-            } catch (Exception e) {
-                ThreadUtil.runOnUi(() -> callback.catchMethod(e));
-            } finally {
-                ThreadUtil.runOnUi(callback::finallyMethod);
-            }
-        });
     }
 }

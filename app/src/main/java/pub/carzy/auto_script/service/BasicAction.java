@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
+import android.view.accessibility.AccessibilityEvent;
 
 import androidx.databinding.ViewDataBinding;
 
@@ -23,7 +24,7 @@ import pub.carzy.auto_script.utils.ThreadUtil;
  */
 public abstract class BasicAction implements ScriptAction{
     protected WindowManager windowManager;
-    protected AccessibilityService service;
+    protected MyAccessibilityService service;
     protected int screenWidth;
     protected int screenHeight;
 
@@ -140,5 +141,20 @@ public abstract class BasicAction implements ScriptAction{
     protected void reAddView(ViewDataBinding binding, WindowManager.LayoutParams params) {
         removeView(binding);
         addView(binding, params);
+    }
+
+    @Override
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+
+    }
+
+    @Override
+    public void onInterrupt() {
+
+    }
+    protected void addViewTouch(View.OnTouchListener listener, View... views) {
+        for (View view : views) {
+            view.setOnTouchListener(listener);
+        }
     }
 }

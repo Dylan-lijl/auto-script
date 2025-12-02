@@ -14,4 +14,11 @@
     <color name="button_pressed">#faad14</color>
     <color name="transparent">#00FFFFFF</color>
     <color name="frosted_glass">#6b6b6b1a</color>
+    <color name="rainbow_red">#FF0000</color>
+    <color name="rainbow_orange">#FF7F00</color>
+    <color name="rainbow_yellow">#FFFF00</color>
+    <color name="rainbow_green">#00FF00</color>
+    <color name="rainbow_blue">#0000FF</color>
+    <color name="rainbow_indigo">#4B0082</color>
+    <color name="rainbow_violet">#8B00FF</color>
 </resources>

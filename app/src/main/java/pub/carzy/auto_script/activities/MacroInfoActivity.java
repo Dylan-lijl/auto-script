@@ -12,7 +12,20 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
+import com.github.mikephil.charting.charts.HorizontalBarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
@@ -22,8 +35,10 @@ import pub.carzy.auto_script.db.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
+import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.PreviewScriptAction;
+import pub.carzy.auto_script.ui.adapter.SingleStackRender;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -45,6 +60,7 @@ public class MacroInfoActivity extends BaseActivity {
         refresh.setInfo(true);
         binding.setModel(model);
         binding.setRefresh(refresh);
+        initChat();
         initIntent();
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -55,6 +71,50 @@ public class MacroInfoActivity extends BaseActivity {
             popup.setOnMenuItemClickListener(createActionClickListener());
             popup.show();
         });
+
+    }
+
+    private void initChat() {
+        HorizontalBarChart chart = binding.flowChatLayout.horizontalBarChart;
+        chart.getDescription().setEnabled(false);
+        chart.setDrawValueAboveBar(true);
+        chart.setPinchZoom(false);
+        chart.setDrawGridBackground(false);
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+        xAxis.setGranularity(1f);
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.setDrawGridLines(true);
+        YAxis rightAxis = chart.getAxisRight();
+        rightAxis.setEnabled(false);
+        chart.setRenderer(new SingleStackRender(chart, chart.getAnimator(), chart.getViewPortHandler()));
+        chart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+                Object index = e.getData();
+                if (index == null) {
+                    return;
+                }
+                try {
+                    int i = (Integer) index;
+                    if (i >= model.getActions().size()) {
+                        return;
+                    }
+                    ScriptActionEntity action = model.getActions().get(i);
+                    //弹出内容
+                    Gson gson = new Gson();
+                    Log.d("MacroInfoActivity", "onValueSelected: " + gson.toJson(action));
+                } catch (Exception exception) {
+                    Log.e("MacroInfoActivity", "onValueSelected: ", exception);
+                }
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
     }
 
     private PopupMenu.OnMenuItemClickListener createActionClickListener() {
@@ -64,15 +124,13 @@ public class MacroInfoActivity extends BaseActivity {
 
             } else if (itemId == R.id.action_preview) {
                 //打开对应service悬浮窗口
-                PreviewScriptAction service = BeanFactory.getInstance().get(PreviewScriptAction.class);
+                MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
                 if (service != null) {
                     ScriptVoEntity entity = new ScriptVoEntity();
                     entity.setRoot(model.getRoot());
                     entity.getActions().addAll(model.getActions());
                     entity.getPoints().addAll(model.getPoints());
-                    OpenParam openParam = new OpenParam();
-                    openParam.setData(entity);
-                    service.open(openParam);
+                    service.open(PreviewScriptAction.ACTION_KEY, new OpenParam(entity));
                 }
             } else if (itemId == R.id.action_remove) {
 
@@ -111,7 +169,6 @@ public class MacroInfoActivity extends BaseActivity {
                 .show();
     }
 
-
     private void initIntent() {
         if (getIntent() == null) {
             refresh.setInfo(false);
@@ -137,9 +194,24 @@ public class MacroInfoActivity extends BaseActivity {
                 for (ScriptPointEntity pointEntity : entity.getPoints()) {
                     model.getPoints().add(pointEntity);
                 }
-                for (ScriptActionEntity actionEntity : entity.getActions()) {
+                List<BarEntry> list = new ArrayList<>();
+                List<Integer> colors = new ArrayList<>();
+                int[] colorArray = getResources().getIntArray(R.array.script_info_chat_color);
+                int colorLength = colorArray.length;
+                for (int i = 0; i < entity.getActions().size(); i++) {
+                    ScriptActionEntity actionEntity = entity.getActions().get(i);
+                    colors.add(colorArray[actionEntity.getIndex() % colorLength]);
+                    list.add(new BarEntry(i, new float[]{actionEntity.getDownTime(), actionEntity.getUpTime() - actionEntity.getDownTime()}, i));
                     model.getActions().add(actionEntity);
                 }
+                ThreadUtil.runOnUi(() -> {
+                    BarDataSet set = new BarDataSet(list, "步骤");
+                    set.setDrawValues(false);
+                    set.setColors(colors);
+                    BarData data = new BarData(set);
+                    binding.flowChatLayout.horizontalBarChart.setData(data);
+                    binding.flowChatLayout.horizontalBarChart.invalidate();
+                });
             }
         });
     }

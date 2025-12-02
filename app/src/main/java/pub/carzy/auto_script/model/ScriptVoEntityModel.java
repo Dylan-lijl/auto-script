@@ -6,6 +6,11 @@ import androidx.databinding.ObservableArrayList;
 import androidx.databinding.ObservableField;
 import androidx.databinding.ObservableList;
 
+import com.github.mikephil.charting.data.BarEntry;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Data;
 import lombok.Getter;
 import pub.carzy.auto_script.BR;
@@ -20,6 +25,7 @@ public class ScriptVoEntityModel extends BaseObservable {
     private ScriptEntity root;
     private ObservableList<ScriptPointEntity> points = new ObservableArrayList<>();
     private ObservableList<ScriptActionEntity> actions = new ObservableArrayList<>();
+    private ObservableList<BarEntry> actionEntries = new ObservableArrayList<>();
 
     @Bindable
     public ScriptEntity getRoot() {
@@ -48,6 +54,12 @@ public class ScriptVoEntityModel extends BaseObservable {
 
     public void setActions(ObservableList<ScriptActionEntity> actions) {
         this.actions = actions;
+        //重新生成对象
+        List<BarEntry> list = new ArrayList<>();
+        for (ScriptActionEntity action : actions) {
+            list.add(new BarEntry(action.getIndex(), action.getMaxTime()));
+        }
+        actionEntries.addAll(list);
         notifyPropertyChanged(BR.actions);
     }
 }

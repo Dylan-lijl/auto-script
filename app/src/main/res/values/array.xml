@@ -8,4 +8,13 @@
         <item>保存</item>
         <item>删除</item>
     </string-array>
+    <integer-array name="script_info_chat_color">
+        <item>@color/rainbow_red</item>
+        <item>@color/rainbow_orange</item>
+        <item>@color/rainbow_yellow</item>
+        <item>@color/rainbow_green</item>
+        <item>@color/rainbow_blue</item>
+        <item>@color/rainbow_indigo</item>
+        <item>@color/rainbow_violet</item>
+    </integer-array>
 </resources>

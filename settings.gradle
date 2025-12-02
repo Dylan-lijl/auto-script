@@ -6,6 +6,7 @@ pluginManagement {
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/spring' }
+        maven { url 'https://jitpack.io' }
     }
 }
 
@@ -15,6 +16,7 @@ dependencyResolutionManagement {
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/spring' }
+        maven { url 'https://jitpack.io' }
         google()
         mavenCentral()
     }

@@ -3,6 +3,7 @@ package pub.carzy.auto_script.service.impl;
 import android.accessibilityservice.AccessibilityService;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
@@ -34,6 +35,13 @@ public class PreviewScriptAction extends BasicAction {
     private WindowManager.LayoutParams bindingParams;
     private MaskViewBinding mask;
 
+    public static final String ACTION_KEY = "preview_script";
+
+    @Override
+    public String key() {
+        return ACTION_KEY;
+    }
+
     @Override
     public boolean open(OpenParam param) {
         lock.lock();
@@ -43,7 +51,7 @@ public class PreviewScriptAction extends BasicAction {
                 BeanFactory.getInstance().register(this);
                 binding = DataBindingUtil.inflate(
                         LayoutInflater.from(service),
-                        R.layout.floating_button,
+                        R.layout.preview_floating_button,
                         null,
                         false
                 );
@@ -58,12 +66,27 @@ public class PreviewScriptAction extends BasicAction {
                 maskParams = createMaskLayoutParams();
                 addListeners();
                 initialized = true;
-                return true;
             }
         } catch (Exception ignored) {
             return false;
         } finally {
             lock.unlock();
+        }
+        try {
+            if (param != null) {
+                Object data = param.getData();
+                if (data instanceof ScriptVoEntity) {
+                    this.entity = (ScriptVoEntity) data;
+                } else {
+                    Log.e("open", "data is not ScriptVoEntity");
+                    return false;
+                }
+            }
+            addView(mask, maskParams);
+            reAddView(binding, bindingParams);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -81,8 +104,9 @@ public class PreviewScriptAction extends BasicAction {
             //
         });
         binding.btnPreviewClose.setOnClickListener(v -> {
-            close(null);
+            service.close(ACTION_KEY, null);
         });
+        addViewTouch(createMoveListener(binding.getRoot(), bindingParams), binding.btnPreviewRun, binding.btnPreviewStop, binding.btnPreviewPause, binding.btnPreviewRestart, binding.btnPreviewClose);
     }
 
     private void removeMaskView() {
@@ -106,24 +130,7 @@ public class PreviewScriptAction extends BasicAction {
         return params;
     }
 
-    public boolean open(OpenParam param) {
-        try {
-            if (param != null) {
-                Object data = param.getData();
-                if (data instanceof ScriptVoEntity) {
-                    this.entity = (ScriptVoEntity) data;
-                } else {
-                    throw new IllegalAccessException("data is not ScriptVoEntity");
-                }
-            }
-            addView(mask, maskParams);
-            reAddView(binding, bindingParams);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
+    @Override
     public boolean close(CloseParam param) {
         try {
             entity = null;

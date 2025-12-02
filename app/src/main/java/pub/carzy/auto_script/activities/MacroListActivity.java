@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.controller.MacroListController;
+import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.impl.RecordScriptAction;
 import pub.carzy.auto_script.ui.ExtImageButton;
 
@@ -39,11 +40,11 @@ public class MacroListActivity extends BaseActivity {
 
     private void openService() {
         Runnable runnable = () -> {
-            RecordScriptAction service = BeanFactory.getInstance().get(RecordScriptAction.class);
+            MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
             if (service == null) {
                 return;
             }
-            if (!service.open(null)) {
+            if (!service.open(RecordScriptAction.ACTION_KEY, null)) {
                 Toast.makeText(this, "打开失败!", Toast.LENGTH_SHORT);
             }
         };
@@ -79,14 +80,14 @@ public class MacroListActivity extends BaseActivity {
     }
 
     private void checkPermission(Consumer<Boolean> callback) {
-        RecordScriptAction.checkOpenAccessibility((enabled) -> {
+        MyAccessibilityService.checkOpenAccessibility((enabled) -> {
             if (!enabled) {
                 //打开提示
                 promptAccessibility();
                 return;
             }
             //检查悬浮窗权限
-            RecordScriptAction.checkOpenFloatWindow((e) -> {
+            MyAccessibilityService.checkOpenFloatWindow((e) -> {
                 if (!e) {
                     promptOverlay();
                     return;

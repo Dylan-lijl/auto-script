@@ -8,4 +8,11 @@ import lombok.Data;
 @Data
 public class OpenParam {
     private Object data;
+
+    public OpenParam() {
+    }
+
+    public OpenParam(Object data) {
+        this.data = data;
+    }
 }

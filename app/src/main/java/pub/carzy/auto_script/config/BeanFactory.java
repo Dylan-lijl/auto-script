@@ -1,12 +1,19 @@
 package pub.carzy.auto_script.config;
 
 import java.util.*;
+import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.Getter;
 import pub.carzy.auto_script.ex.BeanNotFoundException;
+import pub.carzy.auto_script.utils.TypeToken;
 
+/**
+ * @author admin
+ */
 public class BeanFactory {
 
+    @Getter
     private static final BeanFactory instance = new BeanFactory();
 
     /**
@@ -18,12 +25,9 @@ public class BeanFactory {
      * 类型 -> bean 名称集合（可能有多个实现）
      */
     private final Map<Class<?>, Set<String>> typeMap = new ConcurrentHashMap<>();
+    private final Map<Type, Object> genericTypeMap = new ConcurrentHashMap<>();
 
     private BeanFactory() {
-    }
-
-    public static BeanFactory getInstance() {
-        return instance;
     }
 
     /**
@@ -47,6 +51,23 @@ public class BeanFactory {
             typeMap.computeIfAbsent(type, k -> new HashSet<>()).add(name);
         }
         return this;
+    }
+
+    public <T> BeanFactory register(TypeToken<T> type, Object instance) {
+        Objects.requireNonNull(type, "Generic type cannot be null");
+        Objects.requireNonNull(instance, "Instance cannot be null");
+        genericTypeMap.put(type.getType(), instance);
+        register(instance);
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get(TypeToken<?> type) {
+        Object instance = genericTypeMap.get(type.getType());
+        if (instance == null) {
+            throw new BeanNotFoundException("Bean not found for type: " + type);
+        }
+        return (T) instance;
     }
 
     /**

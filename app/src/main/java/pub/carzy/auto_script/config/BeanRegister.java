@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import pub.carzy.auto_script.config.impl.PrefsSetting;
 import pub.carzy.auto_script.config.impl.SnowflakeGenerator;
+import pub.carzy.auto_script.utils.TypeToken;
 
 /**
  * @author admin
@@ -29,7 +30,8 @@ public class BeanRegister {
         BeanFactory.getInstance()
                 .register(new PrefsSetting(context))
                 .register(context)
-                .register(new SnowflakeGenerator());
+                .register(new TypeToken<IdGenerator<Long>>() {
+                }, new SnowflakeGenerator());
 //                .register(new ScriptAccessibilityService());
     }
 }
