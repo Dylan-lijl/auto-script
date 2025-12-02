@@ -6,8 +6,6 @@ import java.util.UUID;
 
 import pub.carzy.auto_script.config.impl.PrefsSetting;
 import pub.carzy.auto_script.config.impl.SnowflakeGenerator;
-import pub.carzy.auto_script.config.impl.UuidGenerator;
-import pub.carzy.auto_script.service.ScriptAccessibilityService;
 
 /**
  * @author admin

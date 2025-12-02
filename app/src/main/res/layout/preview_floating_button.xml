@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <import type="pub.carzy.auto_script.model.PreviewFloatingStatus" />
+        <import type="android.view.View" />
+
+        <variable
+            name="status"
+            type="PreviewFloatingStatus" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{e->status.setSelected(!status.selected)}"
+            android:text="更多" />
+
+        <Button
+            android:id="@+id/btn_preview_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="退出"
+            android:visibility="@{status.selected?View.VISIBLE:View.GONE}" />
+
+        <Button
+            android:id="@+id/btn_preview_restart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="重新"
+            android:visibility="@{(status.status!=PreviewFloatingStatus.NONE &amp;&amp; status.selected)?View.VISIBLE:View.GONE}" />
+
+        <Button
+            android:id="@+id/btn_preview_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="停止"
+            android:visibility="@{(status.status!=PreviewFloatingStatus.RUN &amp;&amp; status.selected)?View.VISIBLE:View.GONE}" />
+
+        <Button
+            android:id="@+id/btn_preview_pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="暂停"
+            android:visibility="@{(status.status==PreviewFloatingStatus.RUN)?View.VISIBLE:View.GONE}" />
+
+        <Button
+            android:id="@+id/btn_preview_run"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="运行"
+            android:visibility="@{(status.status!=PreviewFloatingStatus.RUN)?View.VISIBLE:View.GONE}" />
+    </LinearLayout>
+</layout>

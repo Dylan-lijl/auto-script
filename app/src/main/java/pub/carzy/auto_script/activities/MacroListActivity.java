@@ -3,6 +3,7 @@ package pub.carzy.auto_script.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -12,7 +13,7 @@ import java.util.function.Consumer;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.controller.MacroListController;
-import pub.carzy.auto_script.service.ScriptAccessibilityService;
+import pub.carzy.auto_script.service.impl.RecordScriptAction;
 import pub.carzy.auto_script.ui.ExtImageButton;
 
 /**
@@ -38,11 +39,13 @@ public class MacroListActivity extends BaseActivity {
 
     private void openService() {
         Runnable runnable = () -> {
-            ScriptAccessibilityService service = BeanFactory.getInstance().get(ScriptAccessibilityService.class);
+            RecordScriptAction service = BeanFactory.getInstance().get(RecordScriptAction.class);
             if (service == null) {
                 return;
             }
-            service.open();
+            if (!service.open(null)) {
+                Toast.makeText(this, "打开失败!", Toast.LENGTH_SHORT);
+            }
         };
         if (ok) {
             runnable.run();
@@ -58,17 +61,17 @@ public class MacroListActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ScriptAccessibilityService service = BeanFactory.getInstance().get(ScriptAccessibilityService.class);
+        RecordScriptAction service = BeanFactory.getInstance().get(RecordScriptAction.class);
         if (service == null) {
             return;
         }
-        service.close();
+        service.close(null);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        checkPermission();
+//        checkPermission();
     }
 
     private void checkPermission() {
@@ -76,14 +79,14 @@ public class MacroListActivity extends BaseActivity {
     }
 
     private void checkPermission(Consumer<Boolean> callback) {
-        ScriptAccessibilityService.checkOpenAccessibility((enabled) -> {
+        RecordScriptAction.checkOpenAccessibility((enabled) -> {
             if (!enabled) {
                 //打开提示
                 promptAccessibility();
                 return;
             }
             //检查悬浮窗权限
-            ScriptAccessibilityService.checkOpenFloatWindow((e) -> {
+            RecordScriptAction.checkOpenFloatWindow((e) -> {
                 if (!e) {
                     promptOverlay();
                     return;

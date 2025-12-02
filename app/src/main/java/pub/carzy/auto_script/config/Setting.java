@@ -2,6 +2,8 @@ package pub.carzy.auto_script.config;
 
 import java.io.Serializable;
 
+import pub.carzy.auto_script.entity.FloatPoint;
+
 /**
  * @author admin
  */
@@ -20,4 +22,8 @@ public interface Setting extends Serializable {
 
     void setUUID(String uuid);
     String getUUID();
+
+    void setPoint(FloatPoint point);
+
+    FloatPoint getPoint();
 }

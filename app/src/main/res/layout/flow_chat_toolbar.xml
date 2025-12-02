@@ -14,11 +14,12 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:baselineAligned="true"
         android:orientation="horizontal">
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1">
             <!--总时长-->
             <TextView
@@ -37,6 +38,7 @@
                 android:id="@+id/step_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
                 android:text="步骤:" />
 
             <TextView
@@ -49,6 +51,7 @@
                 android:id="@+id/name_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
                 android:text="名称:" />
 
             <TextView
@@ -61,13 +64,21 @@
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:baselineAligned="true">
 
-            <Spinner
-                android:id="@+id/header_toolbar"
+            <Button
+                android:id="@+id/btn_more_action"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:entries="@array/info_header_toolbar_btn_name" />
+                android:layout_marginEnd="10dp"
+                android:background="@color/transparent"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="更多"
+                android:textAllCaps="false"
+                android:textColor="@color/link" />
         </LinearLayout>
     </LinearLayout>
 </layout>

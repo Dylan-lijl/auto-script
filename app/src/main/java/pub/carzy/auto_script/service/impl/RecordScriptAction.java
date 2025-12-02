@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service;
+package pub.carzy.auto_script.service.impl;
 
 
 import android.accessibilityservice.AccessibilityService;
@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.accessibility.AccessibilityEvent;
 
 import androidx.databinding.DataBindingUtil;
 
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
@@ -28,7 +28,6 @@ import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.IdGenerator;
-import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.databinding.FloatingButtonBinding;
 import pub.carzy.auto_script.databinding.MaskViewBinding;
 import pub.carzy.auto_script.db.ScriptActionEntity;
@@ -38,57 +37,62 @@ import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.model.RecordStateModel;
+import pub.carzy.auto_script.service.BasicAction;
+import pub.carzy.auto_script.service.dto.CloseParam;
+import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
  * @author admin
  */
-public class ScriptAccessibilityService extends AccessibilityService {
-    private WindowManager windowManager;
-    private FloatingButtonBinding view;
+public class RecordScriptAction extends BasicAction {
     private MaskViewBinding mask;
     private RecordStateModel recordStateModel;
-
-    private WindowManager.LayoutParams viewParams;
     private WindowManager.LayoutParams maskParams;
 
     private List<MotionEntity> motionList;
     private Map<Integer, MotionEntity> motionMap;
     private IdGenerator<Long> idWorker;
+    private ReentrantLock lock = new ReentrantLock();
+    private boolean initialized = false;
+    private FloatingButtonBinding binding;
+    private WindowManager.LayoutParams bindingParams;
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void onCreate() {
-        super.onCreate();
-        //注册上去
-        BeanFactory.getInstance().register(this);
-        Startup startup = BeanFactory.getInstance().get(Startup.class);
-        idWorker = BeanFactory.getInstance().get(IdGenerator.class);
-        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        motionList = new ArrayList<>();
-        motionMap = new HashMap<>();
-        // 悬浮窗根布局
-        view = DataBindingUtil.inflate(
-                LayoutInflater.from(this),
-                R.layout.floating_button,
-                null,
-                false
-        );
-        view.setRecordState(recordStateModel = new RecordStateModel());
-        mask = DataBindingUtil.inflate(
-                LayoutInflater.from(this),
-                R.layout.mask_view,
-                null,
-                false
-        );
-        int flag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE;
-        viewParams = createLayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                Gravity.CENTER, flag);
-        maskParams = createLayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, Gravity.CENTER
-                , flag);
-        processView();
+    public boolean open(OpenParam param) {
+        lock.lock();
+        try {
+            if (!initialized) {
+                //注册上去
+                BeanFactory.getInstance().register(this);
+                idWorker = BeanFactory.getInstance().get(IdGenerator.class);
+                motionList = new ArrayList<>();
+                motionMap = new HashMap<>();
+                binding = DataBindingUtil.inflate(
+                        LayoutInflater.from(service),
+                        R.layout.floating_button,
+                        null,
+                        false
+                );
+                binding.setRecordState(recordStateModel = new RecordStateModel());
+                bindingParams = createBindingParams(binding);
+                mask = DataBindingUtil.inflate(
+                        LayoutInflater.from(service),
+                        R.layout.mask_view,
+                        null,
+                        false
+                );
+                maskParams = createMaskLayoutParams();
+                processView();
+                initialized = true;
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        } finally {
+            lock.unlock();
+        }
     }
 
     private final boolean tint = false;
@@ -97,37 +101,41 @@ public class ScriptAccessibilityService extends AccessibilityService {
         //
         View root = mask.getRoot();
         root.setOnTouchListener(createMaskMotionEventListener());
-        View.OnTouchListener listener = createTouchListener(viewParams);
-        addViewTouch(listener, view.btnFloatingPause, view.btnFloatingRecord, view.btnFloatingRun, view.btnFloatingStop);
-        view.btnFloatingRecord.setOnClickListener(v -> {
+        addViewTouch(createMoveListener(root, bindingParams), binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop);
+        binding.btnFloatingRecord.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_RECORDING);
             motionList.clear();
-            addMaskView(true);
+            addView(mask, maskParams);
+            reAddView(binding, bindingParams);
         });
-        view.btnFloatingPause.setOnClickListener(v -> {
+        binding.btnFloatingPause.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_PAUSED);
-            removeMaskView();
+            removeView(mask);
         });
-        view.btnFloatingRun.setOnClickListener(v -> {
+        binding.btnFloatingRun.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_RECORDING);
-            addMaskView(true);
+            addView(mask, maskParams);
+            reAddView(binding, bindingParams);
         });
-        view.btnFloatingStop.setOnClickListener(v -> {
+        binding.btnFloatingStop.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_IDLE);
             //这里需要打开MacroListActivity将motionList传递过去,然后清空数据
-            Intent intent = new Intent(this, MacroInfoActivity.class);
+            Intent intent = new Intent(service, MacroInfoActivity.class);
             // **重要:** 从非 Activity 上下文 (Service) 启动 Activity 必须添加此 Flag
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             // 3. 传递 motionList
             intent.putExtra("data", transformData(motionList));
             // 4. 启动 Activity
-            startActivity(intent);
+            service.startActivity(intent);
             // 5. 清空 motionList 数据
             if (motionList != null) {
                 motionList.clear();
                 // 建议在这里加上日志或调试点，确认数据被清空
             }
-            removeMaskView();
+            close(null);
+        });
+        binding.btnFloatingClose.setOnClickListener(v -> {
+            close(null);
         });
     }
 
@@ -231,15 +239,6 @@ public class ScriptAccessibilityService extends AccessibilityService {
         }
     }
 
-    public void open() {
-        addFloatingView();
-    }
-
-    private void addFloatingView() {
-        removeFloatingView();
-        windowManager.addView(view.getRoot(), viewParams);
-    }
-
     public static Integer getAction(Integer action) {
         if (action == null) {
             return null;
@@ -271,95 +270,29 @@ public class ScriptAccessibilityService extends AccessibilityService {
         return action & MotionEvent.ACTION_MASK;
     }
 
-    private void removeMaskView() {
+    @Override
+    public boolean close(CloseParam param) {
         try {
-            windowManager.removeView(mask.getRoot());
-        } catch (IllegalArgumentException ignored) {
-
+            removeView(mask);
+            recordStateModel.setState(RecordStateModel.STATE_IDLE);
+            removeView(binding);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
-    private void removeFloatingView() {
-        try {
-            windowManager.removeView(view.getRoot());
-        } catch (IllegalArgumentException ignored) {
-
-        }
-    }
-
-    private void addMaskView(boolean update) {
-        windowManager.addView(mask.getRoot(), maskParams);
-        if (update) {
-            removeFloatingView();
-            windowManager.addView(view.getRoot(), viewParams);
-        }
-    }
-
-    public void close() {
-        windowManager.removeView(view.getRoot());
-        windowManager.removeView(mask.getRoot());
-        //这里还需要释放资源等等
-    }
-
-    private static WindowManager.LayoutParams createLayoutParams(int w, int h, int gravity, Integer layoutFlag) {
+    private static WindowManager.LayoutParams createMaskLayoutParams() {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                w,
-                h,
-                layoutFlag,
+                WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         // 默认居中
-        params.gravity = gravity;
+        params.gravity = Gravity.CENTER;
         params.x = 0;
         params.y = 0;
         return params;
-    }
-
-    private View.OnTouchListener createTouchListener(WindowManager.LayoutParams params) {
-        final int dragThreshold = 10;
-        return new View.OnTouchListener() {
-            private int lastX, lastY;
-            private float startX, startY;
-            private boolean isDragging;
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        startX = event.getRawX();
-                        startY = event.getRawY();
-                        lastX = params.x;
-                        lastY = params.y;
-                        isDragging = false;
-                        return true;
-
-                    case MotionEvent.ACTION_MOVE:
-                        float dx = event.getRawX() - startX;
-                        float dy = event.getRawY() - startY;
-
-                        if (!isDragging) {
-                            if (Math.sqrt(dx * dx + dy * dy) > dragThreshold) {
-                                isDragging = true; // 超过阈值才认为是拖动
-                            }
-                        }
-
-                        if (isDragging) {
-                            params.x = lastX + (int) dx;
-                            params.y = lastY + (int) dy;
-                            windowManager.updateViewLayout(view.getRoot(), params);
-                        }
-                        return true;
-
-                    case MotionEvent.ACTION_UP:
-                        if (!isDragging) {
-                            // 手指未移动超过阈值，触发点击事件
-                            v.performClick();
-                        }
-                        return true;
-                }
-                return false;
-            }
-        };
     }
 
     public static void checkOpenAccessibility(ControllerCallback<Boolean> callback) {
@@ -368,12 +301,12 @@ public class ScriptAccessibilityService extends AccessibilityService {
             try {
                 Startup context = BeanFactory.getInstance().get(Startup.class);
                 int accessibilityEnabled = 0;
-                final String service = context.getPackageName() + "/" + ScriptAccessibilityService.class.getCanonicalName();
+                final String service = context.getPackageName() + "/" + RecordScriptAction.class.getCanonicalName();
                 try {
                     accessibilityEnabled = Settings.Secure.getInt(context.getContentResolver(),
                             Settings.Secure.ACCESSIBILITY_ENABLED);
                 } catch (Settings.SettingNotFoundException e) {
-                    Log.e(ScriptAccessibilityService.class.getCanonicalName(), "Error finding setting, default accessibility to not found", e);
+                    Log.e(RecordScriptAction.class.getCanonicalName(), "Error finding setting, default accessibility to not found", e);
                 }
 
                 TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
@@ -399,34 +332,6 @@ public class ScriptAccessibilityService extends AccessibilityService {
                 ThreadUtil.runOnUi(callback::finallyMethod);
             }
         });
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onServiceConnected() {
-        super.onServiceConnected();
-    }
-
-    @Override
-    public void onAccessibilityEvent(AccessibilityEvent event) {
-
-    }
-
-    @Override
-    public void onInterrupt() {
-
-    }
-
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-        // 应用被用户从最近任务划掉时调用
-        disableSelf();
-        stopSelf(); // 停止服务
     }
 
     public static void checkOpenFloatWindow(ControllerCallback<Boolean> callback) {

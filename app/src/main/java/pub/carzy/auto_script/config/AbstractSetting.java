@@ -2,6 +2,8 @@ package pub.carzy.auto_script.config;
 
 import java.util.UUID;
 
+import pub.carzy.auto_script.entity.FloatPoint;
+
 /**
  * @author admin
  */
@@ -10,6 +12,7 @@ public abstract class AbstractSetting implements Setting {
     protected static final String KEY_TICK = "tick";
     protected static final String KEY_LANGUAGE = "language";
     protected static final String KEY_UUID = "uuid";
+    protected static final String FLOAT_POINT = "floatPoint";
 
     protected abstract <T> void write(String key, T value);
 
@@ -58,4 +61,16 @@ public abstract class AbstractSetting implements Setting {
     public String getUUID() {
         return read(KEY_UUID, null, String.class);
     }
+
+    @Override
+    public void setPoint(FloatPoint point) {
+        write(FLOAT_POINT, point);
+    }
+
+    @Override
+    public FloatPoint getPoint() {
+        return read(FLOAT_POINT, null, FloatPoint.class);
+    }
+
+
 }
