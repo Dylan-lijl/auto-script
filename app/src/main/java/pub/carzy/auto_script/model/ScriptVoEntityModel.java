@@ -3,7 +3,6 @@ package pub.carzy.auto_script.model;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import androidx.databinding.ObservableArrayList;
-import androidx.databinding.ObservableField;
 import androidx.databinding.ObservableList;
 
 import com.github.mikephil.charting.data.BarEntry;
@@ -11,12 +10,11 @@ import com.github.mikephil.charting.data.BarEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
-import lombok.Getter;
 import pub.carzy.auto_script.BR;
 import pub.carzy.auto_script.db.ScriptActionEntity;
 import pub.carzy.auto_script.db.ScriptEntity;
 import pub.carzy.auto_script.db.ScriptPointEntity;
+import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
  * @author admin
@@ -26,6 +24,7 @@ public class ScriptVoEntityModel extends BaseObservable {
     private ObservableList<ScriptPointEntity> points = new ObservableArrayList<>();
     private ObservableList<ScriptActionEntity> actions = new ObservableArrayList<>();
     private ObservableList<BarEntry> actionEntries = new ObservableArrayList<>();
+    private Integer detailIndex = StaticValues.DEFAULT_INDEX;
 
     @Bindable
     public ScriptEntity getRoot() {
@@ -61,5 +60,15 @@ public class ScriptVoEntityModel extends BaseObservable {
         }
         actionEntries.addAll(list);
         notifyPropertyChanged(BR.actions);
+    }
+
+    @Bindable
+    public Integer getDetailIndex() {
+        return detailIndex;
+    }
+
+    public void setDetailIndex(Integer detailIndex) {
+        this.detailIndex = detailIndex;
+        notifyPropertyChanged(BR.detailIndex);
     }
 }

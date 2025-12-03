@@ -10,6 +10,7 @@ import pub.carzy.auto_script.BR;
  */
 public class MacroInfoRefreshModel extends BaseObservable {
     private Boolean info = false;
+    private Boolean detail = false;
 
     @Bindable
     public Boolean getInfo() {
@@ -19,5 +20,15 @@ public class MacroInfoRefreshModel extends BaseObservable {
     public void setInfo(Boolean info) {
         this.info = info;
         notifyPropertyChanged(BR.info);
+    }
+
+    @Bindable
+    public Boolean getDetail() {
+        return detail;
+    }
+
+    public void setDetail(Boolean detail) {
+        this.detail = detail;
+        notifyPropertyChanged(BR.detail);
     }
 }

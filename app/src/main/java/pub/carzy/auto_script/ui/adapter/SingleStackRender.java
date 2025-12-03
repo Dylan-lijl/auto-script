@@ -8,6 +8,7 @@ import com.github.mikephil.charting.animation.ChartAnimator;
 import com.github.mikephil.charting.buffer.BarBuffer;
 import com.github.mikephil.charting.buffer.HorizontalBarBuffer;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.dataprovider.BarDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.renderer.HorizontalBarChartRenderer;
@@ -15,6 +16,8 @@ import com.github.mikephil.charting.utils.MPPointF;
 import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
+
+import java.util.List;
 
 /**
  * @author admin
@@ -104,19 +107,84 @@ public class SingleStackRender extends HorizontalBarChartRenderer {
             BarEntry entry = dataSet.getEntryForIndex(i);
             float[] vals = entry.getYVals();
 
-            if (vals == null || vals.length < 2) continue; // 非堆叠或长度小于2跳过
+            if (vals == null || vals.length < 2) continue;
 
-            float start = vals[0]; // 从第一段结束开始
+            float start = vals[0];
             for (int k = 1; k < vals.length; k++) {
                 float end = start + vals[k];
 
-                buffer.buffer[bufferIndex++] = start;                  // left
-                buffer.buffer[bufferIndex++] = entry.getX() - barWidthHalf; // top
-                buffer.buffer[bufferIndex++] = end;                    // right
-                buffer.buffer[bufferIndex++] = entry.getX() + barWidthHalf; // bottom
+                buffer.buffer[bufferIndex++] = start;
+                buffer.buffer[bufferIndex++] = entry.getX() - barWidthHalf;
+                buffer.buffer[bufferIndex++] = end;
+                buffer.buffer[bufferIndex++] = entry.getX() + barWidthHalf;
 
                 start = end;
             }
         }
     }
+
+    @Override
+    public void drawValues(Canvas c) {
+        if (!isDrawingValuesAllowed(mChart)) return;
+
+        List<IBarDataSet> dataSets = mChart.getBarData().getDataSets();
+        final float valueOffsetPlus = Utils.convertDpToPixel(5f);
+        final boolean drawValueAboveBar = mChart.isDrawValueAboveBarEnabled();
+        final float halfTextHeight = Utils.calcTextHeight(mValuePaint, "10") / 2f;
+
+        for (int i = 0; i < mChart.getBarData().getDataSetCount(); i++) {
+            IBarDataSet dataSet = dataSets.get(i);
+            if (!shouldDrawValues(dataSet)) continue;
+
+            applyValueTextStyle(dataSet);
+            Transformer trans = mChart.getTransformer(dataSet.getAxisDependency());
+            BarBuffer buffer = mBarBuffers[i];
+
+            MPPointF iconsOffset = MPPointF.getInstance(dataSet.getIconsOffset());
+            iconsOffset.x = Utils.convertDpToPixel(iconsOffset.x);
+            iconsOffset.y = Utils.convertDpToPixel(iconsOffset.y);
+
+            for (int j = 0; j < dataSet.getEntryCount(); j++) {
+                BarEntry entry = dataSet.getEntryForIndex(j);
+                float[] vals = entry.getYVals();
+                if (vals == null || vals.length < 2) continue;
+
+                // 找到最后一段在 buffer 中的索引
+                int bufferIndex = j * 4 * (vals.length - 1) + (vals.length - 2) * 4;
+
+                float left = buffer.buffer[bufferIndex];
+                float top = buffer.buffer[bufferIndex + 1];
+                float right = buffer.buffer[bufferIndex + 2];
+                float bottom = buffer.buffer[bufferIndex + 3];
+
+                float y = (top + bottom) / 2f;
+
+                // 绘制数值
+                String formattedValue = dataSet.getValueFormatter().getBarLabel(entry);
+                float valueTextWidth = Utils.calcTextWidth(mValuePaint, formattedValue);
+                float xOffset = drawValueAboveBar ? valueOffsetPlus : -(valueTextWidth + valueOffsetPlus);
+                if (mChart.isInverted(dataSet.getAxisDependency())) {
+                    xOffset = -xOffset - valueTextWidth;
+                }
+                float x = right + xOffset;
+
+                if (dataSet.isDrawValuesEnabled()) {
+                    drawValue(c, formattedValue, x, y + halfTextHeight, dataSet.getValueTextColor(j));
+                }
+
+                // 绘制图标
+                if (entry.getIcon() != null && dataSet.isDrawIconsEnabled()) {
+                    float px = x + iconsOffset.x;
+                    float py = y + iconsOffset.y;
+                    Utils.drawImage(c, entry.getIcon(),
+                            (int) px, (int) py,
+                            entry.getIcon().getIntrinsicWidth(),
+                            entry.getIcon().getIntrinsicHeight());
+                }
+            }
+
+            MPPointF.recycleInstance(iconsOffset);
+        }
+    }
+
 }

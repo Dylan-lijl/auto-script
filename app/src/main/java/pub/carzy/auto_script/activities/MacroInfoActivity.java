@@ -19,14 +19,17 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
+import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
@@ -40,6 +43,7 @@ import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.PreviewScriptAction;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
 import pub.carzy.auto_script.utils.ThreadUtil;
+import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
  * @author admin
@@ -50,6 +54,7 @@ public class MacroInfoActivity extends BaseActivity {
 
     private ScriptVoEntityModel model;
     private MacroInfoRefreshModel refresh;
+    private List<Integer> colorArray;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,6 +65,8 @@ public class MacroInfoActivity extends BaseActivity {
         refresh.setInfo(true);
         binding.setModel(model);
         binding.setRefresh(refresh);
+        colorArray = new ArrayList<>();
+        Arrays.stream(getResources().getIntArray(R.array.script_info_chat_color)).forEach(color -> colorArray.add(color));
         initChat();
         initIntent();
         if (getSupportActionBar() != null) {
@@ -75,46 +82,107 @@ public class MacroInfoActivity extends BaseActivity {
     }
 
     private void initChat() {
-        HorizontalBarChart chart = binding.flowChatLayout.horizontalBarChart;
-        chart.getDescription().setEnabled(false);
-        chart.setDrawValueAboveBar(true);
-        chart.setPinchZoom(false);
-        chart.setDrawGridBackground(false);
-        XAxis xAxis = chart.getXAxis();
+        //actionBar
+        HorizontalBarChart actionBarChart = binding.flowChatLayout.actionBarChart;
+        HorizontalBarChart pointBarChart = binding.flowChatLayout.pointBarChart;
+        actionBarChart.getDescription().setEnabled(false);
+        actionBarChart.setDrawValueAboveBar(true);
+        actionBarChart.setPinchZoom(false);
+        actionBarChart.setDrawGridBackground(false);
+        XAxis xAxis = actionBarChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(false);
         xAxis.setGranularity(1f);
-        YAxis leftAxis = chart.getAxisLeft();
-        leftAxis.setDrawGridLines(true);
-        YAxis rightAxis = chart.getAxisRight();
-        rightAxis.setEnabled(false);
-        chart.setRenderer(new SingleStackRender(chart, chart.getAnimator(), chart.getViewPortHandler()));
-        chart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+        xAxis.setAxisMinimum(-1f);
+        YAxis leftAxis = actionBarChart.getAxisLeft();
+        leftAxis.setEnabled(false);
+        YAxis rightAxis = actionBarChart.getAxisRight();
+        rightAxis.setDrawGridLines(true);
+        rightAxis.setAxisMinimum(-1f);
+        actionBarChart.setRenderer(new SingleStackRender(actionBarChart, actionBarChart.getAnimator(), actionBarChart.getViewPortHandler()));
+        actionBarChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-                Object index = e.getData();
-                if (index == null) {
+                Pair<Integer, Long> pair = (Pair<Integer, Long>) e.getData();
+                if (pair == null || refresh.getDetail()) {
                     return;
                 }
+                refresh.setDetail(true);
                 try {
-                    int i = (Integer) index;
+                    int i = pair.getKey();
                     if (i >= model.getActions().size()) {
                         return;
                     }
+                    model.setDetailIndex(i);
                     ScriptActionEntity action = model.getActions().get(i);
-                    //弹出内容
-                    Gson gson = new Gson();
-                    Log.d("MacroInfoActivity", "onValueSelected: " + gson.toJson(action));
+                    if (action != null && !model.getPoints().isEmpty()) {
+                        List<BarEntry> entries = new ArrayList<>();
+                        long time = action.getDownTime();
+                        int k = 0;
+                        for (int j = 0; j < model.getPoints().size(); j++) {
+                            ScriptPointEntity point = model.getPoints().get(j);
+                            if (action.getId().compareTo(point.getParentId()) != 0) {
+                                continue;
+                            }
+                            Pair<Integer, Long> pointPair = new Pair<>(j, point.getTime() - time);
+                            entries.add(new BarEntry(k++, new float[]{time, pointPair.getValue()}, pointPair));
+                            time = point.getTime();
+                        }
+                        if (!entries.isEmpty()) {
+                            ThreadUtil.runOnUi(() -> {
+                                try {
+                                    setChartData(pointBarChart, entries, new ArrayList<>(colorArray), "", (Pair<Integer, Long> pointPair) -> pointPair.getValue() + "ms");
+                                    pointBarChart.invalidate();
+                                } finally {
+                                    refresh.setDetail(false);
+                                }
+                            });
+                        }
+                    }
                 } catch (Exception exception) {
+                    refresh.setDetail(false);
                     Log.e("MacroInfoActivity", "onValueSelected: ", exception);
                 }
             }
 
             @Override
             public void onNothingSelected() {
-
+//                model.setDetailIndex(StaticValues.DEFAULT_INDEX);
             }
         });
+        actionBarChart.getLegend().setEnabled(false);
+        //pointBar
+        pointBarChart.getDescription().setEnabled(false);
+        pointBarChart.setDrawValueAboveBar(true);
+        pointBarChart.setPinchZoom(false);
+        pointBarChart.setDrawGridBackground(false);
+        XAxis xAxis2 = pointBarChart.getXAxis();
+        xAxis2.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis2.setDrawGridLines(false);
+        xAxis2.setGranularity(1f);
+        xAxis2.setAxisMinimum(-1f);
+        YAxis leftAxis2 = pointBarChart.getAxisLeft();
+        leftAxis2.setEnabled(false);
+        YAxis rightAxis2 = pointBarChart.getAxisRight();
+        rightAxis2.setDrawGridLines(true);
+        rightAxis2.setAxisMinimum(-1f);
+        pointBarChart.setRenderer(new SingleStackRender(pointBarChart, pointBarChart.getAnimator(), pointBarChart.getViewPortHandler()));
+        pointBarChart.getLegend().setEnabled(false);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void setChartData(HorizontalBarChart chart, List<BarEntry> entries, List<Integer> colors, String label, Function<T, String> formatter) {
+        BarDataSet set = new BarDataSet(entries, label);
+        set.setStackLabels(new String[]{"", ""});
+        set.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getBarLabel(BarEntry barEntry) {
+                return formatter.apply((T) barEntry.getData());
+            }
+        });
+        set.setColors(colors);
+        chart.setData(new BarData(set));
     }
 
     private PopupMenu.OnMenuItemClickListener createActionClickListener() {
@@ -194,23 +262,20 @@ public class MacroInfoActivity extends BaseActivity {
                 for (ScriptPointEntity pointEntity : entity.getPoints()) {
                     model.getPoints().add(pointEntity);
                 }
-                List<BarEntry> list = new ArrayList<>();
-                List<Integer> colors = new ArrayList<>();
                 int[] colorArray = getResources().getIntArray(R.array.script_info_chat_color);
                 int colorLength = colorArray.length;
+                List<BarEntry> entries = new ArrayList<>();
+                List<Integer> colors = new ArrayList<>();
                 for (int i = 0; i < entity.getActions().size(); i++) {
                     ScriptActionEntity actionEntity = entity.getActions().get(i);
                     colors.add(colorArray[actionEntity.getIndex() % colorLength]);
-                    list.add(new BarEntry(i, new float[]{actionEntity.getDownTime(), actionEntity.getUpTime() - actionEntity.getDownTime()}, i));
+                    Pair<Integer, Long> pair = new Pair<>(i, actionEntity.getUpTime() - actionEntity.getDownTime());
+                    entries.add(new BarEntry(i, new float[]{actionEntity.getDownTime(), pair.getValue()}, pair));
                     model.getActions().add(actionEntity);
                 }
                 ThreadUtil.runOnUi(() -> {
-                    BarDataSet set = new BarDataSet(list, "步骤");
-                    set.setDrawValues(false);
-                    set.setColors(colors);
-                    BarData data = new BarData(set);
-                    binding.flowChatLayout.horizontalBarChart.setData(data);
-                    binding.flowChatLayout.horizontalBarChart.invalidate();
+                    setChartData(binding.flowChatLayout.actionBarChart, entries, colors, "", (Pair<Integer, Long> pair) -> pair.getValue() + "ms");
+                    binding.flowChatLayout.actionBarChart.invalidate();
                 });
             }
         });

@@ -1,6 +1,5 @@
 package pub.carzy.auto_script.service.impl;
 
-import android.accessibilityservice.AccessibilityService;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.util.Log;
@@ -82,8 +81,7 @@ public class PreviewScriptAction extends BasicAction {
                     return false;
                 }
             }
-            addView(mask, maskParams);
-            reAddView(binding, bindingParams);
+            addView(binding, bindingParams);
             return true;
         } catch (Exception e) {
             return false;
@@ -93,6 +91,10 @@ public class PreviewScriptAction extends BasicAction {
     private void addListeners() {
         binding.btnPreviewRun.setOnClickListener(v -> {
             binding.getStatus().setStatus(PreviewFloatingStatus.RUN);
+            addView(mask, maskParams);
+            reAddView(binding, bindingParams);
+            //播放脚本
+
         });
         binding.btnPreviewStop.setOnClickListener(v -> {
             binding.getStatus().setStatus(PreviewFloatingStatus.NONE);
