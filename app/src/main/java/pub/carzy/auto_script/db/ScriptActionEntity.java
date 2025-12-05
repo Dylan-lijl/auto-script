@@ -7,11 +7,15 @@ import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import pub.carzy.auto_script.BR;
 
 /**
  * @author admin
  */
+@ToString
+@EqualsAndHashCode(callSuper = true)
 public class ScriptActionEntity extends BaseObservable implements Parcelable {
     /**
      * 主键

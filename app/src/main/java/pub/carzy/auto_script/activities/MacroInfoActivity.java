@@ -1,6 +1,8 @@
 package pub.carzy.auto_script.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
@@ -10,6 +12,8 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 
 import com.github.mikephil.charting.charts.HorizontalBarChart;
@@ -23,25 +27,34 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 
 import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
 import pub.carzy.auto_script.db.ScriptActionEntity;
 import pub.carzy.auto_script.db.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
+import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.PreviewScriptAction;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
+import pub.carzy.auto_script.utils.StoreUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.statics.StaticValues;
 
@@ -168,6 +181,31 @@ public class MacroInfoActivity extends BaseActivity {
         rightAxis2.setDrawGridLines(true);
         rightAxis2.setAxisMinimum(-1f);
         pointBarChart.setRenderer(new SingleStackRender(pointBarChart, pointBarChart.getAnimator(), pointBarChart.getViewPortHandler()));
+        pointBarChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+                Pair<Integer, Long> data = (Pair<Integer, Long>) e.getData();
+                if (data.getKey() >= model.getPoints().size()) {
+                    return;
+                }
+                ScriptPointEntity point = model.getPoints().get(data.getKey());
+                JsonObject object = new JsonObject();
+                object.addProperty("t", point.getTime());
+                object.addProperty("x", point.getX());
+                object.addProperty("y", point.getY());
+                object.addProperty("type", point.getToolType());
+                String json = new Gson().toJson(object);
+                ThreadUtil.runOnUi(() -> {
+                    Toast.makeText(MacroInfoActivity.this, json, Toast.LENGTH_LONG).show();
+                });
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
         pointBarChart.getLegend().setEnabled(false);
     }
 
@@ -209,9 +247,57 @@ public class MacroInfoActivity extends BaseActivity {
                 }
             } else if (itemId == R.id.action_save) {
 
+            } else if (itemId == R.id.action_export) {
+                Toast.makeText(this, "正在导出中...", Toast.LENGTH_SHORT).show();
+                ThreadUtil.runOnCpu(() -> {
+                    //将脚本保存为json文件
+                    Gson gson = new Gson();
+                    ScriptVoEntity entity = new ScriptVoEntity();
+                    entity.setRoot(model.getRoot());
+                    entity.setActions(model.getActions());
+                    entity.setPoints(model.getPoints());
+                    //调用报错文件api
+                    StoreUtil.promptAndSaveFile(gson.toJson(entity),
+                            "file_" + new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss", Locale.getDefault()).format(new Date()) + ".json",
+                            result -> ThreadUtil.runOnUi(() -> {
+                                Toast.makeText(MacroInfoActivity.this, "保存成功-->" + result, Toast.LENGTH_SHORT).show();
+                                //打开对应文件夹位置
+                                showFileInFolder(this, new File(result));
+                            }));
+                });
             }
             return false;
         };
+    }
+
+    public static void showFileInFolder(Context context, File file) {
+        if (file == null || !file.exists()) {
+            Toast.makeText(context, "文件不存在", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 使用 FileProvider 生成 uri
+        Uri uri = FileProvider.getUriForFile(
+                context,
+                context.getPackageName() + ".provider",
+                file
+        );
+
+        // 弹窗选择
+        openFile(context, uri);
+    }
+
+    private static void openFile(Context context, Uri uri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(uri, "*/*");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        try {
+            context.startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(context, "没有可用的应用打开该文件", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showRenameDialog() {
