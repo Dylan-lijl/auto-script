@@ -129,13 +129,17 @@ public abstract class BasicAction implements ScriptAction{
     protected void removeView(ViewDataBinding binding) {
         try {
             windowManager.removeView(binding.getRoot());
-        } catch (IllegalArgumentException ignored) {
-
+        } catch (IllegalArgumentException e) {
+            Log.d(this.getClass().getCanonicalName(),"removeView",e);
         }
     }
 
     protected void addView(ViewDataBinding binding, WindowManager.LayoutParams params) {
-        windowManager.addView(binding.getRoot(), params);
+        try {
+            windowManager.addView(binding.getRoot(), params);
+        }catch (Exception e){
+            Log.d(this.getClass().getCanonicalName(),"addView",e);
+        }
     }
 
     protected void reAddView(ViewDataBinding binding, WindowManager.LayoutParams params) {

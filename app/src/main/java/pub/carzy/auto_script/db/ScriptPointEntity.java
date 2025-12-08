@@ -7,11 +7,13 @@ import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
+import lombok.EqualsAndHashCode;
 import pub.carzy.auto_script.BR;
 
 /**
  * @author admin
  */
+@EqualsAndHashCode(callSuper = true)
 public class ScriptPointEntity extends BaseObservable implements Parcelable {
     private Long id;
     private Long parentId;

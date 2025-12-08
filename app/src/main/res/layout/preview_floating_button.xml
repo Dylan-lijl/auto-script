@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="停止"
-            android:visibility="@{(status.status!=PreviewFloatingStatus.RUN &amp;&amp; status.selected)?View.VISIBLE:View.GONE}" />
+            android:visibility="@{(status.status!=PreviewFloatingStatus.NONE &amp;&amp; status.selected)?View.VISIBLE:View.GONE}" />
 
         <Button
             android:id="@+id/btn_preview_pause"
