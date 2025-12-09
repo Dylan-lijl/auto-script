@@ -12,7 +12,6 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 
@@ -42,21 +41,18 @@ import java.util.function.Function;
 import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
-import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
 import pub.carzy.auto_script.db.ScriptActionEntity;
 import pub.carzy.auto_script.db.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
-import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.dto.OpenParam;
-import pub.carzy.auto_script.service.impl.PreviewScriptAction;
+import pub.carzy.auto_script.service.impl.ReplayScriptAction;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
 import pub.carzy.auto_script.utils.StoreUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
-import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
  * @author admin
@@ -227,8 +223,6 @@ public class MacroInfoActivity extends BaseActivity {
         return (item) -> {
             int itemId = item.getItemId();
             if (itemId == R.id.action_run) {
-
-            } else if (itemId == R.id.action_preview) {
                 //打开对应service悬浮窗口
                 MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
                 if (service != null) {
@@ -236,7 +230,7 @@ public class MacroInfoActivity extends BaseActivity {
                     entity.setRoot(model.getRoot());
                     entity.getActions().addAll(model.getActions());
                     entity.getPoints().addAll(model.getPoints());
-                    service.open(PreviewScriptAction.ACTION_KEY, new OpenParam(entity));
+                    service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(entity));
                 }
             } else if (itemId == R.id.action_remove) {
 
@@ -248,7 +242,7 @@ public class MacroInfoActivity extends BaseActivity {
             } else if (itemId == R.id.action_save) {
 
             } else if (itemId == R.id.action_export) {
-                Toast.makeText(this, "正在导出中...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
                 ThreadUtil.runOnCpu(() -> {
                     //将脚本保存为json文件
                     Gson gson = new Gson();
@@ -260,7 +254,8 @@ public class MacroInfoActivity extends BaseActivity {
                     StoreUtil.promptAndSaveFile(gson.toJson(entity),
                             "file_" + new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss", Locale.getDefault()).format(new Date()) + ".json",
                             result -> ThreadUtil.runOnUi(() -> {
-                                Toast.makeText(MacroInfoActivity.this, "保存成功-->" + result, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MacroInfoActivity.this, getString(R.string.message_saved_successfully_ph, result)
+                                        , Toast.LENGTH_SHORT).show();
                                 //打开对应文件夹位置
                                 showFileInFolder(this, new File(result));
                             }));
@@ -272,7 +267,7 @@ public class MacroInfoActivity extends BaseActivity {
 
     public static void showFileInFolder(Context context, File file) {
         if (file == null || !file.exists()) {
-            Toast.makeText(context, "文件不存在", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, R.string.message_file_not_exist, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -296,7 +291,7 @@ public class MacroInfoActivity extends BaseActivity {
         try {
             context.startActivity(intent);
         } catch (Exception e) {
-            Toast.makeText(context, "没有可用的应用打开该文件", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, R.string.message_no_available_app_open_file, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -304,22 +299,22 @@ public class MacroInfoActivity extends BaseActivity {
         // 创建一个 EditText 作为输入框
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setHint("请输入新名称");
+        input.setHint(R.string.message_rename_prompt);
 
         new MaterialAlertDialogBuilder(this)
-                .setTitle("重命名")
+                .setTitle(R.string.rename)
                 .setView(input)
-                .setPositiveButton("确认", (dialog, which) -> {
+                .setPositiveButton(R.string.confirm, (dialog, which) -> {
                     String newName = input.getText().toString().trim();
                     if (!newName.isEmpty()) {
                         if (model.getRoot() != null) {
                             model.getRoot().setName(newName);
                         }
                     } else {
-                        Toast.makeText(this, "名称不能为空", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.message_error_empty_ph, getString(R.string.name)), Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNegativeButton("取消", (dialog, which) -> dialog.dismiss())
+                .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
                 .show();
     }
 
@@ -332,11 +327,8 @@ public class MacroInfoActivity extends BaseActivity {
         ThreadUtil.runOnCpu(() -> {
             ScriptVoEntity entity = null;
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    entity = intent.getParcelableExtra("data", ScriptVoEntity.class);
-                } else {
-                    entity = intent.getParcelableExtra("data");
-                }
+                entity = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
+                        intent.getParcelableExtra("data", ScriptVoEntity.class) : intent.getParcelableExtra("data");
             } catch (Exception e) {
                 Log.d(MacroInfoActivity.class.getCanonicalName(), "从intent获取数据失败! ", e);
                 return;

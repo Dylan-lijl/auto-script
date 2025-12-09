@@ -6,6 +6,10 @@
 
         <import type="pub.carzy.auto_script.db.ScriptEntity" />
 
+        <import type="pub.carzy.auto_script.R" />
+
+        <import type="android.content.Context" />
+
         <variable
             name="entity"
             type="ScriptEntity" />
@@ -26,20 +30,20 @@
                 android:id="@+id/time_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="时长:" />
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.duration))}" />
 
             <TextView
                 android:id="@+id/time_element"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{entity==null||entity.maxTime==null?`--`:entity.maxTime+`ms`}" />
+                android:text="@{entity==null||entity.maxTime==null?`--`:entity.maxTime+context.getString(R.string.unit_ms)}" />
             <!--脚本数量-->
             <TextView
                 android:id="@+id/step_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:text="步骤:" />
+                android:layout_marginStart="10dp"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.steps))}" />
 
             <TextView
                 android:id="@+id/step_element"
@@ -51,8 +55,8 @@
                 android:id="@+id/name_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:text="名称:" />
+                android:layout_marginStart="10dp"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.name))}" />
 
             <TextView
                 android:id="@+id/name_element"
@@ -73,11 +77,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:background="@color/transparent"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:padding="0dp"
-                android:text="更多"
-                android:textAllCaps="false"
+                style="@style/TextButtonStyle"
+                android:text="@string/more"
                 android:textColor="@color/link" />
         </LinearLayout>
     </LinearLayout>

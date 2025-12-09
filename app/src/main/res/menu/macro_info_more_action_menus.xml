@@ -2,20 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/action_run"
-        android:title="运行" />
-    <item
-        android:id="@+id/action_preview"
-        android:title="预览" />
+        android:title="@string/start" />
     <item
         android:id="@+id/action_rename"
-        android:title="重命名" />
+        android:title="@string/rename" />
     <item
         android:id="@+id/action_save"
-        android:title="保存" />
+        android:title="@string/save" />
     <item
         android:id="@+id/action_remove"
-        android:title="删除" />
+        android:title="@string/delete" />
     <item
         android:id="@+id/action_export"
-        android:title="导出" />
+        android:title="@string/export" />
 </menu>

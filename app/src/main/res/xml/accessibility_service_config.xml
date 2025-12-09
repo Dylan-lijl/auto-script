@@ -1,7 +1,11 @@
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityEventTypes="typeViewClicked|typeWindowContentChanged|typeNotificationStateChanged"
-    android:accessibilityFlags="flagReportViewIds|flagDefault"
+    android:accessibilityFlags="flagReportViewIds|flagDefault|flagRequestMultiFingerGestures|flagRequestEnhancedWebAccessibility|flagInputMethodEditor|flagSendMotionEvents"
+    android:canPerformGestures="true"
+    android:canRequestEnhancedWebAccessibility="true"
+    android:canRequestFilterKeyEvents="true"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_service_description"
+    android:notificationTimeout="100"
     android:settingsActivity="pub.carzy.auto_script.activities.MacroListActivity"
-    android:notificationTimeout="100" />
+    android:summary="" />

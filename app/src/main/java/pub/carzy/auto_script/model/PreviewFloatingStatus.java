@@ -9,11 +9,21 @@ import pub.carzy.auto_script.BR;
  * @author admin
  */
 public class PreviewFloatingStatus extends BaseObservable {
-    private int status = NONE;
     public static final int NONE = 0;
     public static final int RUN = 1;
     public static final int PAUSE = 2;
-    public boolean selected = false;
+    /**
+     * 状态
+     */
+    private int status = NONE;
+    /**
+     * 更多状态
+     */
+    private boolean selected = false;
+    /**
+     * 模拟状态
+     */
+    private boolean simulate = false;
 
     @Bindable
     public int getStatus() {
@@ -23,6 +33,16 @@ public class PreviewFloatingStatus extends BaseObservable {
     public void setStatus(int status) {
         this.status = status;
         notifyPropertyChanged(BR.status);
+    }
+
+    @Bindable
+    public boolean getSimulate() {
+        return simulate;
+    }
+
+    public void setSimulate(boolean simulate) {
+        this.simulate = simulate;
+        notifyPropertyChanged(BR.simulate);
     }
 
     @Bindable

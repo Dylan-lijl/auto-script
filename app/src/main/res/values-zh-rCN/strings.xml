@@ -26,4 +26,24 @@
     <string name="empty">空</string>
     <string name="empty_message">无数据</string>
     <string name="loading">加载中</string>
+    <string name="start">启动</string>
+    <string name="rename">重命名</string>
+    <string name="save">保存</string>
+    <string name="delete">删除</string>
+    <string name="export">导出</string>
+    <string name="message_file_not_exist">文件不存在！</string>
+    <string name="message_exporting">正在导出中...</string>
+    <string name="message_saved_successfully_ph">保存成功:%s</string>
+    <string name="message_no_available_app_open_file">没有可用的应用程序打开此文件！</string>
+    <string name="message_rename_prompt">请输入新名称</string>
+    <string name="confirm">确认</string>
+    <string name="message_error_empty_ph">%s不能为空！</string>
+    <string name="name">名称</string>
+    <string name="untitled">未命名</string>
+    <string name="duration">时长</string>
+    <string name="label_format">%s：</string>
+    <string name="steps">步骤</string>
+    <string name="more">更多</string>
+    <string name="unit_ms">毫秒</string>
+    <string name="details">详细</string>
 </resources>

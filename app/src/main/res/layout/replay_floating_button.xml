@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
         <import type="pub.carzy.auto_script.model.PreviewFloatingStatus" />
+
         <import type="android.view.View" />
 
         <variable
@@ -24,35 +26,44 @@
             android:text="更多" />
 
         <Button
-            android:id="@+id/btn_preview_close"
+            android:id="@+id/btn_simulate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="@{e->status.setSimulate(!status.simulate)}"
+            android:visibility="@{status.status!=PreviewFloatingStatus.RUN?View.VISIBLE:View.GONE}"
+            android:text="模拟"
+            />
+
+        <Button
+            android:id="@+id/btn_close"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="退出"
             android:visibility="@{status.selected?View.VISIBLE:View.GONE}" />
 
         <Button
-            android:id="@+id/btn_preview_restart"
+            android:id="@+id/btn_restart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="重新"
             android:visibility="@{(status.status!=PreviewFloatingStatus.NONE &amp;&amp; status.selected)?View.VISIBLE:View.GONE}" />
 
         <Button
-            android:id="@+id/btn_preview_stop"
+            android:id="@+id/btn_stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="停止"
             android:visibility="@{(status.status!=PreviewFloatingStatus.NONE &amp;&amp; status.selected)?View.VISIBLE:View.GONE}" />
 
         <Button
-            android:id="@+id/btn_preview_pause"
+            android:id="@+id/btn_pause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="暂停"
             android:visibility="@{(status.status==PreviewFloatingStatus.RUN)?View.VISIBLE:View.GONE}" />
 
         <Button
-            android:id="@+id/btn_preview_run"
+            android:id="@+id/btn_run"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="运行"

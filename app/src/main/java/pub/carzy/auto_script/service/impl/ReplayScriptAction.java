@@ -14,7 +14,7 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.databinding.MaskViewBinding;
-import pub.carzy.auto_script.databinding.PreviewFloatingButtonBinding;
+import pub.carzy.auto_script.databinding.ReplayFloatingButtonBinding;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.PreviewFloatingStatus;
 import pub.carzy.auto_script.service.BasicAction;
@@ -25,17 +25,16 @@ import pub.carzy.auto_script.service.dto.OpenParam;
 /**
  * @author admin
  */
-public class PreviewScriptAction extends BasicAction {
-    private MaskViewBinding maskView;
+public class ReplayScriptAction extends BasicAction {
     private WindowManager.LayoutParams maskParams;
     private ScriptVoEntity entity;
     private final ReentrantLock lock = new ReentrantLock();
     private boolean initialized;
-    private PreviewFloatingButtonBinding binding;
+    private ReplayFloatingButtonBinding binding;
     private WindowManager.LayoutParams bindingParams;
     private MaskViewBinding mask;
 
-    public static final String ACTION_KEY = "preview_script";
+    public static final String ACTION_KEY = "replay_script";
     private SimpleReplay player;
 
     @Override
@@ -52,7 +51,7 @@ public class PreviewScriptAction extends BasicAction {
                 BeanFactory.getInstance().register(this);
                 binding = DataBindingUtil.inflate(
                         LayoutInflater.from(service),
-                        R.layout.preview_floating_button,
+                        R.layout.replay_floating_button,
                         null,
                         false
                 );
@@ -98,11 +97,14 @@ public class PreviewScriptAction extends BasicAction {
         ControllerCallback<Integer> callback = result -> {
             if (result == SimpleReplay.STOP) {
                 binding.getStatus().setStatus(PreviewFloatingStatus.NONE);
+                removeView(mask);
             }
         };
-        binding.btnPreviewRun.setOnClickListener(v -> {
+        binding.btnRun.setOnClickListener(v -> {
             binding.getStatus().setStatus(PreviewFloatingStatus.RUN);
-//            addView(mask, maskParams);
+            if (binding.getStatus().getSimulate()) {
+                addView(mask, maskParams);
+            }
             reAddView(binding, bindingParams);
             if (player.getStatus() == SimpleReplay.PAUSE) {
                 player.resume(callback);
@@ -110,27 +112,32 @@ public class PreviewScriptAction extends BasicAction {
                 player.start(callback);
             }
         });
-        binding.btnPreviewStop.setOnClickListener(v -> {
+        binding.btnStop.setOnClickListener(v -> {
             binding.getStatus().setStatus(PreviewFloatingStatus.NONE);
             removeView(mask);
             player.stop();
         });
-        binding.btnPreviewPause.setOnClickListener(v -> {
+        binding.btnPause.setOnClickListener(v -> {
             binding.getStatus().setStatus(PreviewFloatingStatus.PAUSE);
             player.pause();
             removeView(mask);
         });
-        binding.btnPreviewRestart.setOnClickListener(v -> {
+        binding.btnRestart.setOnClickListener(v -> {
             player.start(callback);
-            addView(mask, maskParams);
+            if (binding.getStatus().getSimulate()) {
+                addView(mask, maskParams);
+            }
             reAddView(binding, bindingParams);
         });
-        binding.btnPreviewClose.setOnClickListener(v -> {
+        binding.btnClose.setOnClickListener(v -> {
             player.stop();
             removeView(mask);
             service.close(ACTION_KEY, null);
         });
-        addViewTouch(createMoveListener(binding.getRoot(), bindingParams), binding.btnPreviewRun, binding.btnPreviewStop, binding.btnPreviewPause, binding.btnPreviewRestart, binding.btnPreviewClose);
+        addViewTouch(createMoveListener(binding.getRoot(), bindingParams),
+                binding.btnRun, binding.btnStop,
+                binding.btnPause, binding.btnRestart,
+                binding.btnClose, binding.btnMore, binding.btnSimulate);
     }
 
     private WindowManager.LayoutParams createMaskLayoutParams() {

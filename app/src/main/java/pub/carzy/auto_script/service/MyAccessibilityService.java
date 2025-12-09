@@ -1,22 +1,11 @@
 package pub.carzy.auto_script.service;
 
 import android.accessibilityservice.AccessibilityService;
-import android.graphics.PixelFormat;
-import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.WindowManager;
-import android.view.WindowMetrics;
 import android.view.accessibility.AccessibilityEvent;
 
-import androidx.databinding.ViewDataBinding;
-
-import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;

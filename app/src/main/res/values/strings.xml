@@ -26,4 +26,24 @@
     <string name="empty">Empty</string>
     <string name="empty_message">No data</string>
     <string name="loading">Loading</string>
+    <string name="start">Start</string>
+    <string name="rename">Rename</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="export">Export</string>
+    <string name="message_file_not_exist">File does not exist!</string>
+    <string name="message_exporting">Exporting...</string>
+    <string name="message_saved_successfully_ph">Saved successfully:%s</string>
+    <string name="message_no_available_app_open_file">No available application can open this file!</string>
+    <string name="message_rename_prompt">Please enter a new name</string>
+    <string name="confirm">Confirm</string>
+    <string name="message_error_empty_ph">%s cannot be empty!</string>
+    <string name="name">Name</string>
+    <string name="untitled">Untitled</string>
+    <string name="duration">Duration</string>
+    <string name="label_format">%s:</string>
+    <string name="steps">Steps</string>
+    <string name="more">More</string>
+    <string name="unit_ms">ms</string>
+    <string name="details">Details</string>
 </resources>

@@ -1,2 +1,2 @@
 pub.carzy.auto_script.service.impl.RecordScriptAction
-pub.carzy.auto_script.service.impl.PreviewScriptAction
+pub.carzy.auto_script.service.impl.ReplayScriptAction

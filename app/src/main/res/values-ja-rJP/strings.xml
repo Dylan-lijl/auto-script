@@ -26,4 +26,24 @@
     <string name="empty">空</string>
     <string name="empty_message">データなし</string>
     <string name="loading">読み込み中</string>
+    <string name="start">起動</string>
+    <string name="rename">リネーム</string>
+    <string name="save">保存</string>
+    <string name="delete">削除</string>
+    <string name="export">エクスポート</string>
+    <string name="message_file_not_exist">ファイルが存在しません！</string>
+    <string name="message_exporting">エクスポート中...</string>
+    <string name="message_saved_successfully_ph">保存に成功しました:%s</string>
+    <string name="message_no_available_app_open_file">このファイルを開ける利用可能なアプリがありません！</string>
+    <string name="message_rename_prompt">新しい名前を入力してください</string>
+    <string name="confirm">確認する</string>
+    <string name="message_error_empty_ph">%sを空にすることはできません！</string>
+    <string name="name">名前</string>
+    <string name="untitled">無題</string>
+    <string name="duration">長さ</string>
+    <string name="label_format">%s：</string>
+    <string name="steps">手順</string>
+    <string name="more">もっと</string>
+    <string name="unit_ms">ミリ秒</string>
+    <string name="details">詳細</string>
 </resources>

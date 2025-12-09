@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
+        <import type="android.content.Context"/>
+        <import type="pub.carzy.auto_script.R" />
         <import type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
 
         <import type="pub.carzy.auto_script.utils.statics.StaticValues" />
@@ -28,7 +29,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="步骤"
+                android:text="@string/steps"
                 android:textAlignment="center" />
 
             <com.github.mikephil.charting.charts.HorizontalBarChart
@@ -48,7 +49,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@{`详细`+(model.detailIndex==StaticValues.DEFAULT_INDEX?``:`(`+model.detailIndex+`)`)}"
+                android:text="@{context.getString(R.string.details)+(model.detailIndex==StaticValues.DEFAULT_INDEX?``:`(`+model.detailIndex+`)`)}"
                 android:textAlignment="center" />
 
             <com.github.mikephil.charting.charts.HorizontalBarChart

@@ -26,4 +26,24 @@
     <string name="empty">비어 있음</string>
     <string name="empty_message">데이터 없음</string>
     <string name="loading">로딩 중</string>
+    <string name="start">시작</string>
+    <string name="rename">이름 바꾸기</string>
+    <string name="save">저장</string>
+    <string name="delete">삭제</string>
+    <string name="export">내보내기</string>
+    <string name="message_file_not_exist">파일이 존재하지 않습니다!</string>
+    <string name="message_exporting">내보내는 중...</string>
+    <string name="message_saved_successfully_ph">성공적으로 저장되었습니다:%s</string>
+    <string name="message_no_available_app_open_file">이 파일을 열 수 있는 사용 가능한 애플리케이션이 없습니다!</string>
+    <string name="message_rename_prompt">새 이름을 입력하세요</string>
+    <string name="confirm">확인</string>
+    <string name="message_error_empty_ph">%s은 비워둘 수 없습니다!</string>
+    <string name="name">이름</string>
+    <string name="untitled">제목 없음</string>
+    <string name="duration">시간</string>
+    <string name="label_format">%s:</string>
+    <string name="steps">단계</string>
+    <string name="more">더보기</string>
+    <string name="unit_ms">밀리초</string>
+    <string name="details">상세</string>
 </resources>

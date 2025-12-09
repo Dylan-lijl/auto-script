@@ -1,13 +1,9 @@
 package pub.carzy.auto_script.service.impl;
 
 
-import android.accessibilityservice.AccessibilityService;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
-import android.provider.Settings;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -23,10 +19,8 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.config.BeanFactory;
-import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.databinding.FloatingButtonBinding;
 import pub.carzy.auto_script.databinding.MaskViewBinding;
@@ -42,7 +36,6 @@ import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.Stopwatch;
-import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.TypeToken;
 
 /**
@@ -56,7 +49,7 @@ public class RecordScriptAction extends BasicAction {
     private List<MotionEntity> motionList;
     private Map<Integer, MotionEntity> motionMap;
     private IdGenerator<Long> idWorker;
-    private ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
     private boolean initialized = false;
     private FloatingButtonBinding binding;
     private WindowManager.LayoutParams bindingParams;
@@ -162,7 +155,7 @@ public class RecordScriptAction extends BasicAction {
         ScriptEntity root = new ScriptEntity();
         entity.setRoot(root);
         root.setId(idWorker.nextId());
-        root.setName("未命名");
+        root.setName(service.getString(R.string.untitled));
         root.setCount(motionList.size());
         long maxTime = 0L;
         for (MotionEntity motionEntity : motionList) {
@@ -213,7 +206,7 @@ public class RecordScriptAction extends BasicAction {
                 entity.setEventTime(event.getEventTime());
                 entity.setDownTime(watch.getElapsedMillis());
                 motionMap.put(index, entity);
-                entity.getPoints().add(new PointEntity(event.getX(), event.getY(), watch.getElapsedMillis(), event.getToolType(index)));
+                entity.getPoints().add(new PointEntity(getEventRawX(event), getEventRawY(event), watch.getElapsedMillis(), event.getToolType(index)));
             } else if (maskType == MotionEvent.ACTION_UP || maskType == MotionEvent.ACTION_POINTER_UP) {
                 //抬起事件就保存
                 int index = getPointIndex(action);
@@ -222,7 +215,7 @@ public class RecordScriptAction extends BasicAction {
                     return true;
                 }
                 entity.setUpTime(watch.getElapsedMillis());
-                entity.getPoints().add(new PointEntity(event.getX(), event.getY(), watch.getElapsedMillis(), event.getToolType(index)));
+                entity.getPoints().add(new PointEntity(getEventRawX(event), getEventRawY(event), watch.getElapsedMillis(), event.getToolType(index)));
             } else if (maskType == MotionEvent.ACTION_MOVE) {
                 //记录触点的x,y坐标
                 for (int i = 0; i < event.getPointerCount(); i++) {
@@ -231,13 +224,49 @@ public class RecordScriptAction extends BasicAction {
                         continue;
                     }
                     event.getX(i);
-                    entity.getPoints().add(new PointEntity(event.getX(i), event.getY(i), watch.getElapsedMillis(), event.getToolType(i)));
+                    entity.getPoints().add(new PointEntity(getEventRawX(event, i), getEventRawY(event, i), watch.getElapsedMillis(), event.getToolType(i)));
                 }
             } else if (maskType == MotionEvent.ACTION_CANCEL) {
                 //这里如何处理
             }
             return true;
         };
+    }
+
+    private Float getEventRawY(MotionEvent event) {
+        return getEventRawY(event, -1);
+    }
+
+    /**
+     * 获取绝对y的坐标
+     *
+     * @param event 事件
+     * @param index 索引
+     * @return y的绝对坐标
+     */
+    private Float getEventRawY(MotionEvent event, int index) {
+        if (index < 0) {
+            return event.getRawY();
+        }
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? event.getRawY(index) : event.getY(index) + event.getRawY() - event.getY();
+    }
+
+    private Float getEventRawX(MotionEvent event) {
+        return getEventRawX(event, -1);
+    }
+
+    /**
+     * 获取绝对x的坐标
+     *
+     * @param event 事件
+     * @param index 索引
+     * @return x的绝对坐标
+     */
+    private Float getEventRawX(MotionEvent event, int index) {
+        if (index < 0) {
+            return event.getRawX();
+        }
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? event.getRawX(index) : event.getX(index) + event.getRawX() - event.getX();
     }
 
     private int getPointIndex(Integer action) {
@@ -290,7 +319,7 @@ public class RecordScriptAction extends BasicAction {
     private static WindowManager.LayoutParams createMaskLayoutParams() {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         // 默认居中
