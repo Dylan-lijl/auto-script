@@ -12,6 +12,7 @@
     <color name="safe">#4CAF50</color>
     <color name="disabled">#720A0000</color>
     <color name="button_pressed">#faad14</color>
+    <color name="warning">#FFA500</color>
     <color name="transparent">#00FFFFFF</color>
     <color name="frosted_glass">#6b6b6b1a</color>
     <color name="rainbow_red">#FF0000</color>

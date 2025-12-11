@@ -7,11 +7,20 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.PopupMenu;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 
@@ -24,6 +33,7 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
@@ -42,6 +52,8 @@ import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
+import pub.carzy.auto_script.databinding.AutoAlignDialogBinding;
+import pub.carzy.auto_script.databinding.ChatToolbarMoreMenuBinding;
 import pub.carzy.auto_script.db.ScriptActionEntity;
 import pub.carzy.auto_script.db.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
@@ -60,34 +72,122 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 public class MacroInfoActivity extends BaseActivity {
 
     private ActivityMacroInfoBinding binding;
-
+    private AutoAlignDialogBinding dataBinding;
+    private ChatToolbarMoreMenuBinding moreMenuBinding;
     private ScriptVoEntityModel model;
     private MacroInfoRefreshModel refresh;
-    private List<Integer> colorArray;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_macro_info);
+        dataBinding = AutoAlignDialogBinding.inflate(LayoutInflater.from(this));
+        moreMenuBinding = ChatToolbarMoreMenuBinding.inflate(LayoutInflater.from(this));
         model = new ScriptVoEntityModel();
+        for (int c : getResources().getIntArray(R.array.script_info_chat_color)) {
+            model.getColorsResource().add(c);
+        }
         refresh = new MacroInfoRefreshModel();
         refresh.setInfo(true);
         binding.setModel(model);
         binding.setRefresh(refresh);
-        colorArray = new ArrayList<>();
-        Arrays.stream(getResources().getIntArray(R.array.script_info_chat_color)).forEach(color -> colorArray.add(color));
         initChat();
         initIntent();
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
-        binding.flowChatToolbar.btnMoreAction.setOnClickListener(e -> {
-            PopupMenu popup = new PopupMenu(this, e);
-            popup.getMenuInflater().inflate(R.menu.macro_info_more_action_menus, popup.getMenu());
-            popup.setOnMenuItemClickListener(createActionClickListener());
-            popup.show();
-        });
+        // 设置没有数据时显示的文字,,,按照mvvm思想这个属性应该写在xml,但是这个库未提供xml属性
+        binding.flowChatLayout.actionBarChart.setNoDataText(getString(R.string.message_no_data));
+        binding.flowChatLayout.pointBarChart.setNoDataText(getString(R.string.message_no_data));
+        initialListeners();
+    }
 
+    private void initialListeners() {
+        binding.flowChatToolbar.btnMoreAction.setOnClickListener(e -> {
+            PopupWindow popupWindow = new PopupWindow(
+                    reinstatedView(moreMenuBinding.getRoot()),
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    true // 点击外部消失
+            );
+            popupWindow.setOutsideTouchable(true);
+            popupWindow.setFocusable(true);
+            moreMenuBinding.actionRun.setOnClickListener(event -> {
+                //打开对应service悬浮窗口
+                popupWindow.dismiss();
+                MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
+                if (service != null) {
+                    ScriptVoEntity entity = new ScriptVoEntity();
+                    entity.setRoot(model.getRoot());
+                    entity.getActions().addAll(model.getActions().values());
+                    entity.getPoints().addAll(model.getPoints().values());
+                    service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(entity));
+                }
+            });
+            moreMenuBinding.actionRename.setOnClickListener(event -> {
+                popupWindow.dismiss();
+                //这里需要弹窗来修改名字
+                if (model.getRoot() != null) {
+                    showRenameDialog();
+                }
+            });
+            moreMenuBinding.actionExport.setOnClickListener(event -> {
+                popupWindow.dismiss();
+                Toast.makeText(this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
+                ThreadUtil.runOnCpu(() -> {
+                    //将脚本保存为json文件
+                    Gson gson = new Gson();
+                    ScriptVoEntity entity = new ScriptVoEntity();
+                    entity.setRoot(model.getRoot());
+                    entity.setActions(new ArrayList<>(model.getActions().values()));
+                    entity.setPoints(new ArrayList<>(model.getPoints().values()));
+                    //调用报错文件api
+                    StoreUtil.promptAndSaveFile(gson.toJson(entity),
+                            "file_" + new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss", Locale.getDefault()).format(new Date()) + ".json",
+                            result -> ThreadUtil.runOnUi(() -> {
+                                Toast.makeText(MacroInfoActivity.this, getString(R.string.message_saved_successfully_ph, result)
+                                        , Toast.LENGTH_SHORT).show();
+                                //打开对应文件夹位置
+                                showFileInFolder(this, new File(result));
+                            }));
+                });
+            });
+            moreMenuBinding.actionRemove.setOnClickListener(event -> {
+                popupWindow.dismiss();
+                //删除当前整个脚本
+                /*AlertDialog d = new MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.delete_dialog_title)
+                        .setMessage(R.string.delete_dialog_message)
+                        .setPositiveButton(R.string.confirm, (dialog, which) -> {
+                            model.getActions().remove(model.getDetailIndex());
+                        }).create();
+                d.show();*/
+            });
+            Button button = binding.flowChatToolbar.btnMoreAction;
+            moreMenuBinding.getRoot().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            popupWindow.showAsDropDown(button, -moreMenuBinding.getRoot().getMeasuredWidth() * 3 / 4, 0);
+        });
+        binding.flowChatLayout.btnDelete.setOnClickListener(createDeleteActionItemListener());
+    }
+
+    private View.OnClickListener createDeleteActionItemListener() {
+        return e -> new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.delete_dialog_title)
+                .setMessage(R.string.delete_dialog_message)
+                .setView(reinstatedView(dataBinding.getRoot()))
+                .setPositiveButton(R.string.confirm, (dialog, which) -> removeChecked(dataBinding.checkBox.isChecked()))
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private View reinstatedView(View root) {
+        //复用
+        // 如果已有父容器，先从父容器移除
+        ViewParent parent = root.getParent();
+        if (parent instanceof ViewGroup) {
+            ((ViewGroup) parent).removeView(root);
+        }
+        return root;
     }
 
     private void initChat() {
@@ -109,7 +209,15 @@ public class MacroInfoActivity extends BaseActivity {
         rightAxis.setDrawGridLines(true);
         rightAxis.setAxisMinimum(-1f);
         actionBarChart.setRenderer(new SingleStackRender(actionBarChart, actionBarChart.getAnimator(), actionBarChart.getViewPortHandler()));
-        actionBarChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+        actionBarChart.setOnChartValueSelectedListener(createActionSelectedListener());
+        setChartData(actionBarChart, new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()), (Long id) -> {
+            ScriptActionEntity action = model.getActions().get(id);
+            if (action == null) {
+                return "--" + getString(R.string.unit_ms);
+            }
+            return action.getUpTime() - action.getDownTime() + getString(R.string.unit_ms);
+        });
+        /*actionBarChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
 
             @Override
             public void onValueSelected(Entry e, Highlight h) {
@@ -157,9 +265,9 @@ public class MacroInfoActivity extends BaseActivity {
 
             @Override
             public void onNothingSelected() {
-//                model.setDetailIndex(StaticValues.DEFAULT_INDEX);
+                model.setDetailIndex(StaticValues.DEFAULT_INDEX);
             }
-        });
+        });*/
         actionBarChart.getLegend().setEnabled(false);
         //pointBar
         pointBarChart.getDescription().setEnabled(false);
@@ -205,9 +313,39 @@ public class MacroInfoActivity extends BaseActivity {
         pointBarChart.getLegend().setEnabled(false);
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> void setChartData(HorizontalBarChart chart, List<BarEntry> entries, List<Integer> colors, String label, Function<T, String> formatter) {
-        BarDataSet set = new BarDataSet(entries, label);
+    private OnChartValueSelectedListener createActionSelectedListener() {
+        return new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+
+            }
+
+            @Override
+            public void onNothingSelected() {
+//                binding.flowChatLayout.actionBarChart.highlightValues(selectedHighlights.toArray(new Highlight[0]));
+            }
+        };
+    }
+
+    private void updateChartData(HorizontalBarChart chart, List<BarEntry> entries, List<Integer> colors) {
+        BarData data = chart.getData();
+        if (data == null) {
+            return;
+        }
+        if (entries != null && data.getDataSetCount() > 0) {
+            BarDataSet dataSet = (BarDataSet) data.getDataSetByIndex(0);
+            dataSet.setValues(entries);
+            if (colors != null) {
+                dataSet.setColors(colors);
+            }
+        }
+        data.notifyDataChanged();
+        chart.notifyDataSetChanged();
+        ThreadUtil.runOnUi(chart::invalidate);
+    }
+
+    private <T> void setChartData(HorizontalBarChart chart, List<BarEntry> entries, List<Integer> colors, Function<T, String> formatter) {
+        BarDataSet set = new BarDataSet(entries, "0");
         set.setStackLabels(new String[]{"", ""});
         set.setValueFormatter(new ValueFormatter() {
             @Override
@@ -217,52 +355,48 @@ public class MacroInfoActivity extends BaseActivity {
         });
         set.setColors(colors);
         chart.setData(new BarData(set));
+        chart.invalidate();
     }
 
-    private PopupMenu.OnMenuItemClickListener createActionClickListener() {
-        return (item) -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.action_run) {
-                //打开对应service悬浮窗口
-                MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
-                if (service != null) {
-                    ScriptVoEntity entity = new ScriptVoEntity();
-                    entity.setRoot(model.getRoot());
-                    entity.getActions().addAll(model.getActions());
-                    entity.getPoints().addAll(model.getPoints());
-                    service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(entity));
+    private void removeChecked(boolean checked) {
+        if (refresh.getDelete()) {
+            return;
+        }
+        refresh.setDelete(true);
+        ThreadUtil.runOnCpu(() -> {
+            try {
+                for (Long id : new ArrayList<>(model.getCheckedAction())) {
+                    ScriptActionEntity action = model.getActions().get(id);
+                    if (action == null) {
+                        continue;
+                    }
+                    long duration = action.getMaxTime() - action.getDownTime();
+                    //删除对应索引数据
+                    if (checked && duration > 0) {
+                        model.findAfterById(id).forEach(item -> {
+                            ScriptActionEntity entity = model.getActions().get(item);
+                            if (entity == null) {
+                                return;
+                            }
+                            //遍历后续步骤 如果步骤过多这里可能需要优化,构建成map
+                            for (ScriptPointEntity pointEntity : model.getPoints().values()) {
+                                if (pointEntity.getParentId().compareTo(entity.getId()) != 0) {
+                                    continue;
+                                }
+                                pointEntity.setTime(pointEntity.getTime() - duration);
+                            }
+                        });
+                    }
+                    model.getActions().remove(id);
                 }
-            } else if (itemId == R.id.action_remove) {
-
-            } else if (itemId == R.id.action_rename) {
-                //这里需要弹窗来修改名字
-                if (model.getRoot() != null) {
-                    showRenameDialog();
-                }
-            } else if (itemId == R.id.action_save) {
-
-            } else if (itemId == R.id.action_export) {
-                Toast.makeText(this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
-                ThreadUtil.runOnCpu(() -> {
-                    //将脚本保存为json文件
-                    Gson gson = new Gson();
-                    ScriptVoEntity entity = new ScriptVoEntity();
-                    entity.setRoot(model.getRoot());
-                    entity.setActions(model.getActions());
-                    entity.setPoints(model.getPoints());
-                    //调用报错文件api
-                    StoreUtil.promptAndSaveFile(gson.toJson(entity),
-                            "file_" + new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss", Locale.getDefault()).format(new Date()) + ".json",
-                            result -> ThreadUtil.runOnUi(() -> {
-                                Toast.makeText(MacroInfoActivity.this, getString(R.string.message_saved_successfully_ph, result)
-                                        , Toast.LENGTH_SHORT).show();
-                                //打开对应文件夹位置
-                                showFileInFolder(this, new File(result));
-                            }));
-                });
+                //标记未保存
+                model.setSaved(false);
+            } catch (Exception e) {
+                Log.d(this.getClass().getCanonicalName(), "removeChecked", e);
+            } finally {
+                ThreadUtil.runOnUi(() -> refresh.setDelete(false));
             }
-            return false;
-        };
+        });
     }
 
     public static void showFileInFolder(Context context, File file) {
@@ -300,8 +434,9 @@ public class MacroInfoActivity extends BaseActivity {
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setHint(R.string.message_rename_prompt);
-
-        new MaterialAlertDialogBuilder(this)
+        input.setFocusable(true);
+        input.setFocusableInTouchMode(true);
+        AlertDialog alertDialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.rename)
                 .setView(input)
                 .setPositiveButton(R.string.confirm, (dialog, which) -> {
@@ -314,8 +449,26 @@ public class MacroInfoActivity extends BaseActivity {
                         Toast.makeText(this, getString(R.string.message_error_empty_ph, getString(R.string.name)), Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
-                .show();
+                .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss()).create();
+
+        alertDialog.setOnShowListener(d -> {
+            input.requestFocus();
+            input.postDelayed(() -> {
+                if (alertDialog.getWindow() == null) {
+                    return;
+                }
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                alertDialog.getWindow().clearFlags(
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                );
+                alertDialog.getWindow().setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+                );
+                imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
+            }, 150);
+        });
+        alertDialog.show();
     }
 
     private void initIntent() {
@@ -337,23 +490,10 @@ public class MacroInfoActivity extends BaseActivity {
             }
             if (entity != null) {
                 model.setRoot(entity.getRoot());
-                for (ScriptPointEntity pointEntity : entity.getPoints()) {
-                    model.getPoints().add(pointEntity);
-                }
-                int[] colorArray = getResources().getIntArray(R.array.script_info_chat_color);
-                int colorLength = colorArray.length;
-                List<BarEntry> entries = new ArrayList<>();
-                List<Integer> colors = new ArrayList<>();
-                for (int i = 0; i < entity.getActions().size(); i++) {
-                    ScriptActionEntity actionEntity = entity.getActions().get(i);
-                    colors.add(colorArray[actionEntity.getIndex() % colorLength]);
-                    Pair<Integer, Long> pair = new Pair<>(i, actionEntity.getUpTime() - actionEntity.getDownTime());
-                    entries.add(new BarEntry(i, new float[]{actionEntity.getDownTime(), pair.getValue()}, pair));
-                    model.getActions().add(actionEntity);
-                }
+                model.setActions(entity.getActions());
+                model.setPoints(entity.getPoints());
                 ThreadUtil.runOnUi(() -> {
-                    setChartData(binding.flowChatLayout.actionBarChart, entries, colors, "", (Pair<Integer, Long> pair) -> pair.getValue() + "ms");
-                    binding.flowChatLayout.actionBarChart.invalidate();
+                    updateChartData(binding.flowChatLayout.actionBarChart, new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()));
                 });
             }
         });

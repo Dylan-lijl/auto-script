@@ -46,4 +46,21 @@
     <string name="more">더보기</string>
     <string name="unit_ms">밀리초</string>
     <string name="details">상세</string>
+    <string name="message_no_data">사용 가능한 차트 데이터가 없습니다</string>
+    <string name="simulate">모의</string>
+    <string name="exit">나가기</string>
+    <string name="restart">다시 시작</string>
+    <string name="message_open_mask">가림막을 열기</string>
+    <string name="message_close_mask">가림막 닫기</string>
+    <string name="expand">펼치기</string>
+    <string name="collapse">접기</string>
+    <string name="delete_dialog_title">삭제 확인</string>
+    <string name="delete_dialog_message">이 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</string>
+    <string name="auto_align">자동 정렬</string>
+    <string name="help">도움말</string>
+    <string name="message_auto_align_help">자동 정렬을 활성화하면, 이 단계를 삭제할 때 이후 모든 단계의 시간이 자동으로 앞당겨집니다.</string>
+    <string name="unsaved">저장되지 않음</string>
+    <string name="unsaved_message">현재 내용이 수정되었지만 아직 저장되지 않았습니다.</string>
+    <string name="play_action">단계 재생</string>
+    <string name="play_point">좌표 재생</string>
 </resources>

@@ -19,8 +19,10 @@ import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.PreviewFloatingStatus;
 import pub.carzy.auto_script.service.BasicAction;
 import pub.carzy.auto_script.service.data.SimpleReplay;
+import pub.carzy.auto_script.service.dto.BasicParam;
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
+import pub.carzy.auto_script.service.dto.UpdateParam;
 
 /**
  * @author admin
@@ -74,6 +76,10 @@ public class ReplayScriptAction extends BasicAction {
         } finally {
             lock.unlock();
         }
+        return updateData(param);
+    }
+
+    private boolean updateData(BasicParam param) {
         try {
             if (param != null) {
                 Object data = param.getData();
@@ -164,5 +170,10 @@ public class ReplayScriptAction extends BasicAction {
         } catch (Exception ignored) {
             return false;
         }
+    }
+
+    @Override
+    public boolean update(UpdateParam param) {
+        return updateData(param);
     }
 }

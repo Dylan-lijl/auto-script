@@ -6,11 +6,11 @@
 
         <import type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
 
-        <import type="pub.carzy.auto_script.model.MacroInfoRefreshModel" />
-
         <variable
             name="model"
             type="ScriptVoEntityModel" />
+
+        <import type="pub.carzy.auto_script.model.MacroInfoRefreshModel" />
 
         <variable
             name="refresh"
@@ -30,16 +30,23 @@
             <!--工具栏-->
             <include
                 android:id="@+id/flow_chat_toolbar"
-                entity="@{model.root}"
-                layout="@layout/flow_chat_toolbar" />
+                layout="@layout/flow_chat_toolbar"
+                app:model="@{model}" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@color/frosted_glass" />
 
             <include
                 android:id="@+id/flow_chat_layout"
                 layout="@layout/script_flow_chat"
-                model="@{model}"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                app:model="@{model}" />
         </LinearLayout>
     </pub.carzy.auto_script.ui.SpinLayout>
 </layout>

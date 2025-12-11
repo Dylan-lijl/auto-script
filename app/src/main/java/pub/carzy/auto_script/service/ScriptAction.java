@@ -4,6 +4,7 @@ import android.view.accessibility.AccessibilityEvent;
 
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
+import pub.carzy.auto_script.service.dto.UpdateParam;
 
 /**
  * @author admin
@@ -27,4 +28,6 @@ public interface ScriptAction {
     public void onAccessibilityEvent(AccessibilityEvent event);
 
     public void onInterrupt();
+
+    boolean update(UpdateParam param);
 }

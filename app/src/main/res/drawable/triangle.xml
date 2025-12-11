@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="12dp"
+    android:viewportWidth="24"
+    android:viewportHeight="12">
+    <!-- 内层：主体三角形（整体缩小 1dp 作为边框间距） -->
+    <path
+        android:fillColor="@color/white"
+        android:strokeWidth="1"
+        android:strokeColor="@color/black"
+        android:pathData="M1,11 L12,1 L23,11 Z"/>
+</vector>

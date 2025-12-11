@@ -24,11 +24,13 @@
         </activity>
         <activity android:name=".activities.MacroListActivity" />
         <activity android:name=".activities.DisclaimerActivity" />
-        <activity android:name=".activities.MacroInfoActivity" />
+        <activity
+            android:name=".activities.MacroInfoActivity" />
+
         <service
             android:name=".service.MyAccessibilityService"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>

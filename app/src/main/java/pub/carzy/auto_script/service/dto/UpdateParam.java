@@ -8,11 +8,11 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class OpenParam extends BasicParam{
-    public OpenParam() {
+public class UpdateParam extends BasicParam{
+    public UpdateParam() {
     }
 
-    public OpenParam(Object data) {
+    public UpdateParam(Object data) {
         super(data);
     }
 }

@@ -34,6 +34,7 @@ import pub.carzy.auto_script.model.RecordStateModel;
 import pub.carzy.auto_script.service.BasicAction;
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
+import pub.carzy.auto_script.service.dto.UpdateParam;
 import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.Stopwatch;
 import pub.carzy.auto_script.utils.TypeToken;
@@ -314,6 +315,11 @@ public class RecordScriptAction extends BasicAction {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    @Override
+    public boolean update(UpdateParam param) {
+        return false;
     }
 
     private static WindowManager.LayoutParams createMaskLayoutParams() {

@@ -46,4 +46,21 @@
     <string name="more">もっと</string>
     <string name="unit_ms">ミリ秒</string>
     <string name="details">詳細</string>
+    <string name="message_no_data">利用可能なチャートデータがありません</string>
+    <string name="simulate">模擬</string>
+    <string name="exit">終了</string>
+    <string name="restart">再開する</string>
+    <string name="message_open_mask">カバーを開く</string>
+    <string name="message_close_mask">カバーを閉じる</string>
+    <string name="expand">展開する</string>
+    <string name="collapse">収縮する</string>
+    <string name="delete_dialog_title">削除の確認</string>
+    <string name="delete_dialog_message">この項目を削除してもよろしいですか？この操作は元に戻せません。</string>
+    <string name="auto_align">自動整列</string>
+    <string name="help">ヘルプ</string>
+    <string name="message_auto_align_help">自動整列を有効にすると、このステップを削除した際、後続のすべてのステップの時間が自動的に前倒しされます。</string>
+    <string name="unsaved">未保存</string>
+    <string name="unsaved_message">現在の内容は変更されていますが、まだ保存されていません。</string>
+    <string name="play_action">ステップを再生</string>
+    <string name="play_point">座標を再生</string>
 </resources>

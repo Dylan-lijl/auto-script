@@ -13,4 +13,31 @@
         <item name="android:textAllCaps">false</item>
         <item name="android:foreground">@null</item>
     </style>
+    <!--透明背景按钮-->
+    <style name="TransparentButton" parent="Widget.AppCompat.ImageButton">
+        <!-- 完全透明背景（必须两项） -->
+        <item name="android:background">@android:color/transparent</item>
+        <item name="background">@android:color/transparent</item>
+        <!-- 禁用自动 tint，否则图标会变蓝 -->
+        <item name="android:tint">@null</item>
+        <item name="tint">@null</item>
+        <!-- 删除内边距 -->
+        <item name="android:padding">2dp</item>
+    </style>
+
+    <style name="SimpleMenuButtonStyle" parent="Widget.AppCompat.Button">
+        <!-- 去背景 -->
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <!-- 文字样式 -->
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="MenuDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">#22000000</item>
+        <item name="android:layout_marginVertical">4dp</item>
+    </style>
+
 </resources>

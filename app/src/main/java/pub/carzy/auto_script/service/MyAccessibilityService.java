@@ -18,6 +18,7 @@ import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
+import pub.carzy.auto_script.service.dto.UpdateParam;
 import pub.carzy.auto_script.service.impl.RecordScriptAction;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -92,8 +93,7 @@ public class MyAccessibilityService extends AccessibilityService {
         for (ScriptAction action : set) {
             if (key.equals(action.key())) {
                 opens.put(group, action);
-                action.open(param);
-                return true;
+                return action.open(param);
             }
         }
         return false;
@@ -161,5 +161,33 @@ public class MyAccessibilityService extends AccessibilityService {
                 ThreadUtil.runOnUi(callback::finallyMethod);
             }
         });
+    }
+
+    public boolean update(String key, UpdateParam param) {
+        if (key == null) {
+            Log.e("update", "key is null");
+            return false;
+        }
+        if (!keys.containsKey(key)) {
+            Log.e("update", "key is not exist");
+            return false;
+        }
+        String group = keys.get(key);
+        LinkedHashSet<ScriptAction> set = groupActions.get(group);
+        if (set == null) {
+            Log.e("update", "group is not exist");
+            return false;
+        }
+        ScriptAction item = opens.get(group);
+        if (item == null||!item.key().equals( key)) {
+            Log.e("update", "same key is not same object");
+            return false;
+        }
+        try {
+            return item.update(param);
+        }catch (Exception e){
+            Log.e("update", "update error", e);
+        }
+        return false;
     }
 }

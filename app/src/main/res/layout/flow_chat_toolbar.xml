@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
-        <import type="pub.carzy.auto_script.db.ScriptEntity" />
+        <import type="android.content.Context" />
+
+        <import type="android.view.View" />
+
+        <import type="android.widget.Toast" />
 
         <import type="pub.carzy.auto_script.R" />
 
-        <import type="android.content.Context" />
+        <import type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
 
         <variable
-            name="entity"
-            type="ScriptEntity" />
+            name="model"
+            type="ScriptVoEntityModel" />
     </data>
 
     <LinearLayout
@@ -36,7 +41,7 @@
                 android:id="@+id/time_element"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{entity==null||entity.maxTime==null?`--`:entity.maxTime+context.getString(R.string.unit_ms)}" />
+                android:text="@{!model.hasMaxTime()?`--`:model.root.maxTime+context.getString(R.string.unit_ms)}" />
             <!--脚本数量-->
             <TextView
                 android:id="@+id/step_label"
@@ -49,7 +54,7 @@
                 android:id="@+id/step_element"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{entity==null||entity.count==null?`--`:entity.count+``}" />
+                android:text="@{!model.hasCount()?`--`:model.root.count+``}" />
             <!--脚本名称-->
             <TextView
                 android:id="@+id/name_label"
@@ -62,22 +67,35 @@
                 android:id="@+id/name_element"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{entity==null||entity.name==null?`--`:entity.name}" />
+                android:text="@{!model.hasName()?`--`:model.root.name}" />
             <!--脚本状态-->
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:baselineAligned="true">
+            android:baselineAligned="true"
+            tools:ignore="UseAppTint">
+
+            <ImageButton
+                style="@style/TransparentButton"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="@string/unsaved"
+                android:onClick="@{e->Toast.makeText(context,R.string.unsaved_message,Toast.LENGTH_SHORT).show()}"
+                android:scaleType="centerInside"
+                android:src="@drawable/asterisk"
+                android:tint="@color/warning"
+                android:visibility="@{model.saved?View.VISIBLE:View.GONE}" />
             <!--弹出的菜单内容 @see /menu/macro_info_more_action_menus.xml-->
             <Button
                 android:id="@+id/btn_more_action"
+                style="@style/TextButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:background="@color/transparent"
-                style="@style/TextButtonStyle"
                 android:text="@string/more"
                 android:textColor="@color/link" />
         </LinearLayout>

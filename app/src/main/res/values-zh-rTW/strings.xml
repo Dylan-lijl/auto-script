@@ -46,4 +46,21 @@
     <string name="more">更多</string>
     <string name="unit_ms">毫秒</string>
     <string name="details">詳細</string>
+    <string name="message_no_data">沒有可用的圖表資料</string>
+    <string name="simulate">模擬</string>
+    <string name="exit">退出</string>
+    <string name="restart">重新开始</string>
+    <string name="message_open_mask">打開遮蓋</string>
+    <string name="message_close_mask">關閉遮蓋</string>
+    <string name="expand">展開</string>
+    <string name="collapse">收縮</string>
+    <string name="delete_dialog_title">刪除確認</string>
+    <string name="delete_dialog_message">確定要刪除這項內容嗎？此操作不可恢復。</string>
+    <string name="auto_align">自動對齊</string>
+    <string name="help">幫助</string>
+    <string name="message_auto_align_help">開啟自動對齊後，刪除這一步會將後面所有步驟的時間自動往前提。</string>
+    <string name="unsaved">未保存</string>
+    <string name="unsaved_message">當前內容已修改，但尚未保存。</string>
+    <string name="play_action">播放步驟</string>
+    <string name="play_point">播放座標</string>
 </resources>

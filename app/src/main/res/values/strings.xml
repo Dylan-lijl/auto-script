@@ -46,4 +46,21 @@
     <string name="more">More</string>
     <string name="unit_ms">ms</string>
     <string name="details">Details</string>
+    <string name="message_no_data">No chart data available</string>
+    <string name="simulate">Simulate</string>
+    <string name="exit">Exit</string>
+    <string name="restart">Restart</string>
+    <string name="message_open_mask">Open overlay</string>
+    <string name="message_close_mask">Close overlay</string>
+    <string name="expand">Expand</string>
+    <string name="collapse">Collapse</string>
+    <string name="delete_dialog_title">Delete confirmation</string>
+    <string name="delete_dialog_message">Are you sure you want to delete this item? This action cannot be undone.</string>
+    <string name="auto_align">Auto align</string>
+    <string name="help">Help</string>
+    <string name="message_auto_align_help">After enabling auto align, deleting this step will automatically move forward the timing of all subsequent steps.</string>
+    <string name="unsaved">Unsaved</string>
+    <string name="unsaved_message">The current content has been modified but not yet saved.</string>
+    <string name="play_action">Play steps</string>
+    <string name="play_point">Play coordinates</string>
 </resources>
