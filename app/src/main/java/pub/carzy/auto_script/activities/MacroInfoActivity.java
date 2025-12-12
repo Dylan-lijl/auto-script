@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
+import androidx.databinding.ObservableMap;
 
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -33,22 +34,19 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.Function;
 
-import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
@@ -168,6 +166,80 @@ public class MacroInfoActivity extends BaseActivity {
             popupWindow.showAsDropDown(button, -moreMenuBinding.getRoot().getMeasuredWidth() * 3 / 4, 0);
         });
         binding.flowChatLayout.btnDelete.setOnClickListener(createDeleteActionItemListener());
+        binding.flowChatLayout.btnDeleteDetail.setOnClickListener(createDeletePointItemListener());
+    }
+
+    private View.OnClickListener createDeletePointItemListener() {
+        return e -> new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.delete_dialog_title)
+                .setMessage(R.string.delete_dialog_message)
+                .setView(reinstatedView(dataBinding.getRoot()))
+                .setPositiveButton(R.string.confirm, (dialog, which) -> removeCheckedPoint(dataBinding.checkBox.isChecked()))
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void removeCheckedPoint(boolean checked) {
+        if (refresh.getDeleteDetail() || refresh.getDetail()) {
+            return;
+        }
+        refresh.setDeleteDetail(true);
+        ThreadUtil.runOnCpu(() -> {
+            try {
+                for (Long id : new ArrayList<>(model.getCheckedPoint().keySet())) {
+                    ScriptPointEntity point = model.getPoints().get(id);
+                    if (point == null) {
+                        continue;
+                    }
+                    //删除对应索引数据
+                    if (checked) {
+                        Set<Long> ids = model.getPointMapByParentId().get(point.getParentId());
+                        if (ids == null) {
+                            continue;
+                        }
+                        Long pre = null;
+                        for (Long id1 : ids) {
+                            if (id1.compareTo(id) == 0) {
+                                break;
+                            }
+                            pre = id1;
+                        }
+                        Long time;
+                        if (pre == null) {
+                            ScriptActionEntity action = model.getActions().get(point.getParentId());
+                            if (action == null) {
+                                continue;
+                            }
+                            time = action.getDownTime();
+                        } else {
+                            ScriptPointEntity scriptPoint = model.getPoints().get(pre);
+                            if (scriptPoint == null) {
+                                continue;
+                            }
+                            time = scriptPoint.getTime();
+                        }
+                        long duration = point.getTime() - time;
+                        if (duration > 0) {
+                            //更新后续节点
+                            model.adjustPointTime(id, -duration);
+                        }
+                    }
+                    ScriptActionEntity action = model.getActions().get(point.getParentId());
+                    if (action != null) {
+                        action.setCount(action.getCount() - 1);
+                    }
+                    model.getPoints().remove(id);
+                }
+                updateChartData(binding.flowChatLayout.actionBarChart, new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()));
+                updateChartData(binding.flowChatLayout.pointBarChart, new ArrayList<>(model.getPointBars().values()), new ArrayList<>(model.getPointColors().values()));
+                //标记未保存
+                model.setSaved(false);
+            } catch (Exception e) {
+                Log.d(this.getClass().getCanonicalName(), "removeCheckedPoint", e);
+            } finally {
+                ThreadUtil.runOnUi(() -> refresh.setDeleteDetail(false));
+            }
+        });
     }
 
     private View.OnClickListener createDeleteActionItemListener() {
@@ -175,7 +247,7 @@ public class MacroInfoActivity extends BaseActivity {
                 .setTitle(R.string.delete_dialog_title)
                 .setMessage(R.string.delete_dialog_message)
                 .setView(reinstatedView(dataBinding.getRoot()))
-                .setPositiveButton(R.string.confirm, (dialog, which) -> removeChecked(dataBinding.checkBox.isChecked()))
+                .setPositiveButton(R.string.confirm, (dialog, which) -> removeCheckedAction(dataBinding.checkBox.isChecked()))
                 .setNegativeButton(R.string.cancel, null)
                 .show();
     }
@@ -217,57 +289,6 @@ public class MacroInfoActivity extends BaseActivity {
             }
             return action.getUpTime() - action.getDownTime() + getString(R.string.unit_ms);
         });
-        /*actionBarChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-
-            @Override
-            public void onValueSelected(Entry e, Highlight h) {
-                Pair<Integer, Long> pair = (Pair<Integer, Long>) e.getData();
-                if (pair == null || refresh.getDetail()) {
-                    return;
-                }
-                refresh.setDetail(true);
-                try {
-                    int i = pair.getKey();
-                    if (i >= model.getActions().size()) {
-                        return;
-                    }
-                    model.setDetailIndex(i);
-                    ScriptActionEntity action = model.getActions().get(i);
-                    if (action != null && !model.getPoints().isEmpty()) {
-                        List<BarEntry> entries = new ArrayList<>();
-                        long time = action.getDownTime();
-                        int k = 0;
-                        for (int j = 0; j < model.getPoints().size(); j++) {
-                            ScriptPointEntity point = model.getPoints().get(j);
-                            if (action.getId().compareTo(point.getParentId()) != 0) {
-                                continue;
-                            }
-                            Pair<Integer, Long> pointPair = new Pair<>(j, point.getTime() - time);
-                            entries.add(new BarEntry(k++, new float[]{time, pointPair.getValue()}, pointPair));
-                            time = point.getTime();
-                        }
-                        if (!entries.isEmpty()) {
-                            ThreadUtil.runOnUi(() -> {
-                                try {
-                                    setChartData(pointBarChart, entries, new ArrayList<>(colorArray), "", (Pair<Integer, Long> pointPair) -> pointPair.getValue() + "ms");
-                                    pointBarChart.invalidate();
-                                } finally {
-                                    refresh.setDetail(false);
-                                }
-                            });
-                        }
-                    }
-                } catch (Exception exception) {
-                    refresh.setDetail(false);
-                    Log.e("MacroInfoActivity", "onValueSelected: ", exception);
-                }
-            }
-
-            @Override
-            public void onNothingSelected() {
-                model.setDetailIndex(StaticValues.DEFAULT_INDEX);
-            }
-        });*/
         actionBarChart.getLegend().setEnabled(false);
         //pointBar
         pointBarChart.getDescription().setEnabled(false);
@@ -285,44 +306,86 @@ public class MacroInfoActivity extends BaseActivity {
         rightAxis2.setDrawGridLines(true);
         rightAxis2.setAxisMinimum(-1f);
         pointBarChart.setRenderer(new SingleStackRender(pointBarChart, pointBarChart.getAnimator(), pointBarChart.getViewPortHandler()));
-        pointBarChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+        pointBarChart.setOnChartValueSelectedListener(createPointSelectedListener());
+        pointBarChart.getLegend().setEnabled(false);
+        setChartData(pointBarChart, new ArrayList<>(model.getPointBars().values()), new ArrayList<>(model.getPointColors().values()), (Long id) -> {
+            ScriptPointEntity point = model.getPoints().get(id);
+            if (point == null) {
+                return "?";
+            }
+            Set<Long> ids = model.getPointMapByParentId().get(point.getParentId());
+            if (ids == null || ids.isEmpty()) {
+                return "?";
+            }
+            Long pre = null;
+            for (Long item : ids) {
+                if (item.compareTo(id) == 0) {
+                    if (pre == null) {
+                        ScriptActionEntity action = model.getActions().get(point.getParentId());
+                        return action == null ? "?" : point.getTime() - action.getDownTime() + "ms";
+                    } else {
+                        ScriptPointEntity preEntity = model.getPoints().get(pre);
+                        return preEntity == null ? "?" : point.getTime() - preEntity.getTime() + "ms";
+                    }
+                }
+                pre = item;
+            }
+            return point.getX() + "ms";
+        });
+        //给checkAction添加监听
+        model.getCheckedAction().addOnMapChangedCallback(new ObservableMap.OnMapChangedCallback<>() {
 
             @Override
+            public void onMapChanged(ObservableMap<Long, Highlight> sender, Long key) {
+                updateChartData(pointBarChart, new ArrayList<>(model.getPointBars().values()), new ArrayList<>(model.getPointColors().values()));
+            }
+        });
+    }
+
+    private OnChartValueSelectedListener createPointSelectedListener() {
+        return new OnChartValueSelectedListener() {
+            @Override
             public void onValueSelected(Entry e, Highlight h) {
-                Pair<Integer, Long> data = (Pair<Integer, Long>) e.getData();
-                if (data.getKey() >= model.getPoints().size()) {
-                    return;
+                ObservableMap<Long, Highlight> map = model.getCheckedPoint();
+                Long id = (Long) e.getData();
+                if (map.containsKey(id)) {
+                    map.remove(id);
+                } else {
+                    map.put(id, h);
                 }
-                ScriptPointEntity point = model.getPoints().get(data.getKey());
-                JsonObject object = new JsonObject();
-                object.addProperty("t", point.getTime());
-                object.addProperty("x", point.getX());
-                object.addProperty("y", point.getY());
-                object.addProperty("type", point.getToolType());
-                String json = new Gson().toJson(object);
-                ThreadUtil.runOnUi(() -> {
-                    Toast.makeText(MacroInfoActivity.this, json, Toast.LENGTH_LONG).show();
-                });
+                // Manually update the chart's highlights
+                Highlight[] highlightsArray = map.values().toArray(new Highlight[0]);
+                binding.flowChatLayout.pointBarChart.highlightValues(highlightsArray);
             }
 
             @Override
             public void onNothingSelected() {
-
+                Highlight[] highlightsArray = model.getCheckedPoint().values().toArray(new Highlight[0]);
+                binding.flowChatLayout.pointBarChart.highlightValues(highlightsArray);
             }
-        });
-        pointBarChart.getLegend().setEnabled(false);
+        };
     }
 
     private OnChartValueSelectedListener createActionSelectedListener() {
         return new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-
+                ObservableMap<Long, Highlight> map = model.getCheckedAction();
+                Long id = (Long) e.getData();
+                if (map.containsKey(id)) {
+                    map.remove(id);
+                } else {
+                    map.put(id, h);
+                }
+                // Manually update the chart's highlights
+                Highlight[] highlightsArray = map.values().toArray(new Highlight[0]);
+                binding.flowChatLayout.actionBarChart.highlightValues(highlightsArray);
             }
 
             @Override
             public void onNothingSelected() {
-//                binding.flowChatLayout.actionBarChart.highlightValues(selectedHighlights.toArray(new Highlight[0]));
+                Highlight[] highlightsArray = model.getCheckedAction().values().toArray(new Highlight[0]);
+                binding.flowChatLayout.actionBarChart.highlightValues(highlightsArray);
             }
         };
     }
@@ -339,11 +402,14 @@ public class MacroInfoActivity extends BaseActivity {
                 dataSet.setColors(colors);
             }
         }
+        //触发高亮
+        chart.highlightValue(null, true);
         data.notifyDataChanged();
         chart.notifyDataSetChanged();
         ThreadUtil.runOnUi(chart::invalidate);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> void setChartData(HorizontalBarChart chart, List<BarEntry> entries, List<Integer> colors, Function<T, String> formatter) {
         BarDataSet set = new BarDataSet(entries, "0");
         set.setStackLabels(new String[]{"", ""});
@@ -358,41 +424,34 @@ public class MacroInfoActivity extends BaseActivity {
         chart.invalidate();
     }
 
-    private void removeChecked(boolean checked) {
-        if (refresh.getDelete()) {
+    private void removeCheckedAction(boolean checked) {
+        if (refresh.getDelete() || refresh.getDeleteDetail()) {
             return;
         }
         refresh.setDelete(true);
         ThreadUtil.runOnCpu(() -> {
             try {
-                for (Long id : new ArrayList<>(model.getCheckedAction())) {
+                for (Long id : new ArrayList<>(model.getCheckedAction().keySet())) {
                     ScriptActionEntity action = model.getActions().get(id);
                     if (action == null) {
                         continue;
                     }
                     long duration = action.getMaxTime() - action.getDownTime();
-                    //删除对应索引数据
+                    //更新后续步骤
                     if (checked && duration > 0) {
-                        model.findAfterById(id).forEach(item -> {
-                            ScriptActionEntity entity = model.getActions().get(item);
-                            if (entity == null) {
-                                return;
-                            }
-                            //遍历后续步骤 如果步骤过多这里可能需要优化,构建成map
-                            for (ScriptPointEntity pointEntity : model.getPoints().values()) {
-                                if (pointEntity.getParentId().compareTo(entity.getId()) != 0) {
-                                    continue;
-                                }
-                                pointEntity.setTime(pointEntity.getTime() - duration);
-                            }
-                        });
+                        model.adjustActionTime(id, -duration);
+                    }
+                    if (model.getRoot() != null) {
+                        model.getRoot().setCount(model.getRoot().getCount() - 1);
                     }
                     model.getActions().remove(id);
                 }
+                updateChartData(binding.flowChatLayout.actionBarChart, new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()));
+                updateChartData(binding.flowChatLayout.pointBarChart, new ArrayList<>(model.getPointBars().values()), new ArrayList<>(model.getPointColors().values()));
                 //标记未保存
                 model.setSaved(false);
             } catch (Exception e) {
-                Log.d(this.getClass().getCanonicalName(), "removeChecked", e);
+                Log.d(this.getClass().getCanonicalName(), "removeCheckedAction", e);
             } finally {
                 ThreadUtil.runOnUi(() -> refresh.setDelete(false));
             }

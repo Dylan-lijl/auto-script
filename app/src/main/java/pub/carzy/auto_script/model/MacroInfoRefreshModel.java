@@ -13,6 +13,7 @@ public class MacroInfoRefreshModel extends BaseObservable {
     private Boolean detail = false;
 
     private Boolean delete = false;
+    private Boolean deleteDetail = false;
     private Boolean save = false;
 
     @Bindable
@@ -23,6 +24,16 @@ public class MacroInfoRefreshModel extends BaseObservable {
     public void setSave(Boolean save) {
         this.save = save;
         notifyPropertyChanged(BR.save);
+    }
+
+    @Bindable
+    public Boolean getDeleteDetail() {
+        return deleteDetail;
+    }
+
+    public void setDeleteDetail(Boolean deleteDetail) {
+        this.deleteDetail = deleteDetail;
+        notifyPropertyChanged(BR.deleteDetail);
     }
 
     @Bindable

@@ -7,15 +7,21 @@
 
         <import type="android.content.Context" />
 
+        <import type="android.view.View" />
+
         <import type="pub.carzy.auto_script.R" />
 
-        <import type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
 
         <import type="pub.carzy.auto_script.utils.statics.StaticValues" />
 
         <variable
             name="model"
-            type="ScriptVoEntityModel" />
+            type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
+
+        <variable
+            name="refresh"
+            type="pub.carzy.auto_script.model.MacroInfoRefreshModel" />
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -43,6 +49,16 @@
                 android:orientation="horizontal"
                 android:paddingStart="0dp"
                 android:paddingEnd="10dp">
+
+                <ImageButton
+                    android:id="@+id/btn_delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/transparent"
+                    android:contentDescription="@string/delete"
+                    android:src="@drawable/delete"
+                    android:tint="@color/danger"
+                    android:visibility="@{model.checkedAction.empty||refresh.deleteDetail?View.GONE:View.VISIBLE}" />
                 <!-- 示例按钮 -->
                 <ImageButton
                     android:id="@+id/btn_play"
@@ -52,16 +68,6 @@
                     android:contentDescription="@string/play_action"
                     android:src="@drawable/start"
                     android:tint="@color/safe" />
-
-                <ImageButton
-                    android:id="@+id/btn_delete"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@color/transparent"
-                    android:clickable="@{!model.checkedAction.isEmpty()}"
-                    android:contentDescription="@string/delete"
-                    android:src="@drawable/delete"
-                    android:tint="@{context.getColor(model.checkedAction.isEmpty()?R.color.disabled:R.color.danger)}" />
             </LinearLayout>
         </LinearLayout>
         <!-- 步骤图表 -->
@@ -87,7 +93,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@{context.getString(R.string.details)+(model.checkedAction.isEmpty()?``:`(`+model.checkedAction.get(model.checkedAction.size()-1)+`)`)}" />
+                android:text="@{context.getString(R.string.details)+(model.checkedAction.isEmpty()?``:`(`+model.lastCheckedActionIndex+`)`)}" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -95,6 +101,16 @@
                 android:orientation="horizontal"
                 android:paddingStart="0dp"
                 android:paddingEnd="10dp">
+                <!-- 示例按钮 -->
+                <ImageButton
+                    android:id="@+id/btn_delete_detail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/transparent"
+                    android:contentDescription="@string/delete"
+                    android:src="@drawable/delete"
+                    android:tint="@color/danger"
+                    android:visibility="@{model.checkedPoint.isEmpty||refresh.delete?View.GONE:View.VISIBLE}" />
 
                 <ImageButton
                     android:id="@+id/btn_play_detail"
@@ -104,16 +120,6 @@
                     android:contentDescription="@string/play_point"
                     android:src="@drawable/start"
                     android:tint="@color/safe" />
-                <!-- 示例按钮 -->
-                <!-- <ImageButton
-                     android:id="@+id/btn_delete_detail"
-                     android:layout_width="wrap_content"
-                     android:layout_height="wrap_content"
-                     android:background="@color/transparent"
-                     android:clickable="@{model.detailIndex>StaticValues.DEFAULT_INDEX}"
-                     android:contentDescription="@string/delete"
-                     android:src="@drawable/delete"
-                     android:tint="@{context.getColor(model.detailIndex>StaticValues.DEFAULT_INDEX?R.color.danger:R.color.disabled)}" />-->
             </LinearLayout>
         </LinearLayout>
         <!-- 坐标图标 -->

@@ -4,13 +4,9 @@
 
     <data>
 
-        <import type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
-
         <variable
             name="model"
-            type="ScriptVoEntityModel" />
-
-        <import type="pub.carzy.auto_script.model.MacroInfoRefreshModel" />
+            type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
 
         <variable
             name="refresh"
@@ -46,6 +42,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
+                app:refresh="@{refresh}"
                 app:model="@{model}" />
         </LinearLayout>
     </pub.carzy.auto_script.ui.SpinLayout>
