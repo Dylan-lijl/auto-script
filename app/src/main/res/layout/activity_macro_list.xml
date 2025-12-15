@@ -1,76 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
+    <data>
+
+    </data>
+
+    <pub.carzy.auto_script.ui.SpinLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:orientation="horizontal">
+        android:layout_height="match_parent">
 
-        <pub.carzy.auto_script.ui.ExtImageButton
-            android:id="@+id/btnRecord"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <pub.carzy.auto_script.ui.ExtImageButton
+                android:id="@+id/btnRecord"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:background="@drawable/button_bg"
+                android:padding="2dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/record"
+                android:tint="@color/danger"
+                app:tooltipText="@string/help_script_list_record" />
+
+            <pub.carzy.auto_script.ui.ExtImageButton
+                android:id="@+id/btnRun"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:background="@drawable/button_bg"
+                android:padding="2dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/start"
+                android:tint="@color/safe"
+                android:visibility="gone"
+                app:tooltipText="@string/help_script_list_run" />
+
+            <pub.carzy.auto_script.ui.ExtImageButton
+                android:id="@+id/btnPause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_bg"
+                android:padding="2dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/pause"
+                android:tint="@color/danger"
+                android:visibility="gone"
+                app:tooltipText="@string/help_script_list_pause" />
+
+            <pub.carzy.auto_script.ui.ExtImageButton
+                android:id="@+id/btnStop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:background="@drawable/button_bg"
+                android:padding="2dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/stop"
+                android:tint="@color/danger"
+                android:visibility="gone"
+                app:tooltipText="@string/help_script_list_stop" />
+        </LinearLayout>
+        <!--表格-->
+        <include
+            android:id="@+id/empty"
+            layout="@layout/empty" />
+        <!--加载条-->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:background="@drawable/button_bg"
-            android:padding="2dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/record"
-            android:tint="@color/danger"
-            app:tooltipText="@string/help_script_list_record" />
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
-        <pub.carzy.auto_script.ui.ExtImageButton
-            android:id="@+id/btnRun"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:background="@drawable/button_bg"
-            android:padding="2dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/start"
-            android:tint="@color/safe"
-            android:visibility="gone"
-            app:tooltipText="@string/help_script_list_run" />
-
-        <pub.carzy.auto_script.ui.ExtImageButton
-            android:id="@+id/btnPause"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_bg"
-            android:padding="2dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/pause"
-            android:tint="@color/danger"
-            android:visibility="gone"
-            app:tooltipText="@string/help_script_list_pause" />
-
-        <pub.carzy.auto_script.ui.ExtImageButton
-            android:id="@+id/btnStop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:background="@drawable/button_bg"
-            android:padding="2dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/stop"
-            android:tint="@color/danger"
-            android:visibility="gone"
-            app:tooltipText="@string/help_script_list_stop" />
-    </LinearLayout>
-    <!--表格-->
-    <include
-        android:id="@+id/empty"
-        layout="@layout/empty" />
-    <!--加载条-->
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </pub.carzy.auto_script.ui.SpinLayout>
+</layout>

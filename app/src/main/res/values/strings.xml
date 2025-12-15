@@ -63,4 +63,11 @@
     <string name="unsaved_message">The current content has been modified but not yet saved.</string>
     <string name="play_action">Play steps</string>
     <string name="play_point">Play coordinates</string>
+    <string name="action_label_down_time">Press time</string>
+    <string name="action_label_up_time">Release time</string>
+    <string name="action_label_event_time">Event time</string>
+    <string name="action_label_count">Move count</string>
+    <string name="action_label_type">Type</string>
+    <string name="action_label_index">Gesture index</string>
+    <string name="dialog_action_info_title">Step details(%d)</string>
 </resources>

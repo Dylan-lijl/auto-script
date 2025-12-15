@@ -11,7 +11,6 @@
 
         <import type="pub.carzy.auto_script.R" />
 
-
         <import type="pub.carzy.auto_script.utils.statics.StaticValues" />
 
         <variable
@@ -51,6 +50,16 @@
                 android:paddingEnd="10dp">
 
                 <ImageButton
+                    android:id="@+id/btn_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/transparent"
+                    android:contentDescription="@string/details"
+                    android:src="@drawable/detail"
+                    android:tint="@color/link"
+                    android:visibility="@{model.checkedAction.isEmpty?View.GONE:View.VISIBLE}" />
+
+                <ImageButton
                     android:id="@+id/btn_delete"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -58,7 +67,7 @@
                     android:contentDescription="@string/delete"
                     android:src="@drawable/delete"
                     android:tint="@color/danger"
-                    android:visibility="@{model.checkedAction.empty||refresh.deleteDetail?View.GONE:View.VISIBLE}" />
+                    android:visibility="@{model.checkedAction.empty||refresh.delete?View.GONE:View.VISIBLE}" />
                 <!-- 示例按钮 -->
                 <ImageButton
                     android:id="@+id/btn_play"
@@ -101,7 +110,17 @@
                 android:orientation="horizontal"
                 android:paddingStart="0dp"
                 android:paddingEnd="10dp">
-                <!-- 示例按钮 -->
+
+                <ImageButton
+                    android:id="@+id/btn_detail_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/transparent"
+                    android:contentDescription="@string/details"
+                    android:src="@drawable/detail"
+                    android:tint="@color/link"
+                    android:visibility="@{model.checkedPoint.isEmpty?View.GONE:View.VISIBLE}" />
+
                 <ImageButton
                     android:id="@+id/btn_delete_detail"
                     android:layout_width="wrap_content"
@@ -110,7 +129,7 @@
                     android:contentDescription="@string/delete"
                     android:src="@drawable/delete"
                     android:tint="@color/danger"
-                    android:visibility="@{model.checkedPoint.isEmpty||refresh.delete?View.GONE:View.VISIBLE}" />
+                    android:visibility="@{model.checkedPoint.isEmpty||refresh.deleteDetail?View.GONE:View.VISIBLE}" />
 
                 <ImageButton
                     android:id="@+id/btn_play_detail"

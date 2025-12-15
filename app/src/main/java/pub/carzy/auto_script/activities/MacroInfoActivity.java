@@ -35,6 +35,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 
@@ -49,6 +50,7 @@ import java.util.function.Function;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.databinding.ActionInfoBinding;
 import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
 import pub.carzy.auto_script.databinding.AutoAlignDialogBinding;
 import pub.carzy.auto_script.databinding.ChatToolbarMoreMenuBinding;
@@ -71,6 +73,7 @@ public class MacroInfoActivity extends BaseActivity {
 
     private ActivityMacroInfoBinding binding;
     private AutoAlignDialogBinding dataBinding;
+    private ActionInfoBinding actionInfoBinding;
     private ChatToolbarMoreMenuBinding moreMenuBinding;
     private ScriptVoEntityModel model;
     private MacroInfoRefreshModel refresh;
@@ -81,6 +84,7 @@ public class MacroInfoActivity extends BaseActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_macro_info);
         dataBinding = AutoAlignDialogBinding.inflate(LayoutInflater.from(this));
         moreMenuBinding = ChatToolbarMoreMenuBinding.inflate(LayoutInflater.from(this));
+        actionInfoBinding = ActionInfoBinding.inflate(LayoutInflater.from(this));
         model = new ScriptVoEntityModel();
         for (int c : getResources().getIntArray(R.array.script_info_chat_color)) {
             model.getColorsResource().add(c);
@@ -167,6 +171,21 @@ public class MacroInfoActivity extends BaseActivity {
         });
         binding.flowChatLayout.btnDelete.setOnClickListener(createDeleteActionItemListener());
         binding.flowChatLayout.btnDeleteDetail.setOnClickListener(createDeletePointItemListener());
+        binding.flowChatLayout.btnInfo.setOnClickListener(createInfoListener());
+    }
+
+    private View.OnClickListener createInfoListener() {
+        return v -> {
+            if (model.getCheckedAction().isEmpty()) {
+                return;
+            }
+            actionInfoBinding.setEntity(model.getLastCheckedAction().getValue());
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(getString(R.string.dialog_action_info_title, model.getLastCheckedActionIndex()))
+                    .setView(reinstatedView(actionInfoBinding.getRoot()))
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+        };
     }
 
     private View.OnClickListener createDeletePointItemListener() {

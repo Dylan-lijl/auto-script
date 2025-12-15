@@ -1,9 +1,12 @@
 package pub.carzy.auto_script.utils;
 
+import android.annotation.SuppressLint;
+
 import androidx.annotation.Nullable;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -436,5 +439,17 @@ public abstract class StringUtils {
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
+    public static String formatTime(String format, Long time) {
+        return time == null ? "" : new SimpleDateFormat(format).format(time);
+    }
+
+    public static String formatTime(Long time) {
+        return formatTime("yyyy-MM-dd HH:mm:ss", time);
+    }
+
+    public static String format(Object obj) {
+        return obj == null ? "" : obj.toString();
+    }
 
 }

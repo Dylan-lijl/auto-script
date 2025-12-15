@@ -63,4 +63,11 @@
     <string name="unsaved_message">現在の内容は変更されていますが、まだ保存されていません。</string>
     <string name="play_action">ステップを再生</string>
     <string name="play_point">座標を再生</string>
+    <string name="action_label_down_time">押下時間</string>
+    <string name="action_label_up_time">解放時間</string>
+    <string name="action_label_event_time">イベント時間</string>
+    <string name="action_label_count">移動回数</string>
+    <string name="action_label_type">タイプ</string>
+    <string name="action_label_index">ジェスチャーインデックス</string>
+    <string name="dialog_action_info_title">ステップ詳細（%d）</string>
 </resources>

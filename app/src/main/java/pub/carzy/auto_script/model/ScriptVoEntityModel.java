@@ -408,6 +408,7 @@ public class ScriptVoEntityModel extends BaseObservable {
         if (list.isEmpty()) {
             return;
         }
+        long maxActionTime = -1;
         //更新后续步骤时间
         for (Long id : list) {
             ScriptActionEntity action = actions.get(id);
@@ -416,20 +417,25 @@ public class ScriptVoEntityModel extends BaseObservable {
             }
             //更新后续步骤对应的点时间
             Set<Long> set = pointMapByParentId.get(action.getId());
+            long max = -1;
             if (set != null) {
-                set.forEach(item -> {
+                for (Long item : set) {
                     ScriptPointEntity point = points.get(item);
                     if (point == null) {
-                        return;
+                        continue;
                     }
                     updatePointTime(point, d);
-                });
+                    max = Math.max(point.getTime(), max);
+                }
             }
-            updateActionTime(action, d);
+            action.setDownTime(action.getDownTime() + d);
+            action.setMaxTime(max == -1 ? action.getDownTime() : max);
+            action.setUpTime(action.getMaxTime());
+            maxActionTime = Math.max(maxActionTime, action.getMaxTime());
         }
         //更新总结时间
         if (root != null) {
-            root.setMaxTime(root.getMaxTime() + d);
+            root.setMaxTime(maxActionTime == -1 ? root.getMaxTime() : maxActionTime);
         }
     }
 
@@ -443,17 +449,19 @@ public class ScriptVoEntityModel extends BaseObservable {
             return;
         }
         List<Long> list = findAfterById(ids, key);
+        long maxTime = -1L;
         for (Long id : list) {
             ScriptPointEntity item = points.get(id);
             if (item == null) {
                 continue;
             }
             updatePointTime(item, d);
+            maxTime = Math.max(item.getTime(), maxTime);
         }
         ScriptActionEntity action = actions.get(point.getParentId());
         if (action != null) {
-            action.setMaxTime(action.getMaxTime() + d);
-            action.setUpTime(action.getUpTime() + d);
+            action.setMaxTime(maxTime == -1 ? action.getDownTime() : maxTime);
+            action.setUpTime(action.getMaxTime());
             adjustActionTime(action.getId(), d);
         }
     }
