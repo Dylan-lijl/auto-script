@@ -35,7 +35,7 @@
     <string name="message_exporting">正在导出中...</string>
     <string name="message_saved_successfully_ph">保存成功:%s</string>
     <string name="message_no_available_app_open_file">没有可用的应用程序打开此文件！</string>
-    <string name="message_rename_prompt">请输入新名称</string>
+    <string name="message_input_prompt">请输入新的%s</string>
     <string name="confirm">确认</string>
     <string name="message_error_empty_ph">%s不能为空！</string>
     <string name="name">名称</string>
@@ -70,4 +70,13 @@
     <string name="action_label_type">类型</string>
     <string name="action_label_index">手势索引</string>
     <string name="dialog_action_info_title">步骤详情（%d）</string>
+    <string name="gesture">手势</string>
+    <string name="key_event">按键</string>
+    <string name="unknown">未知</string>
+    <string name="action_label_code">键码</string>
+    <string name="point_label_x">x</string>
+    <string name="point_label_y">y</string>
+    <string name="point_label_time">时间</string>
+    <string name="dialog_point_info_title">点详情（%d）</string>
+    <string name="remark">备注</string>
 </resources>

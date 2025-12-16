@@ -1,6 +1,6 @@
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityEventTypes="typeViewClicked|typeWindowContentChanged|typeNotificationStateChanged"
-    android:accessibilityFlags="flagReportViewIds|flagDefault|flagRequestMultiFingerGestures|flagRequestEnhancedWebAccessibility|flagInputMethodEditor|flagSendMotionEvents"
+    android:accessibilityFlags="flagReportViewIds|flagDefault|flagRequestMultiFingerGestures|flagRequestEnhancedWebAccessibility|flagInputMethodEditor|flagSendMotionEvents|flagRequestFilterKeyEvents"
     android:canPerformGestures="true"
     android:canRequestEnhancedWebAccessibility="true"
     android:canRequestFilterKeyEvents="true"

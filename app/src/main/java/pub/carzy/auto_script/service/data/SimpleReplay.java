@@ -4,10 +4,10 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
 import android.graphics.Path;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
@@ -47,6 +49,7 @@ public class SimpleReplay {
     private final AtomicBoolean needBuild = new AtomicBoolean(true);
     private final ConcurrentSkipListMap<Long, Object> actionMap = new ConcurrentSkipListMap<>();
     private final Map<Long, Set<ScriptPointEntity>> pointMap = new ConcurrentHashMap<>();
+    private final ConcurrentSkipListMap<Long, ScriptActionEntity> keyMap = new ConcurrentSkipListMap<>();
     /**
      * store executed actions, so resume() does not rebuild from raw list
      */
@@ -150,6 +153,7 @@ public class SimpleReplay {
                 return;
             }
             status.set(STOP);
+            releaseKeyMap();
             callback.complete(status.get());
         } catch (Exception e) {
             callback.catchMethod(e);
@@ -165,12 +169,35 @@ public class SimpleReplay {
             }
             status.set(PAUSE);
             pauseTime.set(System.currentTimeMillis());
+            releaseKeyMap();
             callback.complete(status.get());
         } catch (Exception e) {
             callback.catchMethod(e);
         } finally {
             callback.finallyMethod();
         }
+    }
+
+    /**
+     * 只有部分按键可以比如home,返回,进程,而电源键和音量加减不能正常执行
+     */
+    private void releaseKeyMap() {
+        //这里还得释放模拟按键
+        ThreadUtil.runOnUi(() -> {
+            if (keyMap.isEmpty()) {
+                return;
+            }
+            Map<Long, ScriptActionEntity> map = new LinkedHashMap<>(keyMap);
+            keyMap.clear();
+            map.forEach((key, value) -> {
+                if (value == null || value.getCode() == null) {
+                    return;
+                }
+                if (!service.performGlobalAction(value.getCode())) {
+                    Log.w(SimpleReplay.class.getCanonicalName(), "pause#performGlobalAction: failure");
+                }
+            });
+        });
     }
 
     public void resume(ControllerCallback<Integer> callback) {
@@ -220,29 +247,53 @@ public class SimpleReplay {
         removeMap.putAll(readyMap);
         readyMap.clear();
         GestureDescription.Builder builder = new GestureDescription.Builder();
-        actions.forEach(action -> {
-            if (single(action)) {
+        AtomicBoolean hasGesture = new AtomicBoolean(false);
+        List<KeyEvent> keyEvents = new ArrayList<>();
+        BiConsumer<ScriptActionEntity, Boolean> consumer = (item, isUp) -> {
+            if (item == null) {
+                return;
+            }
+            if (item.getType() == ScriptActionEntity.GESTURE) {
                 try {
-                    dispatchGesture(builder, (ScriptActionEntity) action);
+                    hasGesture.set(true);
+                    dispatchGesture(builder, item);
                 } catch (Exception e) {
                     Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
                 }
+            } else if (item.getType() == ScriptActionEntity.KEY_EVENT) {
+                try {
+                    dispatchKeyEvent(item, keyEvents, isUp);
+                } catch (Exception e) {
+                    Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
+                }
+            }
+        };
+        //先执行未处理完的
+        ConcurrentNavigableMap<Long, ScriptActionEntity> headKeyMap = keyMap.headMap(duration, true);
+        headKeyMap.forEach((id, item) -> consumer.accept(item, true));
+        headKeyMap.clear();
+        actions.forEach(action -> {
+            if (single(action)) {
+                consumer.accept((ScriptActionEntity) action, false);
             } else {
-                ((Set<ScriptActionEntity>) action).forEach(item -> {
-                    try {
-                        dispatchGesture(builder, item);
-                    } catch (Exception e) {
-                        Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
-                    }
-                });
+                ((Set<ScriptActionEntity>) action).forEach(item -> consumer.accept(item, false));
             }
         });
-        if (!actions.isEmpty()) {
+        if (!actions.isEmpty() && hasGesture.get()) {
             ThreadUtil.runOnUi(() -> {
                 if (service.dispatchGesture(builder.build(), gestureCallback, null)) {
                     Log.d(this.getClass().getCanonicalName(), "dispatchGesture success");
                 } else {
                     Log.d(this.getClass().getCanonicalName(), "dispatchGesture fail");
+                }
+            });
+        }
+        if (!keyEvents.isEmpty()) {
+            ThreadUtil.runOnUi(() -> {
+                for (KeyEvent item : keyEvents) {
+                    if (!service.performGlobalAction(item.getKeyCode())) {
+                        Log.w(this.getClass().getCanonicalName(), "performGlobalAction failure");
+                    }
                 }
             });
         }
@@ -255,6 +306,20 @@ public class SimpleReplay {
             return;
         }
         scheduler.schedule(() -> tickProcess(callback), tick.get(), TimeUnit.MILLISECONDS);
+    }
+
+    private void dispatchKeyEvent(ScriptActionEntity a, List<KeyEvent> keyEvents, boolean isUp) {
+        if (a == null || a.getCode() == null) {
+            return;
+        }
+        if (!isUp) {
+            keyEvents.add(new KeyEvent(KeyEvent.ACTION_DOWN, a.getCode()));
+            keyMap.put(a.getUpTime(), a);
+        }
+        if (a.getUpTime() - a.getDownTime() >= tick.get()) {
+            //间隔小于时间片时，跟着发送up事件
+            keyEvents.add(new KeyEvent(KeyEvent.ACTION_UP, a.getCode()));
+        }
     }
 
     public boolean single(Object value) {

@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.service;
 
+import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
 import pub.carzy.auto_script.service.dto.CloseParam;
@@ -25,9 +26,10 @@ public interface ScriptAction {
 
     void setContext(MyAccessibilityService service);
 
-    public void onAccessibilityEvent(AccessibilityEvent event);
+    void onAccessibilityEvent(AccessibilityEvent event);
 
-    public void onInterrupt();
+    boolean onKeyEvent(KeyEvent event);
 
+    void onInterrupt();
     boolean update(UpdateParam param);
 }

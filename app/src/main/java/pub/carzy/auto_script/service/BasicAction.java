@@ -6,6 +6,7 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -149,6 +150,11 @@ public abstract class BasicAction implements ScriptAction{
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
 
+    }
+
+    @Override
+    public boolean onKeyEvent(KeyEvent event) {
+        return false;
     }
 
     @Override

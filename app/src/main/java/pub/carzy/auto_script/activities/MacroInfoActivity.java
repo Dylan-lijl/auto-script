@@ -35,7 +35,6 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 
@@ -54,6 +53,7 @@ import pub.carzy.auto_script.databinding.ActionInfoBinding;
 import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
 import pub.carzy.auto_script.databinding.AutoAlignDialogBinding;
 import pub.carzy.auto_script.databinding.ChatToolbarMoreMenuBinding;
+import pub.carzy.auto_script.databinding.PointInfoBinding;
 import pub.carzy.auto_script.db.ScriptActionEntity;
 import pub.carzy.auto_script.db.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
@@ -74,6 +74,7 @@ public class MacroInfoActivity extends BaseActivity {
     private ActivityMacroInfoBinding binding;
     private AutoAlignDialogBinding dataBinding;
     private ActionInfoBinding actionInfoBinding;
+    private PointInfoBinding pointInfoBinding;
     private ChatToolbarMoreMenuBinding moreMenuBinding;
     private ScriptVoEntityModel model;
     private MacroInfoRefreshModel refresh;
@@ -85,6 +86,7 @@ public class MacroInfoActivity extends BaseActivity {
         dataBinding = AutoAlignDialogBinding.inflate(LayoutInflater.from(this));
         moreMenuBinding = ChatToolbarMoreMenuBinding.inflate(LayoutInflater.from(this));
         actionInfoBinding = ActionInfoBinding.inflate(LayoutInflater.from(this));
+        pointInfoBinding = PointInfoBinding.inflate(LayoutInflater.from(this));
         model = new ScriptVoEntityModel();
         for (int c : getResources().getIntArray(R.array.script_info_chat_color)) {
             model.getColorsResource().add(c);
@@ -93,6 +95,7 @@ public class MacroInfoActivity extends BaseActivity {
         refresh.setInfo(true);
         binding.setModel(model);
         binding.setRefresh(refresh);
+        moreMenuBinding.setModel(model);
         initChat();
         initIntent();
         if (getSupportActionBar() != null) {
@@ -131,6 +134,13 @@ public class MacroInfoActivity extends BaseActivity {
                 //这里需要弹窗来修改名字
                 if (model.getRoot() != null) {
                     showRenameDialog();
+                }
+            });
+            moreMenuBinding.actionRemark.setOnClickListener(event -> {
+                popupWindow.dismiss();
+                //这里需要弹窗来修改名字
+                if (model.getRoot() != null) {
+                    showRemarkDialog();
                 }
             });
             moreMenuBinding.actionExport.setOnClickListener(event -> {
@@ -172,6 +182,65 @@ public class MacroInfoActivity extends BaseActivity {
         binding.flowChatLayout.btnDelete.setOnClickListener(createDeleteActionItemListener());
         binding.flowChatLayout.btnDeleteDetail.setOnClickListener(createDeletePointItemListener());
         binding.flowChatLayout.btnInfo.setOnClickListener(createInfoListener());
+        binding.flowChatLayout.btnDetailInfo.setOnClickListener(createDetailInfoListener());
+    }
+
+    private void showRemarkDialog() {
+        // 创建一个 EditText 作为输入框
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setHint(getString(R.string.message_input_prompt, getString(R.string.remark)));
+        input.setText(model.getRoot().getRemark());
+        input.setFocusable(true);
+        input.setFocusableInTouchMode(true);
+        AlertDialog alertDialog = new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.remark)
+                .setView(input)
+                .setPositiveButton(R.string.confirm, (dialog, which) -> {
+                    String value = input.getText().toString().trim();
+                    if (!value.isEmpty()) {
+                        if (model.getRoot() != null) {
+                            model.getRoot().setRemark(value);
+                        }
+                    } else {
+                        Toast.makeText(this, getString(R.string.message_error_empty_ph, getString(R.string.remark)), Toast.LENGTH_SHORT).show();
+                    }
+                    model.setSaved(true);
+                })
+                .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss()).create();
+
+        alertDialog.setOnShowListener(d -> {
+            input.requestFocus();
+            input.postDelayed(() -> {
+                if (alertDialog.getWindow() == null) {
+                    return;
+                }
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                alertDialog.getWindow().clearFlags(
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                );
+                alertDialog.getWindow().setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+                );
+                imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
+            }, 150);
+        });
+        alertDialog.show();
+    }
+
+    private View.OnClickListener createDetailInfoListener() {
+        return v -> {
+            if (model.getCheckedPoint().isEmpty()) {
+                return;
+            }
+            pointInfoBinding.setEntity(model.getLastCheckedPoint().getValue());
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(getString(R.string.dialog_point_info_title, model.getLastCheckedPointIndex()))
+                    .setView(reinstatedView(pointInfoBinding.getRoot()))
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+        };
     }
 
     private View.OnClickListener createInfoListener() {
@@ -306,7 +375,7 @@ public class MacroInfoActivity extends BaseActivity {
             if (action == null) {
                 return "--" + getString(R.string.unit_ms);
             }
-            return action.getUpTime() - action.getDownTime() + getString(R.string.unit_ms);
+            return (action.getUpTime() - action.getDownTime()) + getString(R.string.unit_ms) + "(" + getString(ScriptActionEntity.getTypeName(action.getType())) + ")";
         });
         actionBarChart.getLegend().setEnabled(false);
         //pointBar
@@ -511,7 +580,8 @@ public class MacroInfoActivity extends BaseActivity {
         // 创建一个 EditText 作为输入框
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setHint(R.string.message_rename_prompt);
+        input.setHint(getString(R.string.message_input_prompt, getString(R.string.name)));
+        input.setText(model.getRoot().getName());
         input.setFocusable(true);
         input.setFocusableInTouchMode(true);
         AlertDialog alertDialog = new MaterialAlertDialogBuilder(this)
@@ -560,6 +630,10 @@ public class MacroInfoActivity extends BaseActivity {
             try {
                 entity = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
                         intent.getParcelableExtra("data", ScriptVoEntity.class) : intent.getParcelableExtra("data");
+                if (intent.getBooleanExtra("add", false)) {
+                    model.setSaved(true);
+                    model.setAdd(true);
+                }
             } catch (Exception e) {
                 Log.d(MacroInfoActivity.class.getCanonicalName(), "从intent获取数据失败! ", e);
                 return;

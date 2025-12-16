@@ -35,7 +35,7 @@
     <string name="message_exporting">エクスポート中...</string>
     <string name="message_saved_successfully_ph">保存に成功しました:%s</string>
     <string name="message_no_available_app_open_file">このファイルを開ける利用可能なアプリがありません！</string>
-    <string name="message_rename_prompt">新しい名前を入力してください</string>
+    <string name="message_input_prompt">新しい%s を入力してください</string>
     <string name="confirm">確認する</string>
     <string name="message_error_empty_ph">%sを空にすることはできません！</string>
     <string name="name">名前</string>
@@ -70,4 +70,13 @@
     <string name="action_label_type">タイプ</string>
     <string name="action_label_index">ジェスチャーインデックス</string>
     <string name="dialog_action_info_title">ステップ詳細（%d）</string>
+    <string name="gesture">ジェスチャー</string>
+    <string name="key_event">ボタン</string>
+    <string name="unknown">不明</string>
+    <string name="action_label_code">キーコード</string>
+    <string name="point_label_x">x</string>
+    <string name="point_label_y">y</string>
+    <string name="point_label_time">時間</string>
+    <string name="dialog_point_info_title">ポイント詳細（%d）</string>
+    <string name="remark">備考</string>
 </resources>

@@ -9,6 +9,9 @@
 
         <import type="pub.carzy.auto_script.utils.StringUtils" />
 
+        <import type="pub.carzy.auto_script.db.ScriptActionEntity" />
+        <import type="android.view.KeyEvent" />
+
         <variable
             name="entity"
             type="pub.carzy.auto_script.db.ScriptActionEntity" />
@@ -17,110 +20,104 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:baselineAligned="true"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         android:visibility="@{entity==null?View.GONE:View.VISIBLE}">
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <!--按下时间-->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
+        <LinearLayout style="@style/FormVerticalItemStyle">
+            <!--按下时间-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{StringUtils.format(entity.downTime)+context.getString(R.string.unit_ms)}" />
-            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{StringUtils.format(entity.downTime)+context.getString(R.string.unit_ms)}" />
+        </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+        <LinearLayout style="@style/FormVerticalItemStyle">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_up_time))}" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_up_time))}" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{StringUtils.format(entity.upTime)+context.getString(R.string.unit_ms)}" />
-            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{StringUtils.format(entity.upTime)+context.getString(R.string.unit_ms)}" />
+        </LinearLayout>
+        <!--开机时长没用-->
+        <!--<LinearLayout style="@style/FormVerticalItemStyle">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_up_time))}" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_up_time))}" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{StringUtils.formatTime(entity.eventTime)+context.getString(R.string.unit_ms)}" />
+        </LinearLayout>-->
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{StringUtils.formatTime(entity.eventTime)+context.getString(R.string.unit_ms)}" />
-            </LinearLayout>
+        <LinearLayout style="@style/FormVerticalItemStyle">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_count))}" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{StringUtils.format(entity.count)}" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/FormVerticalItemStyle">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_type))}" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{StringUtils.format(entity.type)}" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/FormVerticalItemStyle">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_index))}" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{StringUtils.format(entity.index)}" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            style="@style/FormVerticalItemStyle"
+            android:visibility="@{entity.type==ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_code))}" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_count))}" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{StringUtils.format(entity.count)}" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_type))}" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{StringUtils.format(entity.type)}" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_index))}" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{StringUtils.format(entity.index)}" />
-            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{StringUtils.format(entity.code==null?null:KeyEvent.keyCodeToString(entity.code))}" />
         </LinearLayout>
     </LinearLayout>
 </layout>

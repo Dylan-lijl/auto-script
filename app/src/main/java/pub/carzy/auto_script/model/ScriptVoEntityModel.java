@@ -50,6 +50,17 @@ public class ScriptVoEntityModel extends BaseObservable {
     private List<Integer> colorsResource = new ArrayList<>();
 
     private Boolean saved = false;
+    private Boolean add = false;
+
+    @Bindable
+    public Boolean getAdd() {
+        return add;
+    }
+
+    public void setAdd(Boolean add) {
+        this.add = add;
+        notifyPropertyChanged(BR.add);
+    }
 
     public ScriptVoEntityModel() {
         actions.addOnMapChangedCallback(new ObservableMap.OnMapChangedCallback<>() {
@@ -101,20 +112,20 @@ public class ScriptVoEntityModel extends BaseObservable {
                 }
                 Set<Long> ids = pointMapByParentId.get(entry.getKey());
                 ScriptActionEntity action = actions.get(entry.getKey());
-                if (ids == null || ids.isEmpty() || action == null) {
-                    return;
-                }
-                int i = 0;
-                long time = action.getDownTime();
-                for (Long id : ids) {
-                    ScriptPointEntity point = points.get(id);
-                    if (point == null) {
-                        continue;
+                //忽略不存在的和type不是手势的
+                if (ids != null && !ids.isEmpty() && action != null && action.getType() == ScriptActionEntity.GESTURE) {
+                    int i = 0;
+                    long time = action.getDownTime();
+                    for (Long id : ids) {
+                        ScriptPointEntity point = points.get(id);
+                        if (point == null) {
+                            continue;
+                        }
+                        pointBars.put(id, new BarEntry(i, new float[]{time, point.getTime() - time}, id));
+                        pointColors.put(id, colorsResource.isEmpty() ? Color.BLACK : colorsResource.get(i % colorsResource.size()));
+                        time = point.getTime();
+                        i++;
                     }
-                    pointBars.put(id, new BarEntry(i, new float[]{time, point.getTime() - time}, id));
-                    pointColors.put(id, colorsResource.isEmpty() ? Color.BLACK : colorsResource.get(i % colorsResource.size()));
-                    time = point.getTime();
-                    i++;
                 }
                 notifyPropertyChanged(BR.pointBars);
                 notifyPropertyChanged(BR.pointColors);
@@ -464,5 +475,23 @@ public class ScriptVoEntityModel extends BaseObservable {
             action.setUpTime(action.getMaxTime());
             adjustActionTime(action.getId(), d);
         }
+    }
+
+    public Map.Entry<Long, ScriptPointEntity> getLastCheckedPoint() {
+        if (checkedPoint.isEmpty()) {
+            return null;
+        }
+        Long key = getLastKey(checkedPoint);
+        if (key == null) {
+            return null;
+        }
+        return new AbstractMap.SimpleEntry<>(key, points.get(key));
+    }
+
+    public Integer getLastCheckedPointIndex() {
+        if (checkedPoint.isEmpty()) {
+            return null;
+        }
+        return indexOfKey(pointBars.keySet(), getLastKey(checkedPoint));
     }
 }

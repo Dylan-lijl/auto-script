@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
 import java.util.HashMap;
@@ -41,12 +42,18 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-
+        opens.forEach((k, v) -> v.onAccessibilityEvent(event));
     }
 
     @Override
     public void onInterrupt() {
 
+    }
+
+    @Override
+    protected boolean onKeyEvent(KeyEvent event) {
+        opens.forEach((k, v) -> v.onKeyEvent(event));
+        return super.onKeyEvent(event);
     }
 
     @Override
@@ -179,15 +186,16 @@ public class MyAccessibilityService extends AccessibilityService {
             return false;
         }
         ScriptAction item = opens.get(group);
-        if (item == null||!item.key().equals( key)) {
+        if (item == null || !item.key().equals(key)) {
             Log.e("update", "same key is not same object");
             return false;
         }
         try {
             return item.update(param);
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.e("update", "update error", e);
         }
         return false;
     }
+
 }

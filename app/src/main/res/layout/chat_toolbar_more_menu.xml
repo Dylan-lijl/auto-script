@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
     </data>
 
     <LinearLayout
@@ -35,6 +38,7 @@
                 style="@style/SimpleMenuButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textStyle="bold"
                 android:text="@string/start" />
 
             <TextView style="@style/MenuDivider" />
@@ -45,6 +49,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/rename" />
+            <Button
+                android:id="@+id/action_remark"
+                style="@style/SimpleMenuButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/remark" />
 
             <TextView style="@style/MenuDivider" />
 
@@ -53,24 +63,26 @@
                 style="@style/SimpleMenuButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/safe"
                 android:text="@string/save" />
 
-            <TextView style="@style/MenuDivider" />
 
             <Button
                 android:id="@+id/action_remove"
                 style="@style/SimpleMenuButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/danger"
+                android:visibility="@{model.add?View.GONE:View.VISIBLE}"
                 android:text="@string/delete" />
 
-            <TextView style="@style/MenuDivider" />
 
             <Button
                 android:id="@+id/action_export"
                 style="@style/SimpleMenuButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/link"
                 android:text="@string/export" />
 
         </LinearLayout>

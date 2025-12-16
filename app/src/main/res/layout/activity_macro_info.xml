@@ -16,7 +16,7 @@
     <pub.carzy.auto_script.ui.SpinLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:spinning="@{refresh.info}">
+        app:spinning="@{refresh.info||refresh.save}">
 
         <!--甘特图-->
         <LinearLayout

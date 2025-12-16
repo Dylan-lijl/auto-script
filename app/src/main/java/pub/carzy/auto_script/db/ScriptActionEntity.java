@@ -10,6 +10,7 @@ import androidx.databinding.Bindable;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import pub.carzy.auto_script.BR;
+import pub.carzy.auto_script.R;
 
 /**
  * @author admin
@@ -17,6 +18,20 @@ import pub.carzy.auto_script.BR;
 @ToString
 @EqualsAndHashCode(callSuper = true)
 public class ScriptActionEntity extends BaseObservable implements Parcelable {
+    public static final int GESTURE = 1;
+    public static final int KEY_EVENT = 2;
+
+    public static int getTypeName(int type) {
+        switch (type) {
+            case GESTURE:
+                return R.string.gesture;
+            case KEY_EVENT:
+                return R.string.key_event;
+            default:
+                return R.string.unknown;
+        }
+    }
+
     /**
      * 主键
      */
@@ -54,8 +69,11 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
      */
     private Integer type;
 
+    private Integer code;
+
     public ScriptActionEntity() {
     }
+
     protected ScriptActionEntity(Parcel in) {
         if (in.readByte() == 0) {
             id = null;
@@ -102,9 +120,14 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
         } else {
             type = in.readInt();
         }
+        if (in.readByte() == 0) {
+            code = null;
+        } else {
+            code = in.readInt();
+        }
     }
 
-    public static final Creator<ScriptActionEntity> CREATOR = new Creator<ScriptActionEntity>() {
+    public static final Creator<ScriptActionEntity> CREATOR = new Creator<>() {
         @Override
         public ScriptActionEntity createFromParcel(Parcel in) {
             return new ScriptActionEntity(in);
@@ -177,6 +200,12 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(type);
         }
+        if (code == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(code);
+        }
     }
 
     @Bindable
@@ -227,6 +256,16 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     public void setEventTime(Long eventTime) {
         this.eventTime = eventTime;
         notifyPropertyChanged(BR.eventTime);
+    }
+
+    @Bindable
+    public Integer getCode() {
+        return code;
+    }
+
+    public void setCode(Integer code) {
+        this.code = code;
+        notifyPropertyChanged(BR.code);
     }
 
     @Bindable

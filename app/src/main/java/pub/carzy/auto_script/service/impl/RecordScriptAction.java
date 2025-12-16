@@ -4,11 +4,14 @@ package pub.carzy.auto_script.service.impl;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 
 import androidx.databinding.DataBindingUtil;
 
@@ -28,6 +31,7 @@ import pub.carzy.auto_script.db.ScriptActionEntity;
 import pub.carzy.auto_script.db.ScriptEntity;
 import pub.carzy.auto_script.db.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
+import pub.carzy.auto_script.entity.KeyEntity;
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.model.RecordStateModel;
@@ -46,9 +50,10 @@ public class RecordScriptAction extends BasicAction {
     private MaskViewBinding mask;
     private RecordStateModel recordStateModel;
     private WindowManager.LayoutParams maskParams;
-
     private List<MotionEntity> motionList;
     private Map<Integer, MotionEntity> motionMap;
+    private List<KeyEntity> keyList;
+    private Map<Integer, KeyEntity> keyMap;
     private IdGenerator<Long> idWorker;
     private final ReentrantLock lock = new ReentrantLock();
     private boolean initialized = false;
@@ -73,6 +78,8 @@ public class RecordScriptAction extends BasicAction {
                 });
                 motionList = new ArrayList<>();
                 motionMap = new HashMap<>();
+                keyMap = new HashMap<>();
+                keyList = new ArrayList<>();
                 binding = DataBindingUtil.inflate(
                         LayoutInflater.from(service),
                         R.layout.floating_button,
@@ -111,6 +118,9 @@ public class RecordScriptAction extends BasicAction {
         binding.btnFloatingRecord.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_RECORDING);
             motionList.clear();
+            motionMap.clear();
+            keyList.clear();
+            keyMap.clear();
             addView(mask, maskParams);
             reAddView(binding, bindingParams);
             watch.reset();
@@ -135,7 +145,8 @@ public class RecordScriptAction extends BasicAction {
             // **重要:** 从非 Activity 上下文 (Service) 启动 Activity 必须添加此 Flag
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             // 3. 传递 motionList
-            intent.putExtra("data", transformData(motionList));
+            intent.putExtra("data", transformData());
+            intent.putExtra("add", true);
             // 4. 启动 Activity
             service.startActivity(intent);
             // 5. 清空 motionList 数据
@@ -151,19 +162,49 @@ public class RecordScriptAction extends BasicAction {
         });
     }
 
-    private ScriptVoEntity transformData(List<MotionEntity> motionList) {
+    @Override
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+        super.onAccessibilityEvent(event);
+        /*if (recordStateModel.getState() != RecordStateModel.STATE_RECORDING) {
+            return;
+        }
+        Log.d(this.getClass().getCanonicalName(), "onAccessibilityEvent: " + event);*/
+    }
+
+    @Override
+    public boolean onKeyEvent(KeyEvent event) {
+        if (recordStateModel.getState() == RecordStateModel.STATE_RECORDING) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                KeyEntity keyEntity = new KeyEntity();
+                keyEntity.setCode(event.getKeyCode());
+                keyEntity.setDownTime(watch.getElapsedMillis());
+                keyEntity.setEventTime(event.getEventTime());
+                keyMap.put(event.getKeyCode(), keyEntity);
+            } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                KeyEntity keyEntity = keyMap.remove(event.getKeyCode());
+                if (keyEntity != null) {
+                    keyEntity.setUpTime(watch.getElapsedMillis());
+                    keyList.add(keyEntity);
+                }
+            }
+        }
+        return super.onKeyEvent(event);
+    }
+
+    private ScriptVoEntity transformData() {
         ScriptVoEntity entity = new ScriptVoEntity();
         ScriptEntity root = new ScriptEntity();
         entity.setRoot(root);
         root.setId(idWorker.nextId());
         root.setName(service.getString(R.string.untitled));
-        root.setCount(motionList.size());
+        root.setCount(motionList.size() + keyList.size());
         long maxTime = 0L;
         for (MotionEntity motionEntity : motionList) {
             if (motionEntity.getUpTime() != null) {
                 maxTime = Math.max(maxTime, motionEntity.getUpTime());
             }
             ScriptActionEntity script = BeanHandler.copy(motionEntity, ScriptActionEntity.class);
+            script.setType(ScriptActionEntity.GESTURE);
             script.setId(idWorker.nextId());
             script.setParentId(root.getId());
             script.setCount(motionEntity.getPoints().size());
@@ -182,6 +223,18 @@ public class RecordScriptAction extends BasicAction {
                 script.setUpTime(script.getMaxTime());
             }
             entity.getActions().add(script);
+        }
+        for (KeyEntity keyEntity : keyList) {
+            ScriptActionEntity key = BeanHandler.copy(keyEntity, ScriptActionEntity.class);
+            key.setType(ScriptActionEntity.KEY_EVENT);
+            key.setMaxTime(keyEntity.getUpTime());
+            key.setId(idWorker.nextId());
+            key.setParentId(root.getId());
+            key.setIndex(0);
+            key.setCount(1);
+            key.setCode(keyEntity.getCode());
+            entity.getActions().add(key);
+            maxTime = Math.max(maxTime, keyEntity.getUpTime());
         }
         entity.getRoot().setMaxTime(maxTime);
         return entity;
