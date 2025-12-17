@@ -56,7 +56,7 @@
     <string name="collapse">收缩</string>
     <string name="delete_dialog_title">删除确认</string>
     <string name="delete_dialog_message">确定要删除这项内容吗？此操作不可恢复。</string>
-    <string name="auto_align">自动对齐</string>
+    <string name="auto_adjust">自动调整</string>
     <string name="help">帮助</string>
     <string name="message_auto_align_help">开启自动对齐后，删除这一步会把后面所有步骤的时间自动向前提。</string>
     <string name="unsaved">未保存</string>
@@ -79,4 +79,14 @@
     <string name="point_label_time">时间</string>
     <string name="dialog_point_info_title">点详情（%d）</string>
     <string name="remark">备注</string>
+    <string name="add">添加</string>
+    <string name="forward">向前</string>
+    <string name="backward">向后</string>
+    <string name="form_input_hint">请填写%s</string>
+    <string name="add_direction">添加方向</string>
+    <string name="add_start">最前面</string>
+    <string name="add_end">最后面</string>
+    <string name="add_before">当前前面</string>
+    <string name="add_after">当前后面</string>
+    <string name="form_error_hint_add_action_time">抬起时间小于按下时间</string>
 </resources>

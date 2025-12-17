@@ -56,7 +56,7 @@
     <string name="collapse">Collapse</string>
     <string name="delete_dialog_title">Delete confirmation</string>
     <string name="delete_dialog_message">Are you sure you want to delete this item? This action cannot be undone.</string>
-    <string name="auto_align">Auto align</string>
+    <string name="auto_adjust">Auto adjust</string>
     <string name="help">Help</string>
     <string name="message_auto_align_help">After enabling auto align, deleting this step will automatically move forward the timing of all subsequent steps.</string>
     <string name="unsaved">Unsaved</string>
@@ -79,4 +79,14 @@
     <string name="point_label_time">Time</string>
     <string name="dialog_point_info_title">Point details(%d)</string>
     <string name="remark">Remark</string>
+    <string name="add">Add</string>
+    <string name="forward">Forward</string>
+    <string name="backward">Backward</string>
+    <string name="form_input_hint">Please fill in %s</string>
+    <string name="add_direction">Add Direction</string>
+    <string name="add_start">First</string>
+    <string name="add_end">Last</string>
+    <string name="add_before">Before current item</string>
+    <string name="add_after">After current item</string>
+    <string name="form_error_hint_add_action_time">Release time is earlier than press time</string>
 </resources>

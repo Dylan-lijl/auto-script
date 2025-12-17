@@ -48,7 +48,6 @@
                 android:orientation="horizontal"
                 android:paddingStart="0dp"
                 android:paddingEnd="10dp">
-
                 <ImageButton
                     android:id="@+id/btn_info"
                     android:layout_width="wrap_content"
@@ -68,6 +67,14 @@
                     android:src="@drawable/delete"
                     android:tint="@color/danger"
                     android:visibility="@{model.checkedAction.empty||refresh.delete?View.GONE:View.VISIBLE}" />
+                <ImageButton
+                    android:id="@+id/btn_add"
+                    android:background="@color/transparent"
+                    android:contentDescription="@string/add"
+                    android:src="@drawable/cross"
+                    android:tint="@color/safe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
                 <!-- 示例按钮 -->
                 <ImageButton
                     android:id="@+id/btn_play"

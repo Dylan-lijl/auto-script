@@ -56,7 +56,7 @@
     <string name="collapse">접기</string>
     <string name="delete_dialog_title">삭제 확인</string>
     <string name="delete_dialog_message">이 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</string>
-    <string name="auto_align">자동 정렬</string>
+    <string name="auto_adjust">자동 조정</string>
     <string name="help">도움말</string>
     <string name="message_auto_align_help">자동 정렬을 활성화하면, 이 단계를 삭제할 때 이후 모든 단계의 시간이 자동으로 앞당겨집니다.</string>
     <string name="unsaved">저장되지 않음</string>
@@ -79,4 +79,14 @@
     <string name="point_label_time">시간</string>
     <string name="dialog_point_info_title">포인트 상세(%d)</string>
     <string name="remark">비고</string>
+    <string name="add">추가</string>
+    <string name="forward">앞으로</string>
+    <string name="backward">뒤로</string>
+    <string name="form_input_hint">%s을(를) 입력하세요</string>
+    <string name="add_direction">방향 추가</string>
+    <string name="add_start">맨 앞</string>
+    <string name="add_end">맨 뒤</string>
+    <string name="add_before">현재 항목 앞</string>
+    <string name="add_after">현재 항목 뒤</string>
+    <string name="form_error_hint_add_action_time">뗀 시간이 누른 시간보다 빠릅니다</string>
 </resources>

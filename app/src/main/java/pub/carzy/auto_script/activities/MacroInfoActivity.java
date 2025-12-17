@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,10 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
@@ -44,11 +49,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.databinding.ActionInfoBinding;
 import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
 import pub.carzy.auto_script.databinding.AutoAlignDialogBinding;
@@ -65,6 +72,7 @@ import pub.carzy.auto_script.service.impl.ReplayScriptAction;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
 import pub.carzy.auto_script.utils.StoreUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
+import pub.carzy.auto_script.utils.TypeToken;
 
 /**
  * @author admin
@@ -78,10 +86,14 @@ public class MacroInfoActivity extends BaseActivity {
     private ChatToolbarMoreMenuBinding moreMenuBinding;
     private ScriptVoEntityModel model;
     private MacroInfoRefreshModel refresh;
+    private IdGenerator<Long> idWorker;
+    private ActivityResultLauncher<Intent> addLauncher;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
+        });
         binding = DataBindingUtil.setContentView(this, R.layout.activity_macro_info);
         dataBinding = AutoAlignDialogBinding.inflate(LayoutInflater.from(this));
         moreMenuBinding = ChatToolbarMoreMenuBinding.inflate(LayoutInflater.from(this));
@@ -105,6 +117,33 @@ public class MacroInfoActivity extends BaseActivity {
         binding.flowChatLayout.actionBarChart.setNoDataText(getString(R.string.message_no_data));
         binding.flowChatLayout.pointBarChart.setNoDataText(getString(R.string.message_no_data));
         initialListeners();
+        addLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), createProcessAddResult());
+    }
+
+    private ActivityResultCallback<ActivityResult> createProcessAddResult() {
+        return result -> {
+            if (result.getResultCode() == RESULT_OK) {
+                Intent data = result.getData();
+                if (data == null) {
+                    return;
+                }
+                ScriptActionEntity entity;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    entity = data.getParcelableExtra("data", ScriptActionEntity.class);
+                } else {
+                    entity = data.getParcelableExtra("data");
+                }
+                if (entity == null) {
+                    return;
+                }
+                // 处理返回数据
+                entity.setId(idWorker.nextId());
+                entity.setEventTime(System.nanoTime());
+                entity.setParentId(model.getRoot().getId());
+                //添加到列表当中
+                model.getActions().put(entity.getId(), entity);
+            }
+        };
     }
 
     private void initialListeners() {
@@ -183,6 +222,38 @@ public class MacroInfoActivity extends BaseActivity {
         binding.flowChatLayout.btnDeleteDetail.setOnClickListener(createDeletePointItemListener());
         binding.flowChatLayout.btnInfo.setOnClickListener(createInfoListener());
         binding.flowChatLayout.btnDetailInfo.setOnClickListener(createDetailInfoListener());
+        binding.flowChatLayout.btnAdd.setOnClickListener(createAddActionListener());
+    }
+
+    private View.OnClickListener createAddActionListener() {
+        return e -> {
+            ScriptActionEntity entity = new ScriptActionEntity();
+            entity.setMaxTime(0L);
+            entity.setUpTime(0L);
+            entity.setCode(null);
+            entity.setCount(KeyEvent.KEYCODE_HOME);
+            entity.setIndex(0);
+            entity.setType(ScriptActionEntity.GESTURE);
+            Intent intent = new Intent(this, ActionAddActivity.class);
+            intent.putExtra("data", entity);
+            Map.Entry<Long, ScriptActionEntity> entry = model.getLastCheckedAction();
+            if (entry != null) {
+                intent.putExtra("upTime", entry.getValue().getUpTime());
+                intent.putExtra("downTime", entry.getValue().getDownTime());
+            }
+            Integer index = model.getLastCheckedActionIndex();
+            if (index != null) {
+                intent.putExtra("index", index);
+            }
+            if (!model.getActions().isEmpty()) {
+                ScriptActionEntity last = model.getActions().get(ScriptVoEntityModel.getLastKey(model.getActions()));
+                if (last != null) {
+                    intent.putExtra("maxTime", last.getUpTime());
+                }
+            }
+            //跳转到新增界面
+            addLauncher.launch(intent);
+        };
     }
 
     private void showRemarkDialog() {

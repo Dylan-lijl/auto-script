@@ -77,6 +77,7 @@ public class ScriptVoEntityModel extends BaseObservable {
                         remove.forEach(pointIdAndActionId::remove);
                     }
                 } else {
+                    //这里需要更新整个bar todo
                     int index = indexOfKey(sender.keySet(), key);
                     actionBars.put(key, new BarEntry(index,
                             new float[]{action.getDownTime(), action.getUpTime() - action.getDownTime()},

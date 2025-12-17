@@ -307,4 +307,15 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
         this.type = type;
         notifyPropertyChanged(BR.type);
     }
+
+    public boolean checkTime() {
+        return checkTime(upTime, downTime);
+    }
+
+    public static boolean checkTime(Long upTime, Long downTime) {
+        if (upTime == null || downTime == null) {
+            return false;
+        }
+        return upTime < downTime;
+    }
 }
