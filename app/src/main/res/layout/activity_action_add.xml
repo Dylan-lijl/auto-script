@@ -27,12 +27,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{index+``}"
-            android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
-
         <LinearLayout
             style="@style/FormVerticalItemStyle"
             android:baselineAligned="true">
@@ -74,7 +68,9 @@
 
         <TextView style="@style/MenuDivider" />
 
-        <LinearLayout style="@style/FormVerticalItemStyle">
+        <LinearLayout
+            style="@style/FormVerticalItemStyle"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/type_label"
@@ -125,36 +121,27 @@
                 android:text="@={Converter.longToString(data.downTime)}" />
         </LinearLayout>
 
-        <LinearLayout style="@style/FormVerticalItemStyle">
+        <LinearLayout
+            style="@style/FormVerticalItemStyle"
+            android:visibility="@{data.type == ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
 
             <TextView
-                android:id="@+id/up_time_input_label"
+                android:id="@+id/duration_input_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_up_time))}" />
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_duration))}" />
 
             <EditText
-                android:id="@+id/up_time_input"
+                android:id="@+id/duration_input"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ems="10"
-                android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_label_up_time))}"
+                android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_duration))}"
                 android:importantForAutofill="no"
                 android:inputType="number"
-                android:labelFor="@id/up_time_input_label"
-                android:text="@={Converter.longToString(data.upTime)}" />
+                android:labelFor="@id/duration_input_label" />
         </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            android:text="@string/form_error_hint_add_action_time"
-            android:textAlignment="viewEnd"
-            android:textColor="@color/danger"
-            android:textSize="12sp"
-            android:visibility="@{ScriptActionEntity.checkTime(data.upTime,data.downTime)?View.VISIBLE:View.GONE}" />
 
         <LinearLayout
             style="@style/FormVerticalItemStyle"
@@ -178,7 +165,18 @@
                 android:labelFor="@id/index_input_label"
                 android:text="@={Converter.intToString(data.index)}" />
         </LinearLayout>
+        <LinearLayout
+            style="@style/FormVerticalItemStyle"
+            android:visibility="@{data.type==ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
 
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/auto_adjust_input"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.auto_adjust))}" />
+
+        </LinearLayout>
         <LinearLayout
             style="@style/FormVerticalItemStyle"
             android:visibility="@{data.type==ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
@@ -195,16 +193,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 app:selectedValue="@={data.code}" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/FormVerticalItemStyle">
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/auto_adjust_input"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.auto_adjust))}" />
         </LinearLayout>
 
         <LinearLayout

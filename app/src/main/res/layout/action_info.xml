@@ -10,6 +10,7 @@
         <import type="pub.carzy.auto_script.utils.StringUtils" />
 
         <import type="pub.carzy.auto_script.db.ScriptActionEntity" />
+
         <import type="android.view.KeyEvent" />
 
         <variable
@@ -52,21 +53,10 @@
                 android:layout_height="wrap_content"
                 android:text="@{StringUtils.format(entity.upTime)+context.getString(R.string.unit_ms)}" />
         </LinearLayout>
-        <!--开机时长没用-->
-        <!--<LinearLayout style="@style/FormVerticalItemStyle">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_up_time))}" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{StringUtils.formatTime(entity.eventTime)+context.getString(R.string.unit_ms)}" />
-        </LinearLayout>-->
-
-        <LinearLayout style="@style/FormVerticalItemStyle">
+        <LinearLayout
+            style="@style/FormVerticalItemStyle"
+            android:visibility="@{entity.type==ScriptActionEntity.GESTURE?View.VISIBLE:View.GONE}">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -89,10 +79,12 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{StringUtils.format(entity.type)}" />
+                android:text="@{ScriptActionEntity.getTypeName(entity.type)}" />
         </LinearLayout>
 
-        <LinearLayout style="@style/FormVerticalItemStyle">
+        <LinearLayout
+            style="@style/FormVerticalItemStyle"
+            android:visibility="@{entity.type==ScriptActionEntity.GESTURE?View.VISIBLE:View.GONE}">
 
             <TextView
                 android:layout_width="wrap_content"

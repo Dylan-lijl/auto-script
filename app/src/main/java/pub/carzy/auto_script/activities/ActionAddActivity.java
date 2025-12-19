@@ -52,6 +52,8 @@ public class ActionAddActivity extends BaseActivity {
             //报错
         }
         index = (index = intent.getIntExtra("index", -1)) == -1 ? null : index;
+        //更新标题
+        updateActionBarTitle(getActionBarTitle());
         upTime = (upTime = intent.getLongExtra("upTime", -1)) == -1 ? null : upTime;
         downTime = (downTime = intent.getLongExtra("downTime", -1)) == -1 ? null : downTime;
         maxTime = (maxTime = intent.getLongExtra("maxTime", -1)) == -1 ? null : maxTime;
@@ -86,7 +88,7 @@ public class ActionAddActivity extends BaseActivity {
             data.setDownTime(maxTime);
         });
         binding.addBefore.setOnClickListener(e -> {
-            data.setUpTime(downTime);
+            data.setDownTime(downTime);
         });
         binding.addAfter.setOnClickListener(e -> {
             data.setDownTime(upTime);
@@ -109,19 +111,25 @@ public class ActionAddActivity extends BaseActivity {
                 Toast.makeText(this, String.join("\n", errors), Toast.LENGTH_LONG).show();
                 return;
             }
+            //如果是按键事件就要添加持续时长
+            if (data.getType() == ScriptActionEntity.KEY_EVENT) {
+                data.setUpTime(data.getDownTime() + Integer.parseInt(binding.durationInput.getText().toString()));
+            }
             Intent intent = new Intent();
             intent.putExtra("data", data);
+            intent.putExtra("auto", binding.autoAdjustInput.isChecked());
+            intent.putExtra("index", index);
             setResult(RESULT_OK, intent);
             finish();
         };
     }
 
     private List<String> checkForm() {
-        List<String> error = new ArrayList<>();
-        if (data.checkTime()) {
-            error.add(getString(R.string.form_error_hint_add_action_time));
-        }
-        return error;
+        return new ArrayList<>();
     }
 
+    @Override
+    protected String getActionBarTitle() {
+        return getString(R.string.add) + getString(R.string.steps) + (index == null ? "" : "-" + index);
+    }
 }

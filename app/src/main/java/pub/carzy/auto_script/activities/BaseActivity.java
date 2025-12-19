@@ -93,8 +93,14 @@ public abstract class BaseActivity extends AppCompatActivity {
         return context.createConfigurationContext(config);
     }
 
-    protected Integer getActionBarTitle() {
-        return R.string.app_name;
+    protected String getActionBarTitle() {
+        return getString(R.string.app_name);
+    }
+
+    protected void updateActionBarTitle(String title) {
+        if (title != null && getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(title);
+        }
     }
 
     @Override

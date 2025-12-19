@@ -30,8 +30,8 @@ public class DisclaimerActivity extends BaseActivity {
     private ActivityDisclaimerBinding binding;
 
     @Override
-    protected Integer getActionBarTitle() {
-        return R.string.disclaimers_title;
+    protected String getActionBarTitle() {
+        return getString(R.string.disclaimers_title);
     }
 
     @Override

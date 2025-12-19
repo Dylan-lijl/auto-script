@@ -89,4 +89,5 @@
     <string name="add_before">當前前面</string>
     <string name="add_after">當前後面</string>
     <string name="form_error_hint_add_action_time">抬起時間小於按下時間</string>
+    <string name="action_duration">持續時長</string>
 </resources>

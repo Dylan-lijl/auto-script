@@ -12,11 +12,13 @@ import com.github.mikephil.charting.highlight.Highlight;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -31,20 +33,20 @@ import pub.carzy.auto_script.utils.ObservableLinkedHashMap;
  */
 public class ScriptVoEntityModel extends BaseObservable {
     private ScriptEntity root;
-    private final ObservableMap<Long, ScriptActionEntity> actions = new ObservableLinkedHashMap<>();
-    private final ObservableMap<Long, BarEntry> actionBars = new ObservableLinkedHashMap<>();
-    private final ObservableMap<Long, Highlight> checkedAction = new ObservableLinkedHashMap<>();
-    private final ObservableMap<Long, Integer> actionColors = new ObservableLinkedHashMap<>();
-    private final ObservableMap<Long, ScriptPointEntity> points = new ObservableLinkedHashMap<>();
+    private final ObservableLinkedHashMap<Long, ScriptActionEntity> actions = new ObservableLinkedHashMap<>();
+    private final ObservableLinkedHashMap<Long, BarEntry> actionBars = new ObservableLinkedHashMap<>();
+    private final ObservableLinkedHashMap<Long, Highlight> checkedAction = new ObservableLinkedHashMap<>();
+    private final ObservableLinkedHashMap<Long, Integer> actionColors = new ObservableLinkedHashMap<>();
+    private final ObservableLinkedHashMap<Long, ScriptPointEntity> points = new ObservableLinkedHashMap<>();
     @Getter
     private final Map<Long, Set<Long>> pointMapByParentId = new LinkedHashMap<>();
     /**
      * 由于回调没有旧值传递,需要手动维护映射关系
      */
     private final Map<Long, Long> pointIdAndActionId = new LinkedHashMap<>();
-    private final ObservableMap<Long, BarEntry> pointBars = new ObservableLinkedHashMap<>();
-    private final ObservableMap<Long, Highlight> checkedPoint = new ObservableLinkedHashMap<>();
-    private final ObservableMap<Long, Integer> pointColors = new ObservableLinkedHashMap<>();
+    private final ObservableLinkedHashMap<Long, BarEntry> pointBars = new ObservableLinkedHashMap<>();
+    private final ObservableLinkedHashMap<Long, Highlight> checkedPoint = new ObservableLinkedHashMap<>();
+    private final ObservableLinkedHashMap<Long, Integer> pointColors = new ObservableLinkedHashMap<>();
     @Getter
     @Setter
     private List<Integer> colorsResource = new ArrayList<>();
@@ -98,6 +100,7 @@ public class ScriptVoEntityModel extends BaseObservable {
 
             @Override
             public void onMapChanged(ObservableMap<Long, Highlight> sender, Long key) {
+
                 //更新的key跟最后一个元素一样且已渲染则不更新
                 if (skipUpdatePoint()) {
                     return;
@@ -131,6 +134,7 @@ public class ScriptVoEntityModel extends BaseObservable {
                 notifyPropertyChanged(BR.pointBars);
                 notifyPropertyChanged(BR.pointColors);
                 notifyPropertyChanged(BR.checkedPoint);
+                notifyPropertyChanged(BR.lastCheckedAction);
             }
         });
         actionBars.addOnMapChangedCallback(new ObservableMap.OnMapChangedCallback<>() {
@@ -310,7 +314,9 @@ public class ScriptVoEntityModel extends BaseObservable {
 
     public void setActions(Map<Long, ScriptActionEntity> actions) {
         this.actions.clear();
+        this.checkedAction.clear();
         this.actionBars.clear();
+        this.actionColors.clear();
         if (actions != null) {
             this.actions.putAll(actions);
         }
@@ -320,7 +326,8 @@ public class ScriptVoEntityModel extends BaseObservable {
     public void setActions(Collection<ScriptActionEntity> actions) {
         Map<Long, ScriptActionEntity> map = new LinkedHashMap<>();
         if (actions != null) {
-            actions.forEach(e -> map.put(e.getId(), e));
+            actions.stream().sorted(Comparator.comparingLong(ScriptActionEntity::getDownTime)).collect(Collectors.toList())
+                    .forEach(e -> map.put(e.getId(), e));
         }
         setActions(map);
     }
@@ -347,6 +354,7 @@ public class ScriptVoEntityModel extends BaseObservable {
         return checkedAction;
     }
 
+    @Bindable
     public Map.Entry<Long, ScriptActionEntity> getLastCheckedAction() {
         if (checkedAction.isEmpty()) {
             return null;

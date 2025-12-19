@@ -29,8 +29,8 @@ public class MacroListActivity extends BaseActivity {
     private ActivityMacroListBinding binding;
 
     @Override
-    protected Integer getActionBarTitle() {
-        return R.string.script_list_title;
+    protected String getActionBarTitle() {
+        return getString(R.string.script_list_title);
     }
 
     @Override

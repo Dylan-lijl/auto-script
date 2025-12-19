@@ -36,6 +36,18 @@ public class Converter {
             return 0;
         }
     }
+    @InverseMethod("stringToFloat")
+    public static String floatToString(float value) {
+        return String.valueOf(value);
+    }
+
+    public static float stringToFloat(String value) {
+        try {
+            return Float.parseFloat(value);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
     @BindingAdapter("minVal")
     public static void setMinVal(EditText view, int min) {
         view.addTextChangedListener(new TextWatcher() {

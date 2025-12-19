@@ -47,6 +47,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -140,8 +141,32 @@ public class MacroInfoActivity extends BaseActivity {
                 entity.setId(idWorker.nextId());
                 entity.setEventTime(System.nanoTime());
                 entity.setParentId(model.getRoot().getId());
-                //添加到列表当中
-                model.getActions().put(entity.getId(), entity);
+                if (entity.getType() == ScriptActionEntity.GESTURE) {
+                    entity.setUpTime(entity.getDownTime());
+                }
+                long d = entity.getUpTime() - entity.getDownTime();
+                if (entity.getType() == ScriptActionEntity.KEY_EVENT && data.getBooleanExtra("auto", false) && d > 0) {
+                    //需要对齐
+                    long id = -1;
+                    for (ScriptActionEntity e : model.getActions().values()) {
+                        if (e.getDownTime() >= entity.getDownTime()) {
+                            break;
+                        }
+                        id = e.getId();
+                    }
+                    if (id != -1) {
+                        model.adjustActionTime(id, d);
+                    }
+                }
+                List<ScriptActionEntity> list = new ArrayList<>(model.getActions().values());
+                list.add(entity);
+                model.setActions(list);
+                model.getRoot().setCount(model.getRoot().getCount() + 1);
+                ThreadUtil.runOnUi(() -> {
+                    //触发图表更新
+                    updateChartData(binding.flowChatLayout.actionBarChart,
+                            new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()));
+                });
             }
         };
     }
@@ -230,8 +255,8 @@ public class MacroInfoActivity extends BaseActivity {
             ScriptActionEntity entity = new ScriptActionEntity();
             entity.setMaxTime(0L);
             entity.setUpTime(0L);
-            entity.setCode(null);
-            entity.setCount(KeyEvent.KEYCODE_HOME);
+            entity.setCode(KeyEvent.KEYCODE_HOME);
+            entity.setCount(0);
             entity.setIndex(0);
             entity.setType(ScriptActionEntity.GESTURE);
             Intent intent = new Intent(this, ActionAddActivity.class);

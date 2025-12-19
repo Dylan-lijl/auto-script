@@ -89,4 +89,5 @@
     <string name="add_before">Before current item</string>
     <string name="add_after">After current item</string>
     <string name="form_error_hint_add_action_time">Release time is earlier than press time</string>
+    <string name="action_duration">Duration</string>
 </resources>

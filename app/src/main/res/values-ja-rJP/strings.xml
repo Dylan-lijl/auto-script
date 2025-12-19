@@ -89,4 +89,5 @@
     <string name="add_before">現在の項目の前</string>
     <string name="add_after">現在の項目の後</string>
     <string name="form_error_hint_add_action_time">離した時間が押下時間より早い</string>
+    <string name="action_duration">継続時間</string>
 </resources>

@@ -142,6 +142,50 @@ public class ObservableLinkedHashMap<K, V> implements ObservableMap<K, V> {
         return put(k, value);
     }
 
+    public boolean insertFirst(K key, V value) {
+        Map<K, V> map = new LinkedHashMap<>(backing);
+        backing.clear();
+        backing.put(key, value);
+        backing.putAll(map);
+        notifyChange(key, value);
+        return true;
+    }
+
+    public boolean insertLast(K key, V value) {
+        Map<K, V> map = new LinkedHashMap<>(backing);
+        backing.clear();
+        backing.putAll(map);
+        backing.put(key, value);
+        notifyChange(key, value);
+        return true;
+    }
+
+    public boolean insertBefore(K key, V value, K dependKey) {
+        return insertByKey(key, value, dependKey, true);
+    }
+
+    public boolean insertAfter(K key, V value, K dependKey) {
+        return insertByKey(key, value, dependKey, false);
+    }
+
+    public boolean insertByKey(K key, V value, K dependKey, boolean insertBefore) {
+        if (dependKey == null || backing.get(dependKey) == null) {
+            return false;
+        }
+        Map<K, V> map = new LinkedHashMap<>(backing);
+        backing.clear();
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (Objects.equals(entry.getKey(), dependKey) && insertBefore) {
+                backing.put(key, value);
+            }
+            backing.put(entry.getKey(), entry.getValue());
+            if (Objects.equals(entry.getKey(), dependKey) && !insertBefore) {
+                backing.put(key, value);
+            }
+        }
+        notifyChange(key, value);
+        return true;
+    }
     /* -------- equals & hashCode -------- */
 
     @Override
