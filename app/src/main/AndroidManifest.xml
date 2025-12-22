@@ -25,6 +25,7 @@
         <activity android:name=".activities.MacroListActivity" />
         <activity android:name=".activities.DisclaimerActivity" />
         <activity android:name=".activities.ActionAddActivity" />
+        <activity android:name=".activities.PointAddActivity" />
         <activity
             android:name=".activities.MacroInfoActivity" />
 

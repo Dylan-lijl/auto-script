@@ -24,8 +24,39 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
+
+        <LinearLayout
+            style="@style/FormVerticalItemStyle"
+            android:baselineAligned="true">
+
+            <Button
+                android:id="@+id/add_info_start"
+                style="@style/TransparentButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_start"
+                android:textColor="@color/warning" />
+
+            <Button
+                android:id="@+id/add_info_current"
+                style="@style/TransparentButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="当前选中"
+                android:textColor="@color/warning"
+                android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
+
+            <Button
+                android:id="@+id/add_info_end"
+                style="@style/TransparentButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_end"
+                android:textColor="@color/warning" />
+        </LinearLayout>
+
         <LinearLayout style="@style/FormVerticalItemStyle">
 
             <TextView
@@ -47,8 +78,16 @@
                 android:text="@={Converter.longToString(data.time)}" />
         </LinearLayout>
 
-        <LinearLayout
-            style="@style/FormVerticalItemStyle">
+        <Button
+            android:id="@+id/btn_show"
+            style="@style/TransparentButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="显示"
+            android:textColor="@color/link" />
+
+        <LinearLayout style="@style/FormVerticalItemStyle">
+
             <TextView
                 android:id="@+id/x_input_label"
                 android:layout_width="wrap_content"
@@ -56,19 +95,19 @@
                 android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_x))}" />
 
             <EditText
-                android:autofillHints=""
-                android:hint="@string/point_label_x"
                 android:id="@+id/x_input"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:autofillHints=""
                 android:ems="10"
-                android:text="@={Converter.floatToString(data.x)}"
-                android:inputType="numberDecimal" />
+                android:hint="@string/point_label_x"
+                android:inputType="numberDecimal"
+                android:text="@={Converter.floatToString(data.x)}" />
         </LinearLayout>
 
-        <LinearLayout
-            style="@style/FormVerticalItemStyle">
+        <LinearLayout style="@style/FormVerticalItemStyle">
+
             <TextView
                 android:id="@+id/y_input_label"
                 android:layout_width="wrap_content"
@@ -76,15 +115,15 @@
                 android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_y))}" />
 
             <EditText
-                android:autofillHints=""
-                android:hint="@string/point_label_y"
                 android:id="@+id/y_input"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:autofillHints=""
                 android:ems="10"
-                android:text="@={Converter.floatToString(data.y)}"
-                android:inputType="numberDecimal" />
+                android:hint="@string/point_label_y"
+                android:inputType="numberDecimal"
+                android:text="@={Converter.floatToString(data.y)}" />
         </LinearLayout>
 
         <LinearLayout

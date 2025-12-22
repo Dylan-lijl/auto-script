@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.ui;
+package pub.carzy.auto_script.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.View;
-
 
 /**
  * @author admin
@@ -18,27 +17,43 @@ public class DraggableDotView extends View {
     private final Paint fillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    private final int r;
-    private float lastRawX;
-    private float lastRawY;
+    /** 半径 */
+    private int r;
 
-    private OnDotMoveListener moveListener;
+    /** 父容器在屏幕上的位置 */
+    private int parentLeft;
+    private int parentTop;
+
+    private OnDotMoveListener listener;
 
     public DraggableDotView(Context context, int radiusPx) {
         super(context);
         this.r = radiusPx;
 
-        fillPaint.setColor(Color.WHITE);
+        fillPaint.setColor(Color.GRAY);
         fillPaint.setStyle(Paint.Style.FILL);
 
         strokePaint.setColor(Color.BLACK);
         strokePaint.setStyle(Paint.Style.STROKE);
         strokePaint.setStrokeWidth(2);
+
         setClickable(true);
     }
 
     public void setOnDotMoveListener(OnDotMoveListener listener) {
-        this.moveListener = listener;
+        this.listener = listener;
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        // 获取父容器在屏幕上的 raw 偏移
+        View parent = (View) getParent();
+        int[] loc = new int[2];
+        parent.getLocationOnScreen(loc);
+        parentLeft = loc[0];
+        parentTop = loc[1];
     }
 
     @Override
@@ -47,9 +62,10 @@ public class DraggableDotView extends View {
     }
 
     @Override
-    public void onDraw(Canvas canvas) {
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        // 填充
+
+        // 填充圆
         canvas.drawCircle(r, r, r - 1, fillPaint);
         // 边框
         canvas.drawCircle(r, r, r - 1, strokePaint);
@@ -58,56 +74,49 @@ public class DraggableDotView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
+
             case MotionEvent.ACTION_DOWN:
-                // 按下 → 蓝色
                 fillPaint.setColor(Color.BLUE);
                 invalidate();
-                lastRawX = event.getRawX();
-                lastRawY = event.getRawY();
                 return true;
 
             case MotionEvent.ACTION_MOVE:
                 float rawX = event.getRawX();
                 float rawY = event.getRawY();
 
-                float dx = rawX - lastRawX;
-                float dy = rawY - lastRawY;
+                // raw → view 坐标（圆心对齐）
+                float newX = rawX - parentLeft - r;
+                float newY = rawY - parentTop - r;
 
-                // 移动 View（关键）
-                setX(getX() + dx);
-                setY(getY() + dy);
+                setX(newX);
+                setY(newY);
 
-                lastRawX = rawX;
-                lastRawY = rawY;
-
-                if (moveListener != null) {
-                    // 返回的是“圆心坐标”
-                    moveListener.onMove(
-                            getX() + r,
-                            getY() + r
-                    );
+                if (listener != null) {
+                    listener.onMove(rawX, rawY);
                 }
                 return true;
 
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                // 抬起 → 恢复白色
-                fillPaint.setColor(Color.WHITE);
+                fillPaint.setColor(Color.GRAY);
                 invalidate();
 
-                if (moveListener != null) {
-                    moveListener.onUp(
-                            getX() + r,
-                            getY() + r
+                if (listener != null) {
+                    listener.onUp(
+                            getX() + r + parentLeft,
+                            getY() + r + parentTop
                     );
                 }
                 return true;
         }
         return super.onTouchEvent(event);
     }
-    public static interface OnDotMoveListener {
-        void onMove(float x, float y);
-        void onUp(float x, float y);
+
+    public interface OnDotMoveListener {
+        /** raw 坐标（全屏） */
+        void onMove(float rawX, float rawY);
+
+        /** 抬起时 raw 坐标 */
+        void onUp(float rawX, float rawY);
     }
 }
-

@@ -48,9 +48,9 @@
                     android:text="@string/steps" />
 
                 <TextView
-                    android:layout_marginStart="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
                     android:text="@{model.lastCheckedAction.value.downTime+context.getString(R.string.unit_ms)+`~`+model.lastCheckedAction.value.upTime+context.getString(R.string.unit_ms)}"
                     android:visibility="@{model.checkedAction.empty?View.GONE:View.VISIBLE}" />
             </LinearLayout>
@@ -91,18 +91,17 @@
                     android:src="@drawable/cross"
                     android:tint="@color/safe" />
                 <!-- 示例按钮 -->
-                <ImageButton
+                <!--<ImageButton
                     android:id="@+id/btn_play"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@color/transparent"
                     android:contentDescription="@string/play_action"
                     android:src="@drawable/start"
-                    android:tint="@color/safe" />
+                    android:tint="@color/safe" />-->
             </LinearLayout>
         </LinearLayout>
         <!-- 步骤图表 -->
-        <!-- 坐标描述栏 -->
         <com.github.mikephil.charting.charts.HorizontalBarChart
             android:id="@+id/actionBarChart"
             android:layout_width="match_parent"
@@ -154,13 +153,22 @@
                     android:visibility="@{model.checkedPoint.isEmpty||refresh.deleteDetail?View.GONE:View.VISIBLE}" />
 
                 <ImageButton
+                    android:id="@+id/btn_info_add"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/transparent"
+                    android:contentDescription="@string/add"
+                    android:src="@drawable/cross"
+                    android:tint="@color/safe"
+                    android:visibility="@{model.checkedAction.empty?View.GONE:View.VISIBLE}" />
+                <!--<ImageButton
                     android:id="@+id/btn_play_detail"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@color/transparent"
                     android:contentDescription="@string/play_point"
                     android:src="@drawable/start"
-                    android:tint="@color/safe" />
+                    android:tint="@color/safe" />-->
             </LinearLayout>
         </LinearLayout>
         <!-- 坐标图标 -->

@@ -1,26 +1,26 @@
 package pub.carzy.auto_script.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.view.ViewGroup;
+import android.view.ViewOverlay;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.databinding.ActivityActionAddBinding;
 import pub.carzy.auto_script.databinding.ActivityPointAddBinding;
-import pub.carzy.auto_script.db.ScriptActionEntity;
 import pub.carzy.auto_script.db.ScriptPointEntity;
-import pub.carzy.auto_script.utils.Option;
+import pub.carzy.auto_script.utils.DraggableDotView;
 
 /**
  * @author admin
@@ -28,9 +28,13 @@ import pub.carzy.auto_script.utils.Option;
 public class PointAddActivity extends BaseActivity {
     private Integer index;
     private Long time;
+    private Long minTime;
     private Long maxTime;
     private ScriptPointEntity data;
     private ActivityPointAddBinding binding;
+    private DraggableDotView dotView;
+    private ViewGroup overlay;
+    private int r = 20;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,6 +57,7 @@ public class PointAddActivity extends BaseActivity {
         //更新标题
         updateActionBarTitle(getActionBarTitle());
         time = (time = intent.getLongExtra("time", -1)) == -1 ? null : time;
+        minTime = (minTime = intent.getLongExtra("minTime", -1)) == -1 ? null : minTime;
         maxTime = (maxTime = intent.getLongExtra("maxTime", -1)) == -1 ? null : maxTime;
         if (index != null && time != null) {
             data.setTime(time);
@@ -67,7 +72,77 @@ public class PointAddActivity extends BaseActivity {
     private void initListener() {
         binding.btnSubmit.setOnClickListener(createSubmitListener());
         binding.btnCancel.setOnClickListener(createCancelListener());
+        binding.btnShow.setOnClickListener(createShowListener());
+        binding.addInfoCurrent.setOnClickListener(e -> {
+            if (time != null) {
+                data.setTime(time);
+            }
+        });
+        binding.addInfoStart.setOnClickListener(e -> {
+            if (minTime != null) {
+                data.setTime(minTime);
+            }
+        });
+        binding.addInfoEnd.setOnClickListener(e -> {
+            if (maxTime != null) {
+                data.setTime(maxTime);
+            }
+        });
     }
+
+    private void showDot() {
+        if (dotView != null) return;
+
+        overlay = (ViewGroup) getWindow().getDecorView();
+
+        dotView = new DraggableDotView(this, r);
+        dotView.setOnDotMoveListener(
+                new DraggableDotView.OnDotMoveListener() {
+                    @Override
+                    public void onMove(float rawX, float rawY) {
+                        data.setX(rawX);
+                        data.setY(rawY);
+                    }
+
+                    @Override
+                    public void onUp(float rawX, float rawY) {
+                        data.setX(rawX);
+                        data.setY(rawY);
+                    }
+
+                }
+        );
+
+        overlay.addView(dotView,
+                new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                ));
+
+        // ⚠️ 核心：等窗口 ready 后再定位
+        overlay.post(() -> updateDotByRaw(data.getX(), data.getY()));
+    }
+
+    private void updateDotByRaw(float rawX, float rawY) {
+        int[] loc = new int[2];
+        overlay.getLocationOnScreen(loc);
+
+        dotView.setX(rawX - loc[0] - r);
+        dotView.setY(rawY - loc[1] - r);
+    }
+
+
+    private View.OnClickListener createShowListener() {
+        return ignite -> {
+            if (dotView == null) {
+                showDot();
+            } else {
+                overlay.removeView(dotView);
+                dotView = null;
+            }
+        };
+    }
+
 
     private View.OnClickListener createCancelListener() {
         return e -> {
@@ -75,6 +150,7 @@ public class PointAddActivity extends BaseActivity {
             finish();
         };
     }
+
 
     private View.OnClickListener createSubmitListener() {
         return v -> {
@@ -100,4 +176,5 @@ public class PointAddActivity extends BaseActivity {
     protected String getActionBarTitle() {
         return getString(R.string.add) + getString(R.string.details) + (index == null ? "" : "-" + index);
     }
+
 }

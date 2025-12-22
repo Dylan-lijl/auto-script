@@ -169,50 +169,51 @@ public class ScriptVoEntityModel extends BaseObservable {
                         }
                     }
                 } else {
-                    Set<Long> ids = pointMapByParentId.get(point.getParentId());
-                    if (ids != null) {
-                        //查找index-1的点
-                        long pre = -1;
-                        int index = -1;
-                        int i = 0;
-                        for (Long id : ids) {
-                            if (id.compareTo(key) == 0) {
-                                index = i;
-                                break;
-                            }
-                            pre = id;
-                            i++;
+                    Set<Long> ids = pointMapByParentId.computeIfAbsent(point.getParentId(), k -> new LinkedHashSet<>());
+                    //查找index-1的点
+                    long pre = -1;
+                    int index = -1;
+                    int i = 0;
+                    for (Long id : ids) {
+                        if (id.compareTo(key) == 0) {
+                            index = i;
+                            break;
                         }
-                        if (index != -1) {
-                            long time = -1;
-                            if (pre == -1) {
-                                ScriptActionEntity action = actions.get(point.getParentId());
-                                if (action != null) {
-                                    time = action.getDownTime();
-                                }
-                            } else {
-                                ScriptPointEntity prePoint = points.get(pre);
-                                if (prePoint != null) {
-                                    time = prePoint.getTime();
-                                }
-                            }
-                            if (time != -1) {
-                                pointBars.put(key, new BarEntry(index,
-                                        new float[]{point.getTime(), point.getTime() - time},
-                                        point.getId()));
-                                actionColors.put(key, colorsResource.isEmpty() ? Color.BLACK : colorsResource.get(index % colorsResource.size()));
-                                //排序
-                                if (checkedAction.containsKey(key)) {
-                                    Highlight remove = checkedAction.remove(key);
-                                    checkedAction.put(key, remove);
-                                }
-                            }
+                        pre = id;
+                        i++;
+                    }
+                    long time = -1;
+                    if (pre == -1) {
+                        ScriptActionEntity action = actions.get(point.getParentId());
+                        if (action != null) {
+                            time = action.getDownTime();
+                        }
+                    } else {
+                        ScriptPointEntity prePoint = points.get(pre);
+                        if (prePoint != null) {
+                            time = prePoint.getTime();
                         }
                     }
+                    if (time != -1) {
+                        if (index == -1) {
+                            index = 0;
+                        }
+                        pointBars.put(key, new BarEntry(index,
+                                new float[]{point.getTime(), point.getTime() - time},
+                                point.getId()));
+                        pointColors.put(key, colorsResource.isEmpty() ? Color.BLACK : colorsResource.get(index % colorsResource.size()));
+                        //排序
+                        if (checkedPoint.containsKey(key)) {
+                            Highlight remove = checkedPoint.remove(key);
+                            checkedPoint.put(key, remove);
+                        }
+                    }
+                    pointIdAndActionId.put(point.getId(), point.getParentId());
+                    ids.add(point.getId());
                 }
-                notifyPropertyChanged(BR.actionBars);
-                notifyPropertyChanged(BR.checkedAction);
-                notifyPropertyChanged(BR.actionColors);
+                notifyPropertyChanged(BR.pointBars);
+                notifyPropertyChanged(BR.checkedPoint);
+                notifyPropertyChanged(BR.pointColors);
             }
         });
         pointBars.addOnMapChangedCallback(new ObservableMap.OnMapChangedCallback<>() {
@@ -289,6 +290,8 @@ public class ScriptVoEntityModel extends BaseObservable {
     public void setPoints(Map<Long, ScriptPointEntity> points) {
         this.points.clear();
         pointMapByParentId.clear();
+        pointIdAndActionId.clear();
+        checkedPoint.clear();
         if (points != null) {
             this.points.putAll(points);
             points.forEach((id, point) -> {
