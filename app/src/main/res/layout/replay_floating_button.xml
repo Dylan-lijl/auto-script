@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -11,16 +11,32 @@
         <import type="android.content.Context" />
 
         <import type="android.view.View" />
+
         <variable
             name="status"
             type="PreviewFloatingStatus" />
+
+        <variable
+            name="count"
+            type="androidx.databinding.ObservableInt" />
     </data>
 
     <LinearLayout
-        tools:ignore="UseAppTint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:ignore="UseAppTint">
+
+        <Button
+            android:id="@+id/btn_count"
+            style="@style/TransparentButton"
+            android:textSize="24sp"
+            android:layout_width="32dp"
+            android:layout_height="wrap_content"
+            android:text="@{count&lt;0?`∞`:count+``}"
+            android:textColor="@color/warning">
+
+        </Button>
 
         <ImageButton
             android:id="@+id/btn_more"
@@ -30,8 +46,7 @@
             android:contentDescription="@{context.getString(status.selected?R.string.collapse:R.string.expand)}"
             android:onClick="@{e->status.setSelected(!status.selected)}"
             android:src="@{context.getDrawable(status.selected?R.drawable.arrow_down:R.drawable.arrow_up)}"
-            android:tint="@color/frosted_glass"
-             />
+            android:tint="@color/frosted_glass" />
 
         <ImageButton
             android:id="@+id/btn_simulate"
@@ -41,8 +56,8 @@
             android:contentDescription="@{context.getString(status.simulate?R.string.message_close_mask:R.string.message_open_mask)}"
             android:onClick="@{e->status.setSimulate(!status.simulate)}"
             android:src="@{context.getDrawable(status.simulate?R.drawable.has_mask:R.drawable.not_mask)}"
-            android:visibility="@{status.status!=PreviewFloatingStatus.RUN?View.VISIBLE:View.GONE}"
-            android:tint="@{context.getColor(status.simulate?R.color.link:R.color.disabled)}" />
+            android:tint="@{context.getColor(status.simulate?R.color.link:R.color.disabled)}"
+            android:visibility="@{status.status!=PreviewFloatingStatus.RUN?View.VISIBLE:View.GONE}" />
 
         <ImageButton
             android:id="@+id/btn_close"
@@ -51,8 +66,8 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/exit"
             android:src="@drawable/exit"
-            android:visibility="@{status.selected?View.VISIBLE:View.GONE}"
-            android:tint="@color/safe" />
+            android:tint="@color/safe"
+            android:visibility="@{status.selected?View.VISIBLE:View.GONE}" />
 
         <ImageButton
             android:id="@+id/btn_restart"
@@ -61,8 +76,8 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/restart"
             android:src="@drawable/replay"
-            android:visibility="@{(status.status!=PreviewFloatingStatus.NONE &amp;&amp; status.selected)?View.VISIBLE:View.GONE}"
-            android:tint="@color/danger" />
+            android:tint="@color/danger"
+            android:visibility="@{(status.status!=PreviewFloatingStatus.NONE &amp;&amp; status.selected)?View.VISIBLE:View.GONE}" />
 
         <ImageButton
             android:id="@+id/btn_stop"
@@ -71,8 +86,8 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/help_script_list_stop"
             android:src="@drawable/stop"
-            android:visibility="@{(status.status!=PreviewFloatingStatus.NONE &amp;&amp; status.selected)?View.VISIBLE:View.GONE}"
-            android:tint="@color/danger" />
+            android:tint="@color/danger"
+            android:visibility="@{(status.status!=PreviewFloatingStatus.NONE &amp;&amp; status.selected)?View.VISIBLE:View.GONE}" />
 
         <ImageButton
             android:id="@+id/btn_pause"
@@ -81,8 +96,8 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/help_script_list_pause"
             android:src="@drawable/pause"
-            android:visibility="@{(status.status==PreviewFloatingStatus.RUN)?View.VISIBLE:View.GONE}"
-            android:tint="@color/danger" />
+            android:tint="@color/danger"
+            android:visibility="@{(status.status==PreviewFloatingStatus.RUN)?View.VISIBLE:View.GONE}" />
 
         <ImageButton
             android:id="@+id/btn_run"
@@ -91,7 +106,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/help_script_list_run"
             android:src="@drawable/start"
-            android:visibility="@{(status.status!=PreviewFloatingStatus.RUN)?View.VISIBLE:View.GONE}"
-            android:tint="@color/safe" />
+            android:tint="@color/safe"
+            android:visibility="@{(status.status!=PreviewFloatingStatus.RUN)?View.VISIBLE:View.GONE}" />
     </LinearLayout>
 </layout>

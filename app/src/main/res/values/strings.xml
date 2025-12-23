@@ -90,4 +90,11 @@
     <string name="add_after">After current item</string>
     <string name="form_error_hint_add_action_time">Release time is earlier than press time</string>
     <string name="action_duration">Duration</string>
+    <string name="show">Show</string>
+    <string name="hide">Hide</string>
+    <string name="stop">Stop</string>
+    <string name="dialog_edit_loop_count">Edit loop count</string>
+    <string name="infinite_loop">Infinite loop</string>
+    <string name="loop_format">%d loops</string>
+    <string name="loop">Loop</string>
 </resources>

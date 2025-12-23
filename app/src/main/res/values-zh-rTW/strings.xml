@@ -90,4 +90,11 @@
     <string name="add_after">當前後面</string>
     <string name="form_error_hint_add_action_time">抬起時間小於按下時間</string>
     <string name="action_duration">持續時長</string>
+    <string name="show">顯示</string>
+    <string name="hide">隱藏</string>
+    <string name="stop">停止</string>
+    <string name="dialog_edit_loop_count">編輯循環次數</string>
+    <string name="infinite_loop">無限循環</string>
+    <string name="loop_format">%d次循環</string>
+    <string name="loop">循環</string>
 </resources>

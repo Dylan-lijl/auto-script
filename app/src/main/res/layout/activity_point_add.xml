@@ -20,6 +20,10 @@
         <variable
             name="index"
             type="Integer" />
+
+        <variable
+            name="show"
+            type="androidx.databinding.ObservableBoolean" />
     </data>
 
     <LinearLayout
@@ -80,10 +84,11 @@
 
         <Button
             android:id="@+id/btn_show"
-            style="@style/TransparentButton"
+            style="@style/TextButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="显示"
+            android:background="@color/transparent"
+            android:text="@{Boolean.TRUE.equals(show)?context.getString(R.string.hide):context.getString(R.string.show)}"
             android:textColor="@color/link" />
 
         <LinearLayout style="@style/FormVerticalItemStyle">

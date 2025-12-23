@@ -1,18 +1,26 @@
 package pub.carzy.auto_script.service.impl;
 
+import android.content.DialogInterface;
 import android.graphics.PixelFormat;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.DataBindingUtil;
+import androidx.databinding.ObservableInt;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
+import pub.carzy.auto_script.databinding.DialogEditCountBinding;
 import pub.carzy.auto_script.databinding.MaskViewBinding;
 import pub.carzy.auto_script.databinding.ReplayFloatingButtonBinding;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
@@ -23,6 +31,8 @@ import pub.carzy.auto_script.service.dto.BasicParam;
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.dto.UpdateParam;
+import pub.carzy.auto_script.utils.ActivityUtils;
+import pub.carzy.auto_script.utils.OverlayInputDialog;
 
 /**
  * @author admin
@@ -35,9 +45,10 @@ public class ReplayScriptAction extends BasicAction {
     private ReplayFloatingButtonBinding binding;
     private WindowManager.LayoutParams bindingParams;
     private MaskViewBinding mask;
-
+    private OverlayInputDialog dialog;
     public static final String ACTION_KEY = "replay_script";
     private SimpleReplay player;
+    private ObservableInt count;
 
     @Override
     public String key() {
@@ -57,8 +68,11 @@ public class ReplayScriptAction extends BasicAction {
                         null,
                         false
                 );
+                count = new ObservableInt(-1);
                 binding.setStatus(new PreviewFloatingStatus());
+                binding.setCount(count);
                 bindingParams = createBindingParams(binding);
+                dialog = new OverlayInputDialog(service);
                 mask = DataBindingUtil.inflate(
                         LayoutInflater.from(service),
                         R.layout.mask_view,
@@ -66,8 +80,8 @@ public class ReplayScriptAction extends BasicAction {
                         false
                 );
                 maskParams = createMaskLayoutParams();
-                addListeners();
                 player = new SimpleReplay(service);
+                addListeners();
                 initialized = true;
             }
         } catch (Exception e) {
@@ -106,44 +120,99 @@ public class ReplayScriptAction extends BasicAction {
                 removeView(mask);
             }
         };
+        AtomicBoolean closed = new AtomicBoolean(false);
         binding.btnRun.setOnClickListener(v -> {
-            binding.getStatus().setStatus(PreviewFloatingStatus.RUN);
-            if (binding.getStatus().getSimulate()) {
-                addView(mask, maskParams);
-            }
-            reAddView(binding, bindingParams);
             if (player.getStatus() == SimpleReplay.PAUSE) {
-                player.resume(callback);
+                player.resume();
             } else {
-                player.start(callback);
+                player.start();
             }
         });
-        binding.btnStop.setOnClickListener(v -> {
-            binding.getStatus().setStatus(PreviewFloatingStatus.NONE);
-            removeView(mask);
-            player.stop();
-        });
-        binding.btnPause.setOnClickListener(v -> {
-            binding.getStatus().setStatus(PreviewFloatingStatus.PAUSE);
-            player.pause();
-            removeView(mask);
-        });
-        binding.btnRestart.setOnClickListener(v -> {
-            player.start(callback);
-            if (binding.getStatus().getSimulate()) {
-                addView(mask, maskParams);
-            }
-            reAddView(binding, bindingParams);
-        });
+        binding.btnStop.setOnClickListener(v -> player.stop());
+        binding.btnPause.setOnClickListener(v -> player.pause());
+        binding.btnRestart.setOnClickListener(v -> player.start());
         binding.btnClose.setOnClickListener(v -> {
+            closed.set(true);
             player.stop();
-            removeView(mask);
-            service.close(ACTION_KEY, null);
+        });
+        binding.btnCount.setOnClickListener(v -> {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            } else {
+                dialog.show(count.get(), (result) -> {
+                    count.set(result);
+                    player.setCount(result);
+                });
+            }
+        });
+        player.addCallback(new SimpleReplay.ResultListener() {
+            @Override
+            public void stop(int code, String message, Exception e) {
+                if (code == SimpleReplay.ResultListener.SUCCESS) {
+                    binding.getStatus().setStatus(PreviewFloatingStatus.NONE);
+                    removeView(mask);
+                } else if (code == SimpleReplay.ResultListener.FAIL && message != null) {
+                    Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("player", "stop", e);
+                }
+                if (closed.get()) {
+                    service.close(ACTION_KEY, null);
+                    closed.set(true);
+                }
+            }
+
+            @Override
+            public void pause(int code, String message, Exception e) {
+                if (code == SimpleReplay.ResultListener.SUCCESS) {
+                    binding.getStatus().setStatus(PreviewFloatingStatus.PAUSE);
+                    removeView(mask);
+                } else if (code == SimpleReplay.ResultListener.FAIL && message != null) {
+                    Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("player", "pause", e);
+                }
+            }
+
+            @Override
+            public void resume(int code, String message, Exception e) {
+                if (code == SimpleReplay.ResultListener.SUCCESS) {
+                    binding.getStatus().setStatus(PreviewFloatingStatus.RUN);
+                    if (binding.getStatus().getSimulate()) {
+                        addView(mask, maskParams);
+                    }
+                    reAddView(binding, bindingParams);
+                } else if (code == SimpleReplay.ResultListener.FAIL && message != null) {
+                    Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("player", "resume", e);
+                }
+            }
+
+            @Override
+            public void start(int code, String message, Exception e) {
+                if (code == SimpleReplay.ResultListener.SUCCESS) {
+                    binding.getStatus().setStatus(PreviewFloatingStatus.RUN);
+                    if (binding.getStatus().getSimulate()) {
+                        addView(mask, maskParams);
+                    }
+                    reAddView(binding, bindingParams);
+                } else if (code == SimpleReplay.ResultListener.FAIL && message != null) {
+                    Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("player", "start", e);
+                }
+            }
+
+            @Override
+            public void after(int status, int count) {
+                ReplayScriptAction.this.count.set(count);
+            }
         });
         addViewTouch(createMoveListener(binding.getRoot(), bindingParams),
                 binding.btnRun, binding.btnStop,
                 binding.btnPause, binding.btnRestart,
-                binding.btnClose, binding.btnMore, binding.btnSimulate);
+                binding.btnClose, binding.btnMore, binding.btnSimulate, binding.btnCount);
     }
 
     private WindowManager.LayoutParams createMaskLayoutParams() {

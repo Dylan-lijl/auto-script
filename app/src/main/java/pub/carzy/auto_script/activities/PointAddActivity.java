@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
+import androidx.databinding.ObservableBoolean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ public class PointAddActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_point_add);
+        binding.setShow(new ObservableBoolean(false));
         Intent intent = getIntent();
         if (intent == null) {
             //抛异常
@@ -118,8 +120,6 @@ public class PointAddActivity extends BaseActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 ));
-
-        // ⚠️ 核心：等窗口 ready 后再定位
         overlay.post(() -> updateDotByRaw(data.getX(), data.getY()));
     }
 
@@ -136,9 +136,11 @@ public class PointAddActivity extends BaseActivity {
         return ignite -> {
             if (dotView == null) {
                 showDot();
+                binding.getShow().set(true);
             } else {
                 overlay.removeView(dotView);
                 dotView = null;
+                binding.getShow().set(false);
             }
         };
     }

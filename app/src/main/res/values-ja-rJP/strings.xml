@@ -90,4 +90,11 @@
     <string name="add_after">現在の項目の後</string>
     <string name="form_error_hint_add_action_time">離した時間が押下時間より早い</string>
     <string name="action_duration">継続時間</string>
+    <string name="show">表示</string>
+    <string name="hide">非表示</string>
+    <string name="stop">停止</string>
+    <string name="dialog_edit_loop_count">ループ回数を編集</string>
+    <string name="infinite_loop">無限ループ</string>
+    <string name="loop_format">%d回ループ</string>
+    <string name="loop">ループ</string>
 </resources>

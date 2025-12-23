@@ -90,4 +90,11 @@
     <string name="add_after">현재 항목 뒤</string>
     <string name="form_error_hint_add_action_time">뗀 시간이 누른 시간보다 빠릅니다</string>
     <string name="action_duration">지속 시간</string>
+    <string name="show">표시</string>
+    <string name="hide">숨기기</string>
+    <string name="stop">중지</string>
+    <string name="dialog_edit_loop_count">반복 횟수 편집</string>
+    <string name="infinite_loop">무한 반복</string>
+    <string name="loop_format">%d회 반복</string>
+    <string name="loop">반복</string>
 </resources>

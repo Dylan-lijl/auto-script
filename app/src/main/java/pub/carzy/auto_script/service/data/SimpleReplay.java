@@ -62,6 +62,25 @@ public class SimpleReplay {
     private final AtomicLong pauseTime = new AtomicLong(0);
     private final ControllerCallback<Integer> defaultCallback = callback -> {
     };
+    private final AtomicInteger count = new AtomicInteger(-1);
+    private final Set<ResultListener> callback = new LinkedHashSet<>();
+
+    public void addCallback(ResultListener listener) {
+        callback.add(listener);
+    }
+
+    public void removeCallback(ResultListener listener) {
+        callback.remove(listener);
+    }
+
+    public void setCount(int count) {
+        this.count.set(count);
+    }
+
+    public int getCount() {
+        return count.get();
+    }
+
     private final AccessibilityService.GestureResultCallback gestureCallback = new AccessibilityService.GestureResultCallback() {
         @Override
         public void onCompleted(GestureDescription gestureDescription) {
@@ -97,18 +116,20 @@ public class SimpleReplay {
         needBuild.set(true);
     }
 
-    public void start(ControllerCallback<Integer> callback) {
+    public void start() {
+        if (count.get() == 0) {
+            callback.forEach(c -> c.start(ResultListener.FAIL, null, null));
+            return;
+        }
         try {
-            //判断是否处于暂停状态,如果是暂停状态需要提示用户是否丢弃已经运行的脚本 todo
             //将标志位恢复成运行状态,并重新构建列表
             status.set(RUNNING);
             buildData();
-            scheduler.schedule(() -> tickProcess(callback), 0, TimeUnit.MILLISECONDS);
+            scheduler.schedule(this::tickProcess, 0, TimeUnit.MILLISECONDS);
             startTime.set(System.currentTimeMillis());
+            callback.forEach(c -> c.start(ResultListener.SUCCESS, null, null));
         } catch (Exception e) {
-            callback.catchMethod(e);
-        } finally {
-            callback.finallyMethod();
+            callback.forEach(c -> c.start(ResultListener.EXCEPTION, null, e));
         }
     }
 
@@ -147,34 +168,32 @@ public class SimpleReplay {
         }
     }
 
-    public void stop(ControllerCallback<Integer> callback) {
+    public void stop() {
         try {
             if (status.get() == STOP) {
+                callback.forEach(c -> c.stop(ResultListener.FAIL, null, null));
                 return;
             }
             status.set(STOP);
             releaseKeyMap();
-            callback.complete(status.get());
+            callback.forEach(c -> c.stop(ResultListener.SUCCESS, null, null));
         } catch (Exception e) {
-            callback.catchMethod(e);
-        } finally {
-            callback.finallyMethod();
+            callback.forEach(c -> c.stop(ResultListener.EXCEPTION, null, e));
         }
     }
 
-    public void pause(ControllerCallback<Integer> callback) {
+    public void pause() {
         try {
             if (status.get() != RUNNING) {
+                callback.forEach(c -> c.pause(ResultListener.FAIL, null, null));
                 return;
             }
             status.set(PAUSE);
             pauseTime.set(System.currentTimeMillis());
             releaseKeyMap();
-            callback.complete(status.get());
+            callback.forEach(c -> c.pause(ResultListener.SUCCESS, null, null));
         } catch (Exception e) {
-            callback.catchMethod(e);
-        } finally {
-            callback.finallyMethod();
+            callback.forEach(c -> c.pause(ResultListener.EXCEPTION, null, e));
         }
     }
 
@@ -200,39 +219,23 @@ public class SimpleReplay {
         });
     }
 
-    public void resume(ControllerCallback<Integer> callback) {
+    public void resume() {
         try {
             if (status.get() != PAUSE) {
+                callback.forEach(c -> c.resume(ResultListener.FAIL, null, null));
                 return;
             }
             status.set(RUNNING);
             startTime.set(startTime.get() + System.currentTimeMillis() - pauseTime.get());
-            scheduler.schedule(() -> tickProcess(callback), 0, TimeUnit.MILLISECONDS);
+            scheduler.schedule(this::tickProcess, 0, TimeUnit.MILLISECONDS);
+            callback.forEach(c -> c.resume(ResultListener.SUCCESS, null, null));
         } catch (Exception e) {
-            callback.catchMethod(e);
-        } finally {
-            callback.finallyMethod();
+            callback.forEach(c -> c.resume(ResultListener.EXCEPTION, null, e));
         }
     }
 
-    public void start() {
-        start(defaultCallback);
-    }
-
-    public void stop() {
-        stop(defaultCallback);
-    }
-
-    public void pause() {
-        pause(defaultCallback);
-    }
-
-    public void resume() {
-        resume(defaultCallback);
-    }
-
     @SuppressWarnings("unchecked")
-    private void tickProcess(ControllerCallback<Integer> callback) {
+    private void tickProcess() {
         if (status.get() != RUNNING) {
             return;
         }
@@ -302,10 +305,25 @@ public class SimpleReplay {
         }
         //没有就结束
         if (actionMap.isEmpty()) {
-            stop(callback);
-            return;
+            this.callback.forEach(completedListener -> completedListener.before(status.get(), count.get()));
+            try {
+                if (count.get() == 0) {
+                    stop();
+                    return;
+                } else if (count.get() > 0) {
+                    count.set(count.get() - 1);
+                }
+                recover();
+            } finally {
+                this.callback.forEach(completedListener -> completedListener.after(status.get(), count.get()));
+            }
         }
-        scheduler.schedule(() -> tickProcess(callback), tick.get(), TimeUnit.MILLISECONDS);
+        scheduler.schedule(this::tickProcess, tick.get(), TimeUnit.MILLISECONDS);
+    }
+
+    private void recover() {
+        buildData();
+        startTime.set(System.currentTimeMillis());
     }
 
     private void dispatchKeyEvent(ScriptActionEntity a, List<KeyEvent> keyEvents, boolean isUp) {
@@ -349,5 +367,35 @@ public class SimpleReplay {
         }
         long duration = Math.max(1, time - action.getDownTime());
         builder.addStroke(new GestureDescription.StrokeDescription(path, 0, duration));
+    }
+
+    public interface ResultListener {
+        int SUCCESS = 0;
+        int FAIL = -1;
+        int EXCEPTION = -2;
+
+        default void stop(int code, String message, Exception e) {
+
+        }
+
+        default void pause(int code, String message, Exception e) {
+
+        }
+
+        default void resume(int code, String message, Exception e) {
+
+        }
+
+        default void start(int code, String message, Exception e) {
+
+        }
+
+        default void before(int status, int count) {
+
+        }
+
+        default void after(int status, int count) {
+
+        }
     }
 }

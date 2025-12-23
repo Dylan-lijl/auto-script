@@ -10,8 +10,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -73,6 +71,7 @@ import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.ReplayScriptAction;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
+import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.StoreUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.TypeToken;
@@ -250,7 +249,7 @@ public class MacroInfoActivity extends BaseActivity {
     private void initialListeners() {
         binding.flowChatToolbar.btnMoreAction.setOnClickListener(e -> {
             PopupWindow popupWindow = new PopupWindow(
-                    reinstatedView(moreMenuBinding.getRoot()),
+                    ActivityUtils.reinstatedView(moreMenuBinding.getRoot()),
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     true // 点击外部消失
@@ -460,7 +459,7 @@ public class MacroInfoActivity extends BaseActivity {
             pointInfoBinding.setEntity(model.getLastCheckedPoint().getValue());
             new MaterialAlertDialogBuilder(this)
                     .setTitle(getString(R.string.dialog_point_info_title, model.getLastCheckedPointIndex()))
-                    .setView(reinstatedView(pointInfoBinding.getRoot()))
+                    .setView(ActivityUtils.reinstatedView(pointInfoBinding.getRoot()))
                     .setNegativeButton(R.string.cancel, null)
                     .show();
         };
@@ -474,7 +473,7 @@ public class MacroInfoActivity extends BaseActivity {
             actionInfoBinding.setEntity(model.getLastCheckedAction().getValue());
             new MaterialAlertDialogBuilder(this)
                     .setTitle(getString(R.string.dialog_action_info_title, model.getLastCheckedActionIndex()))
-                    .setView(reinstatedView(actionInfoBinding.getRoot()))
+                    .setView(ActivityUtils.reinstatedView(actionInfoBinding.getRoot()))
                     .setNegativeButton(R.string.cancel, null)
                     .show();
         };
@@ -484,7 +483,7 @@ public class MacroInfoActivity extends BaseActivity {
         return e -> new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.delete_dialog_title)
                 .setMessage(R.string.delete_dialog_message)
-                .setView(reinstatedView(dataBinding.getRoot()))
+                .setView(ActivityUtils.reinstatedView(dataBinding.getRoot()))
                 .setPositiveButton(R.string.confirm, (dialog, which) -> removeCheckedPoint(dataBinding.checkBox.isChecked()))
                 .setNegativeButton(R.string.cancel, null)
                 .show();
@@ -557,20 +556,10 @@ public class MacroInfoActivity extends BaseActivity {
         return e -> new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.delete_dialog_title)
                 .setMessage(R.string.delete_dialog_message)
-                .setView(reinstatedView(dataBinding.getRoot()))
+                .setView(ActivityUtils.reinstatedView(dataBinding.getRoot()))
                 .setPositiveButton(R.string.confirm, (dialog, which) -> removeCheckedAction(dataBinding.checkBox.isChecked()))
                 .setNegativeButton(R.string.cancel, null)
                 .show();
-    }
-
-    private View reinstatedView(View root) {
-        //复用
-        // 如果已有父容器，先从父容器移除
-        ViewParent parent = root.getParent();
-        if (parent instanceof ViewGroup) {
-            ((ViewGroup) parent).removeView(root);
-        }
-        return root;
     }
 
     private void initChat() {
