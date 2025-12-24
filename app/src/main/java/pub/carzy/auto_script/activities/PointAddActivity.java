@@ -1,14 +1,10 @@
 package pub.carzy.auto_script.activities;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewOverlay;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -20,7 +16,7 @@ import java.util.List;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.ActivityPointAddBinding;
-import pub.carzy.auto_script.db.ScriptPointEntity;
+import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.utils.DraggableDotView;
 
 /**

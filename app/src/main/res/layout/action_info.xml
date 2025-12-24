@@ -9,13 +9,13 @@
 
         <import type="pub.carzy.auto_script.utils.StringUtils" />
 
-        <import type="pub.carzy.auto_script.db.ScriptActionEntity" />
+        <import type="pub.carzy.auto_script.db.entity.ScriptActionEntity" />
 
         <import type="android.view.KeyEvent" />
 
         <variable
             name="entity"
-            type="pub.carzy.auto_script.db.ScriptActionEntity" />
+            type="pub.carzy.auto_script.db.entity.ScriptActionEntity" />
     </data>
 
     <LinearLayout

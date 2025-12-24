@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
+        <import type="android.view.View" />
+
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.model.MacroListModel" />
     </data>
 
-    <pub.carzy.auto_script.ui.SpinLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -16,17 +23,17 @@
             android:gravity="end"
             android:orientation="horizontal">
 
-            <pub.carzy.auto_script.ui.ExtImageButton
+            <ImageButton
                 android:id="@+id/btnRecord"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:background="@drawable/button_bg"
+                android:contentDescription="@string/help_script_list_record"
                 android:padding="2dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/record"
-                android:tint="@color/danger"
-                app:tooltipText="@string/help_script_list_record" />
+                app:tint="@color/danger" />
 
             <pub.carzy.auto_script.ui.ExtImageButton
                 android:id="@+id/btnRun"
@@ -66,18 +73,35 @@
                 android:visibility="gone"
                 app:tooltipText="@string/help_script_list_stop" />
         </LinearLayout>
-        <!--表格-->
-        <include
-            android:id="@+id/empty"
-            layout="@layout/empty" />
-        <!--加载条-->
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone" />
 
-    </pub.carzy.auto_script.ui.SpinLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <!--表格-->
+            <in.srain.cube.views.ptr.PtrFrameLayout xmlns:cube_ptr="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/swipeRefresh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                cube_ptr:ptr_duration_to_close="300"
+                cube_ptr:ptr_duration_to_close_header="2000"
+                cube_ptr:ptr_keep_header_when_refresh="true"
+                cube_ptr:ptr_pull_to_fresh="false"
+                cube_ptr:ptr_ratio_of_header_height_to_refresh="1.2"
+                cube_ptr:ptr_resistance="1.7">
+
+                <include
+                    android:id="@+id/empty"
+                    layout="@layout/empty"
+                    android:visibility="@{model.data.empty ? View.VISIBLE : View.GONE}" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="@{model.data.empty? View.GONE : View.VISIBLE}"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            </in.srain.cube.views.ptr.PtrFrameLayout>
+        </LinearLayout>
+    </LinearLayout>
 </layout>

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -445,6 +446,14 @@ public abstract class StringUtils {
     }
 
     public static String formatTime(Long time) {
+        return formatTime("yyyy-MM-dd HH:mm:ss", time);
+    }
+
+    public static String formatTime(String format, Date time) {
+        return time == null ? "" : formatTime(format, time.getTime());
+    }
+
+    public static String formatTime(Date time) {
         return formatTime("yyyy-MM-dd HH:mm:ss", time);
     }
 

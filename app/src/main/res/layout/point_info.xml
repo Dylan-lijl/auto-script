@@ -8,12 +8,12 @@
 
         <import type="pub.carzy.auto_script.utils.StringUtils" />
 
-        <import type="pub.carzy.auto_script.db.ScriptPointEntity" />
+        <import type="pub.carzy.auto_script.db.entity.ScriptPointEntity" />
         <import type="android.view.KeyEvent" />
 
         <variable
             name="entity"
-            type="pub.carzy.auto_script.db.ScriptPointEntity" />
+            type="pub.carzy.auto_script.db.entity.ScriptPointEntity" />
     </data>
 
     <LinearLayout

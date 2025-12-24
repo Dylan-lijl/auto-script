@@ -45,13 +45,12 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import pub.carzy.auto_script.R;
@@ -62,8 +61,10 @@ import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
 import pub.carzy.auto_script.databinding.AutoAlignDialogBinding;
 import pub.carzy.auto_script.databinding.ChatToolbarMoreMenuBinding;
 import pub.carzy.auto_script.databinding.PointInfoBinding;
-import pub.carzy.auto_script.db.ScriptActionEntity;
-import pub.carzy.auto_script.db.ScriptPointEntity;
+import pub.carzy.auto_script.db.AppDatabase;
+import pub.carzy.auto_script.db.entity.ScriptActionEntity;
+import pub.carzy.auto_script.db.entity.ScriptEntity;
+import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
@@ -91,12 +92,14 @@ public class MacroInfoActivity extends BaseActivity {
     private IdGenerator<Long> idWorker;
     private ActivityResultLauncher<Intent> addLauncher;
     private ActivityResultLauncher<Intent> addInfoLauncher;
+    private AppDatabase db;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
         });
+        db = BeanFactory.getInstance().get(AppDatabase.class);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_macro_info);
         dataBinding = AutoAlignDialogBinding.inflate(LayoutInflater.from(this));
         moreMenuBinding = ChatToolbarMoreMenuBinding.inflate(LayoutInflater.from(this));
@@ -303,16 +306,37 @@ public class MacroInfoActivity extends BaseActivity {
                             }));
                 });
             });
+            moreMenuBinding.actionSave.setOnClickListener(createSaveListener());
             moreMenuBinding.actionRemove.setOnClickListener(event -> {
-                popupWindow.dismiss();
+                if (refresh.getDelete()) {
+                    return;
+                }
                 //删除当前整个脚本
-                /*AlertDialog d = new MaterialAlertDialogBuilder(this)
+                AlertDialog d = new MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.delete_dialog_title)
                         .setMessage(R.string.delete_dialog_message)
-                        .setPositiveButton(R.string.confirm, (dialog, which) -> {
-                            model.getActions().remove(model.getDetailIndex());
-                        }).create();
-                d.show();*/
+                        .setPositiveButton(R.string.confirm, (dialog, which) -> ThreadUtil.runOnCpu(() -> {
+                            refresh.setDelete(true);
+                            try {
+                                db.runInTransaction(() -> {
+                                    //查找并删除
+                                    List<Long> actionIds = db.scriptActionMapper().findIdByParentId(model.getRoot().getId());
+                                    if (!actionIds.isEmpty()) {
+                                        List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
+                                        if (!pointIds.isEmpty()) {
+                                            db.scriptPointMapper().deleteByIds(pointIds);
+                                        }
+                                        db.scriptActionMapper().deleteByIds(actionIds);
+                                    }
+                                    db.scriptMapper().deleteById(model.getRoot().getId());
+                                });
+                                model.setSaved(false);
+                                popupWindow.dismiss();
+                            } finally {
+                                refresh.setDelete(false);
+                            }
+                        })).create();
+                d.show();
             });
             Button button = binding.flowChatToolbar.btnMoreAction;
             moreMenuBinding.getRoot().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -324,6 +348,52 @@ public class MacroInfoActivity extends BaseActivity {
         binding.flowChatLayout.btnDetailInfo.setOnClickListener(createDetailInfoListener());
         binding.flowChatLayout.btnAdd.setOnClickListener(createAddActionListener());
         binding.flowChatLayout.btnInfoAdd.setOnClickListener(createAddPointListener());
+    }
+
+    private View.OnClickListener createSaveListener() {
+
+        return e -> {
+            if (refresh.getSave()) {
+                return;
+            }
+            refresh.setSave(true);
+            ThreadUtil.runOnCpu(() -> {
+                try {
+                    //存数据
+                    db.runInTransaction(() -> {
+                        //删除旧数据
+                        List<Long> actionIds = db.scriptActionMapper().findIdByParentId(model.getRoot().getId());
+                        if (!actionIds.isEmpty()) {
+                            List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
+                            if (!pointIds.isEmpty()) {
+                                db.scriptPointMapper().deleteByIds(pointIds);
+                            }
+                            db.scriptActionMapper().deleteByIds(actionIds);
+                        }
+
+                        ScriptEntity entity = model.getRoot();
+                        if (entity == null) {
+                            return;
+                        }
+                        Date now = new Date();
+                        if (Objects.isNull(entity.getCreateTime())) {
+                            entity.setCreateTime(now);
+                        }
+                        entity.setUpdateTime(now);
+                        //保存
+                        db.scriptMapper().save(model.getRoot());
+                        db.scriptActionMapper().save(model.getActions().values());
+                        db.scriptPointMapper().save(model.getPoints().values());
+                    });
+                    //修改状态
+                    model.setSaved(false);
+                } catch (Exception ex) {
+                    ThreadUtil.runOnUi(() -> Toast.makeText(MacroInfoActivity.this, "保存失败:" + ex.getMessage(), Toast.LENGTH_SHORT).show());
+                } finally {
+                    refresh.setSave(false);
+                }
+            });
+        };
     }
 
     private View.OnClickListener createAddPointListener() {
@@ -361,7 +431,7 @@ public class MacroInfoActivity extends BaseActivity {
                 entity.setX(point.getValue().getX());
                 entity.setY(point.getValue().getY());
                 entity.setTime(point.getValue().getTime());
-            }else{
+            } else {
                 entity.setX(200F);
                 entity.setY(200F);
             }

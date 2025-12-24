@@ -9,13 +9,13 @@
 
         <import type="android.view.View" />
 
-        <import type="pub.carzy.auto_script.db.ScriptActionEntity" />
+        <import type="pub.carzy.auto_script.db.entity.ScriptActionEntity" />
 
         <import type="pub.carzy.auto_script.adapter.Converter" />
 
         <variable
             name="data"
-            type="ScriptActionEntity" />
+            type="pub.carzy.auto_script.db.entity.ScriptActionEntity" />
 
         <variable
             name="index"

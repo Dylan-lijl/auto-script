@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import pub.carzy.auto_script.config.ControllerCallback;
-import pub.carzy.auto_script.db.ScriptActionEntity;
-import pub.carzy.auto_script.db.ScriptPointEntity;
+import pub.carzy.auto_script.db.entity.ScriptActionEntity;
+import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.utils.ThreadUtil;
 

@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import pub.carzy.auto_script.config.impl.PrefsSetting;
 import pub.carzy.auto_script.config.impl.SnowflakeGenerator;
+import pub.carzy.auto_script.db.AppDatabase;
 import pub.carzy.auto_script.utils.TypeToken;
 
 /**
@@ -32,7 +33,8 @@ public class BeanRegister {
                 .register(new PrefsSetting(context))
                 .register(context)
                 .register(new TypeToken<IdGenerator<Long>>() {
-                }, new SnowflakeGenerator());
+                }, new SnowflakeGenerator())
+                .register(AppDatabase.get(context));
 //                .register(new ScriptAccessibilityService());
     }
 }

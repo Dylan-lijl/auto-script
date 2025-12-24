@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
-import pub.carzy.auto_script.db.ScriptActionEntity;
-import pub.carzy.auto_script.db.ScriptEntity;
-import pub.carzy.auto_script.db.ScriptPointEntity;
+import pub.carzy.auto_script.db.entity.ScriptActionEntity;
+import pub.carzy.auto_script.db.entity.ScriptEntity;
+import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 
 /**
  * @author admin

@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.db;
+package pub.carzy.auto_script.db.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -6,6 +6,9 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -17,6 +20,7 @@ import pub.carzy.auto_script.R;
  */
 @ToString
 @EqualsAndHashCode(callSuper = true)
+@Entity(tableName = "script_action")
 public class ScriptActionEntity extends BaseObservable implements Parcelable {
     public static final int GESTURE = 1;
     public static final int KEY_EVENT = 2;
@@ -35,10 +39,12 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     /**
      * 主键
      */
+    @PrimaryKey
     private Long id;
     /**
      * 父级主键
      */
+    @ColumnInfo(name = "parent_id")
     private Long parentId;
     /**
      * 手势索引
@@ -47,18 +53,22 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     /**
      * 序列
      */
+    @ColumnInfo(name = "down_time")
     private Long downTime;
     /**
      * 按下时间
      */
+    @ColumnInfo(name = "event_time")
     private Long eventTime;
     /**
      * 抬起时间
      */
+    @ColumnInfo(name = "up_time")
     private Long upTime;
     /**
      * 最大的时间,一般来说这个时间是upTime,但是有的时候upTime为null,这个时候就需要遍历points
      */
+    @ColumnInfo(name = "max_time")
     private Long maxTime;
     /**
      * 移动点数量

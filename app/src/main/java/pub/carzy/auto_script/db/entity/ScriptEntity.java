@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.db;
+package pub.carzy.auto_script.db.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -6,20 +6,30 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import java.util.Date;
 
+import lombok.EqualsAndHashCode;
 import pub.carzy.auto_script.BR;
 
 /**
  * @author admin
  */
+@Entity(tableName = "script")
+@EqualsAndHashCode(callSuper = false)
 public class ScriptEntity extends BaseObservable implements Parcelable {
+    @PrimaryKey
     private Long id;
     private String name;
+    @ColumnInfo(name = "create_time")
     private Date createTime;
+    @ColumnInfo(name = "update_time")
     private Date updateTime;
     private Integer count;
+    @ColumnInfo(name = "max_time")
     private Long maxTime;
     private String remark;
 

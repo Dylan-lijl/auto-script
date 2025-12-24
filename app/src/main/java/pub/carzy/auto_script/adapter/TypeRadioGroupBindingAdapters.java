@@ -7,7 +7,7 @@ import androidx.databinding.InverseBindingAdapter;
 import androidx.databinding.InverseBindingListener;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.db.ScriptActionEntity;
+import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 
 /**
  * action type绑定

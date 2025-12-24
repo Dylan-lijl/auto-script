@@ -6,10 +6,8 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
@@ -18,9 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.adapter.CodeOptionAdapter;
 import pub.carzy.auto_script.databinding.ActivityActionAddBinding;
-import pub.carzy.auto_script.db.ScriptActionEntity;
+import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.utils.Option;
 
 /**

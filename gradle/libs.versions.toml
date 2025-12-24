@@ -12,12 +12,16 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 appcompat = "1.7.0"
 kotlinGradlePlugin = "1.9.0"
+libraryVersion = "1.2.0"
 lombok = "1.18.30"
 material = "1.10.0"
 databindingRuntime = "8.13.1"
 library = "3.2.0-alpha11"
 mpandroidchart = "v3.1.0"
+roomRuntime = "2.8.4"
+swiperefreshlayout = "1.2.0"
 uidGenerator = "1.0.5"
+ultraPtr = "1.0.11"
 
 [libraries]
 auto-service = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }
@@ -38,7 +42,12 @@ material = { group = "com.google.android.material", name = "material", version.r
 databinding-runtime = { group = "androidx.databinding", name = "databinding-runtime", version.ref = "databindingRuntime" }
 library = { group = "androidx.databinding", name = "library", version.ref = "library" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
+pullrefreshlayout-library = { module = "com.baoyz.pullrefreshlayout:library", version.ref = "libraryVersion" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 uid-generator = { module = "com.baidu.fsg:uid-generator", version.ref = "uidGenerator" }
+ultra-ptr = { module = "in.srain.cube:ultra-ptr", version.ref = "ultraPtr" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

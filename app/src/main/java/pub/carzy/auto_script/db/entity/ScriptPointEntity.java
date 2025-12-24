@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.db;
+package pub.carzy.auto_script.db.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -6,6 +6,9 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import lombok.EqualsAndHashCode;
 import pub.carzy.auto_script.BR;
@@ -14,16 +17,21 @@ import pub.carzy.auto_script.BR;
  * @author admin
  */
 @EqualsAndHashCode(callSuper = true)
+@Entity(tableName = "script_point")
 public class ScriptPointEntity extends BaseObservable implements Parcelable {
+    @PrimaryKey
     private Long id;
+    @ColumnInfo(name = "parent_id")
     private Long parentId;
     private Float x;
     private Float y;
     private Long time;
+    @ColumnInfo(name = "tool_type")
     private Integer toolType;
 
     public ScriptPointEntity() {
     }
+
     protected ScriptPointEntity(Parcel in) {
         if (in.readByte() == 0) {
             id = null;

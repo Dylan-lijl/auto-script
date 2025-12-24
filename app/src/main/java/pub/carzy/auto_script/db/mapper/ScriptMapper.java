@@ -1,0 +1,25 @@
+package pub.carzy.auto_script.db.mapper;
+
+import androidx.room.Dao;
+import androidx.room.Query;
+import androidx.room.RawQuery;
+import androidx.sqlite.db.SupportSQLiteQuery;
+
+import java.util.List;
+
+import pub.carzy.auto_script.db.entity.ScriptEntity;
+
+
+/**
+ * @author admin
+ */
+@Dao
+public interface ScriptMapper extends BaseMapper<ScriptEntity> {
+
+    @Query("DELETE FROM script WHERE id = :id")
+    void deleteById(Long id);
+
+
+    @RawQuery
+    List<ScriptEntity> queryList(SupportSQLiteQuery query);
+}
