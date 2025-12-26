@@ -13,11 +13,16 @@ import pub.carzy.auto_script.db.entity.ScriptActionEntity;
  * @author admin
  */
 @Dao
-public interface ScriptActionMapper extends BaseMapper<ScriptActionEntity>{
+public interface ScriptActionMapper extends BaseMapper<ScriptActionEntity> {
     @Query("DELETE FROM script_action WHERE id = :id")
     int deleteById(Long id);
+
     @Query("DELETE FROM script_action WHERE id IN (:ids)")
     int deleteByIds(Collection<Long> ids);
+
     @Query("SELECT id FROM script_action WHERE parent_id = :parentId")
     List<Long> findIdByParentId(Long parentId);
+
+    @Query("select * from script_action where parent_id = :parentId")
+    List<ScriptActionEntity> findByParentId(Long parentId);
 }

@@ -1,6 +1,7 @@
 [versions]
 agp = "8.9.1"
 autoService = "1.1.0"
+baoyzLibrary = "1.3.0"
 forms_rt = "7.0.3"
 gradle = "8.1.4"
 gson = "2.10.1"
@@ -18,6 +19,7 @@ material = "1.10.0"
 databindingRuntime = "8.13.1"
 library = "3.2.0-alpha11"
 mpandroidchart = "v3.1.0"
+qmui = "2.0.1"
 roomRuntime = "2.8.4"
 swiperefreshlayout = "1.2.0"
 uidGenerator = "1.0.5"
@@ -43,8 +45,10 @@ databinding-runtime = { group = "androidx.databinding", name = "databinding-runt
 library = { group = "androidx.databinding", name = "library", version.ref = "library" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
 pullrefreshlayout-library = { module = "com.baoyz.pullrefreshlayout:library", version.ref = "libraryVersion" }
+qmui = { module = "com.qmuiteam:qmui", version.ref = "qmui" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+swipemenulistview-library = { module = "com.baoyz.swipemenulistview:library", version.ref = "baoyzLibrary" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 uid-generator = { module = "com.baidu.fsg:uid-generator", version.ref = "uidGenerator" }
 ultra-ptr = { module = "in.srain.cube:ultra-ptr", version.ref = "ultraPtr" }

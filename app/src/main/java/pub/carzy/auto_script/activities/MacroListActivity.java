@@ -1,33 +1,54 @@
 package pub.carzy.auto_script.activities;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.View;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.Observable;
 import androidx.databinding.ObservableList;
+import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
+import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
+import com.qmuiteam.qmui.recyclerView.QMUIRVItemSwipeAction;
+import com.qmuiteam.qmui.recyclerView.QMUISwipeAction;
+import com.qmuiteam.qmui.recyclerView.QMUISwipeViewHolder;
+import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
+import com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import in.srain.cube.views.ptr.PtrClassicDefaultHeader;
-import in.srain.cube.views.ptr.PtrDefaultHandler;
-import in.srain.cube.views.ptr.PtrFrameLayout;
-import pub.carzy.auto_script.BR;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.adapter.MacroTableAdapter;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.databinding.ActivityMacroListBinding;
+import pub.carzy.auto_script.databinding.MacroListTableBinding;
+import pub.carzy.auto_script.db.AppDatabase;
+import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
+import pub.carzy.auto_script.db.entity.ScriptPointEntity;
+import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.MacroListModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
+import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.RecordScriptAction;
-import pub.carzy.auto_script.ui.ExtImageButton;
+import pub.carzy.auto_script.service.impl.ReplayScriptAction;
+import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -38,6 +59,9 @@ public class MacroListActivity extends BaseActivity {
 
     private ActivityMacroListBinding binding;
     private MacroListModel model;
+    private AppDatabase db;
+
+    private Adapter adapter;
 
     @Override
     protected String getActionBarTitle() {
@@ -47,87 +71,145 @@ public class MacroListActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        model = new MacroListModel();
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_macro_list);
-        MacroTableAdapter adapter = new MacroTableAdapter();
-        binding.recycler.setAdapter(adapter);
-        addListeners(adapter);
-        binding.btnRecord.setOnClickListener((e) -> openService());
+        initBase();
+        initToolbar();
+        initPullLayout();
+        initDataList();
         model.reloadData();
 //        binding.recycler.post(() -> model.reloadData());
     }
 
-    private void addListeners(MacroTableAdapter adapter) {
-        model.getData().addOnListChangedCallback(
-                new ObservableList.OnListChangedCallback<>() {
+    private void initBase() {
+        db = BeanFactory.getInstance().get(AppDatabase.class);
+        model = new MacroListModel();
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_macro_list);
+        binding.setModel(model);
+    }
 
-                    @Override
-                    public void onChanged(ObservableList<ScriptEntity> sender) {
-                        adapter.submitList(new ArrayList<>(sender));
-                    }
+    private void initDataList() {
+        binding.dataList.setAdapter(adapter = new Adapter());
+        QMUIRVItemSwipeAction action = new QMUIRVItemSwipeAction(true, new QMUIRVItemSwipeAction.Callback() {
 
-                    @Override
-                    public void onItemRangeInserted(
-                            ObservableList<ScriptEntity> sender,
-                            int positionStart,
-                            int itemCount
-                    ) {
-                        adapter.submitList(new ArrayList<>(sender));
-                    }
-
-                    @Override
-                    public void onItemRangeRemoved(
-                            ObservableList<ScriptEntity> sender,
-                            int positionStart,
-                            int itemCount
-                    ) {
-                        adapter.submitList(new ArrayList<>(sender));
-                    }
-
-                    @Override
-                    public void onItemRangeChanged(
-                            ObservableList<ScriptEntity> sender,
-                            int positionStart,
-                            int itemCount
-                    ) {
-                        adapter.submitList(new ArrayList<>(sender));
-                    }
-
-                    @Override
-                    public void onItemRangeMoved(
-                            ObservableList<ScriptEntity> sender,
-                            int fromPosition,
-                            int toPosition,
-                            int itemCount
-                    ) {
-                        adapter.submitList(new ArrayList<>(sender));
-                    }
-                });
-        binding.swipeRefresh.setPtrHandler(new PtrDefaultHandler() {
             @Override
-            public boolean checkCanDoRefresh(PtrFrameLayout frame, View content, View header) {
-                return super.checkCanDoRefresh(frame, content, header) && !binding.recycler.canScrollVertically(-1);
+            public int getSwipeDirection(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return QMUIRVItemSwipeAction.SWIPE_LEFT;
             }
 
             @Override
-            public void onRefreshBegin(PtrFrameLayout frame) {
-                model.reloadData();
-            }
-        });
-        PtrClassicDefaultHeader header =
-                new PtrClassicDefaultHeader(this);
-
-        binding.swipeRefresh.setHeaderView(header);
-        binding.swipeRefresh.addPtrUIHandler(header);
-
-        model.getLoading().addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
-            @Override
-            public void onPropertyChanged(Observable sender, int propertyId) {
-                if (model.getLoading().get()) {
-                    binding.swipeRefresh.refreshComplete();
+            public void onClickAction(QMUIRVItemSwipeAction swipeAction, RecyclerView.ViewHolder selected, QMUISwipeAction action) {
+                ScriptEntity tag = adapter.data.get(selected.getAdapterPosition());
+                if (tag == null) {
+                    return;
+                }
+                if (action == adapter.deleteAction) {
+                    processDeleteItem(tag);
+                } else if (action == adapter.runAction) {
+                    runScript(tag);
                 }
             }
         });
+        action.attachToRecyclerView(binding.dataList);
+    }
+
+    private void initPullLayout() {
+        AtomicReference<QMUIPullLayout.PullAction> currentPullAction = new AtomicReference<>();
+        binding.pullLayout.setActionListener(pullAction -> {
+            if (pullAction.getPullEdge() == QMUIPullLayout.PULL_EDGE_TOP) {
+                model.reloadData();
+                currentPullAction.set(pullAction);
+            } else if (pullAction.getPullEdge() == QMUIPullLayout.PULL_EDGE_BOTTOM) {
+                model.loadData();
+                currentPullAction.set(pullAction);
+            }
+        });
+        model.getLoading().addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
+            @Override
+            public void onPropertyChanged(Observable sender, int propertyId) {
+                if (!model.getLoading().get() && currentPullAction.get() != null) {
+                    binding.pullLayout.finishActionRun(currentPullAction.get());
+                }
+            }
+        });
+    }
+
+    private void initToolbar() {
+        binding.actionBar.addLeftBackImageButton().setOnClickListener(v -> {
+        });
+        binding.actionBar.setTitle(getActionBarTitle());
+        QMUIAlphaImageButton searchBtn = binding.actionBar.addRightImageButton(R.drawable.search, QMUIViewHelper.generateViewId());
+        searchBtn.setOnClickListener(e -> {
+            Log.d(this.getClass().getCanonicalName(), "查询按钮一点击");
+        });
+        QMUIAlphaImageButton manyBtn = binding.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
+        manyBtn.setOnClickListener(e -> openBottomSheet());
+//        binding.btnRecord.setOnClickListener((e) -> openService());
+    }
+
+    private void openBottomSheet() {
+        new QMUIBottomSheet.BottomListSheetBuilder(this)
+                .setGravityCenter(false)
+                .setAddCancelBtn(false)
+                .addItem(ContextCompat.getDrawable(this, R.drawable.start),getString(R.string.help_script_list_record))
+                .build();
+    }
+
+    private void addListeners(MacroTableAdapter adapter) {
+    }
+
+    private void runScript(ScriptEntity script) {
+        ThreadUtil.runOnCpu(() -> {
+            //根据id查询action数据和point数据
+            List<ScriptActionEntity> actions = db.scriptActionMapper().findByParentId(script.getId());
+            if (actions.isEmpty()) {
+                return;
+            }
+            Set<Long> actionIds = actions.stream().map(ScriptActionEntity::getId).collect(Collectors.toSet());
+            List<ScriptPointEntity> points = db.scriptPointMapper().findByParentIds(actionIds);
+            ScriptVoEntity entity = new ScriptVoEntity();
+            entity.setRoot(script);
+            entity.getActions().addAll(actions);
+            entity.getPoints().addAll(points);
+            //打开服务
+            ThreadUtil.runOnUi(() -> {
+                MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
+                if (service != null) {
+                    service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(entity));
+                }
+            });
+        });
+    }
+
+    private void processDeleteItem(ScriptEntity script) {
+        if (!model.getDeleteIds().contains(script.getId())) {
+            model.getDeleteIds().add(script.getId());
+            ActivityUtils.createDeleteMessageDialog(this,
+                    (dialog, which) -> ThreadUtil.runOnCpu(() -> {
+                        try {
+                            //删除数据
+                            db.runInTransaction(() -> {
+                                db.scriptMapper().delete(script);
+                                List<Long> actionIds = db.scriptActionMapper().findIdByParentId(script.getId());
+                                if (!actionIds.isEmpty()) {
+                                    db.scriptActionMapper().deleteByIds(actionIds);
+                                    List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
+                                    if (!pointIds.isEmpty()) {
+                                        db.scriptPointMapper().deleteByIds(pointIds);
+                                    }
+                                }
+                            });
+                            //在移除对应的数据
+                            ThreadUtil.runOnUi(() -> {
+                                model.getData().remove(script);
+                                dialog.dismiss();
+                            });
+                        } finally {
+                            ThreadUtil.runOnUi(() -> model.getDeleteIds().remove(script.getId()));
+                        }
+                    }), (dialog, i) -> {
+                        model.getDeleteIds().remove(script.getId());
+                        dialog.dismiss();
+                    }).show();
+        }
     }
 
     private void openService() {
@@ -154,7 +236,7 @@ public class MacroListActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        RecordScriptAction service = BeanFactory.getInstance().get(RecordScriptAction.class);
+        RecordScriptAction service = BeanFactory.getInstance().get(RecordScriptAction.class, false);
         if (service == null) {
             return;
         }
@@ -204,5 +286,122 @@ public class MacroListActivity extends BaseActivity {
                 })
                 .setNegativeButton(R.string.cancel, null)
                 .show();
+    }
+
+    private void jumpInfo(ScriptEntity entity) {
+        ThreadUtil.runOnCpu(() -> {
+            ScriptVoEntity data = new ScriptVoEntity();
+            data.setRoot(entity);
+            List<ScriptActionEntity> actions = db.scriptActionMapper().findByParentId(entity.getId());
+            data.getActions().addAll(actions);
+            if (!actions.isEmpty()) {
+                List<ScriptPointEntity> points = db.scriptPointMapper().findByParentIds(actions.stream().map(ScriptActionEntity::getId).collect(Collectors.toSet()));
+                data.getPoints().addAll(points);
+            }
+            ThreadUtil.runOnUi(() -> {
+                Intent intent = new Intent(this, MacroInfoActivity.class);
+                intent.putExtra("data", data);
+                intent.putExtra("add", false);
+                startActivity(intent);
+            });
+        });
+    }
+
+    class Adapter extends RecyclerView.Adapter<VH> {
+        private final ObservableList<ScriptEntity> data;
+        private final QMUISwipeAction deleteAction;
+        private final QMUISwipeAction runAction;
+
+        public Adapter() {
+            this.data = model.getData();
+            setHasStableIds(true);
+            ObservableList.OnListChangedCallback<ObservableList<ScriptEntity>> callback = new ObservableList.OnListChangedCallback<>() {
+                @Override
+                public void onChanged(ObservableList<ScriptEntity> sender) {
+                    notifyDataSetChanged();
+                }
+
+                @Override
+                public void onItemRangeInserted(
+                        ObservableList<ScriptEntity> sender,
+                        int positionStart,
+                        int itemCount
+                ) {
+                    notifyItemRangeInserted(positionStart, itemCount);
+                }
+
+                @Override
+                public void onItemRangeRemoved(
+                        ObservableList<ScriptEntity> sender,
+                        int positionStart,
+                        int itemCount
+                ) {
+                    notifyItemRangeRemoved(positionStart, itemCount);
+                }
+
+                @Override
+                public void onItemRangeChanged(
+                        ObservableList<ScriptEntity> sender,
+                        int positionStart,
+                        int itemCount
+                ) {
+                    notifyItemRangeChanged(positionStart, itemCount);
+                }
+
+                @Override
+                public void onItemRangeMoved(
+                        ObservableList<ScriptEntity> sender,
+                        int fromPosition,
+                        int toPosition,
+                        int itemCount
+                ) {
+                    for (int i = 0; i < itemCount; i++) {
+                        notifyItemMoved(fromPosition + i, toPosition + i);
+                    }
+                }
+            };
+            data.addOnListChangedCallback(callback);
+            QMUISwipeAction.ActionBuilder builder = new QMUISwipeAction.ActionBuilder()
+                    .textSize(QMUIDisplayHelper.sp2px(getApplicationContext(), 14))
+                    .textColor(Color.WHITE)
+                    .paddingStartEnd(QMUIDisplayHelper.dp2px(getApplicationContext(), 14));
+            deleteAction = builder.text("删除").backgroundColor(Color.RED).build();
+            runAction = builder.text("详情").backgroundColor(Color.BLUE).build();
+        }
+
+        @NonNull
+        @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            MacroListTableBinding binding =
+                    MacroListTableBinding.inflate(inflater, parent, false);
+            final VH vh = new VH(binding);
+            vh.addSwipeAction(deleteAction);
+            vh.addSwipeAction(runAction);
+            //点击跳转到详情
+            binding.getRoot().setOnClickListener(e -> jumpInfo(data.get(vh.getAdapterPosition())));
+            return vh;
+        }
+
+
+        @Override
+        public void onBindViewHolder(@NonNull VH holder, int position) {
+            holder.binding.setItem(data.get(position));
+        }
+
+
+        @Override
+        public int getItemCount() {
+            return data == null ? 0 : data.size();
+        }
+    }
+
+    static class VH extends QMUISwipeViewHolder {
+        final MacroListTableBinding binding;
+
+        VH(MacroListTableBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+        }
     }
 }

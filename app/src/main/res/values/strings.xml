@@ -97,4 +97,12 @@
     <string name="infinite_loop">Infinite loop</string>
     <string name="loop_format">%d loops</string>
     <string name="loop">Loop</string>
+    <string name="ptr_pull_down_to_refresh">Pull to refresh</string>
+    <string name="ptr_release_to_refresh">Release to refresh</string>
+    <string name="ptr_refreshing">Refreshing…</string>
+    <string name="ptr_refresh_complete">Refresh complete</string>
+    <string name="ptr_last_update">Last update:</string>
+    <string name="ptr_seconds_ago">seconds ago</string>
+    <string name="ptr_minutes_ago">minutes ago</string>
+    <string name="ptr_hours_ago">hours ago</string>
 </resources>

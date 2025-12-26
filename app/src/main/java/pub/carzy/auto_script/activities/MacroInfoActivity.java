@@ -116,9 +116,6 @@ public class MacroInfoActivity extends BaseActivity {
         moreMenuBinding.setModel(model);
         initChat();
         initIntent();
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
         // 设置没有数据时显示的文字,,,按照mvvm思想这个属性应该写在xml,但是这个库未提供xml属性
         binding.flowChatLayout.actionBarChart.setNoDataText(getString(R.string.message_no_data));
         binding.flowChatLayout.pointBarChart.setNoDataText(getString(R.string.message_no_data));
@@ -262,7 +259,7 @@ public class MacroInfoActivity extends BaseActivity {
             moreMenuBinding.actionRun.setOnClickListener(event -> {
                 //打开对应service悬浮窗口
                 popupWindow.dismiss();
-                MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
+                MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class,false);
                 if (service != null) {
                     ScriptVoEntity entity = new ScriptVoEntity();
                     entity.setRoot(model.getRoot());

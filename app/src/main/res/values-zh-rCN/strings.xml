@@ -97,4 +97,12 @@
     <string name="infinite_loop">无限循环</string>
     <string name="loop_format">%d次循环</string>
     <string name="loop">循环</string>
+    <string name="ptr_pull_down_to_refresh">下拉刷新</string>
+    <string name="ptr_release_to_refresh">松开刷新</string>
+    <string name="ptr_refreshing">正在刷新…</string>
+    <string name="ptr_refresh_complete">刷新完成</string>
+    <string name="ptr_last_update">上次更新：</string>
+    <string name="ptr_seconds_ago">秒前</string>
+    <string name="ptr_minutes_ago">分钟前</string>
+    <string name="ptr_hours_ago">小时前</string>
 </resources>

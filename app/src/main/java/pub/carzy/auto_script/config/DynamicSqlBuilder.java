@@ -9,10 +9,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import pub.carzy.auto_script.db.config.ConvertManager;
+
 /**
  * @author admin
  */
 public class DynamicSqlBuilder {
+
+    public static <T> Object toDb(T v) {
+        return ConvertManager.toDb(v);
+    }
+
     public static SupportSQLiteQuery queryByCursorOrderByUpdateTimeDesc(
             String keyword,
             Date lastTime,
@@ -25,13 +32,13 @@ public class DynamicSqlBuilder {
 
         if (!TextUtils.isEmpty(keyword)) {
             sql.append("AND name LIKE ? ");
-            args.add("%" + keyword + "%");
+            args.add("%" + toDb(keyword) + "%");
         }
         if (lastTime != null && lastId != null) {
             sql.append("AND (update_time < ? OR (update_time = ? AND id < ?))");
-            args.add(lastTime);
-            args.add(lastTime);
-            args.add(lastId);
+            args.add(toDb(lastTime));
+            args.add(toDb(lastTime));
+            args.add(toDb(lastId));
         }
         sql.append("ORDER BY update_time DESC, id DESC ");
         sql.append("LIMIT ? ");

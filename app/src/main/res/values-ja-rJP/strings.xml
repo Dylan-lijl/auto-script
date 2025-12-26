@@ -97,4 +97,12 @@
     <string name="infinite_loop">無限ループ</string>
     <string name="loop_format">%d回ループ</string>
     <string name="loop">ループ</string>
+    <string name="ptr_pull_down_to_refresh">プルして更新</string>
+    <string name="ptr_release_to_refresh">離して更新</string>
+    <string name="ptr_refreshing">更新中…</string>
+    <string name="ptr_refresh_complete">更新完了</string>
+    <string name="ptr_last_update">最終更新：</string>
+    <string name="ptr_seconds_ago">秒前</string>
+    <string name="ptr_minutes_ago">分前</string>
+    <string name="ptr_hours_ago">時間前</string>
 </resources>

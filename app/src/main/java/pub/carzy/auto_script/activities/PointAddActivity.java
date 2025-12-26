@@ -52,8 +52,6 @@ public class PointAddActivity extends BaseActivity {
             //报错
         }
         index = (index = intent.getIntExtra("index", -1)) == -1 ? null : index;
-        //更新标题
-        updateActionBarTitle(getActionBarTitle());
         time = (time = intent.getLongExtra("time", -1)) == -1 ? null : time;
         minTime = (minTime = intent.getLongExtra("minTime", -1)) == -1 ? null : minTime;
         maxTime = (maxTime = intent.getLongExtra("maxTime", -1)) == -1 ? null : maxTime;

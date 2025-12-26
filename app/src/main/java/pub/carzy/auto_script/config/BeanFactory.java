@@ -62,52 +62,93 @@ public class BeanFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(TypeToken<?> type) {
+    public <T> T get(TypeToken<?> type, boolean ex) {
         Object instance = genericTypeMap.get(type.getType());
         if (instance == null) {
-            throw new BeanNotFoundException("Bean not found for type: " + type);
+            if (ex) {
+                throw new BeanNotFoundException("Bean not found for type: " + type);
+            } else {
+                return null;
+            }
+
         }
         return (T) instance;
+    }
+
+    public <T> T get(TypeToken<?> type) {
+        return get(type, true);
     }
 
     /**
      * 获取对象（按名字+类型）
      */
     @SuppressWarnings("unchecked")
-    public <T> T get(String name, Class<T> type) {
+    public <T> T get(String name, Class<T> type, boolean ex) {
         Object obj = nameMap.get(name);
         if (obj == null) {
-            throw new BeanNotFoundException("Bean not found with name: " + name);
+            if (ex) {
+                throw new BeanNotFoundException("Bean not found with name: " + name);
+            } else {
+                return null;
+            }
         }
         if (type != null && !type.isInstance(obj)) {
-            throw new BeanNotFoundException("Bean named '" + name + "' is not of type: " + type.getName());
+            if (ex) {
+                throw new BeanNotFoundException("Bean named '" + name + "' is not of type: " + type.getName());
+            } else {
+                return null;
+            }
         }
         return (T) obj;
+    }
+
+    public <T> T get(String name, Class<T> type) {
+        return get(name, type, true);
     }
 
     /**
      * 获取对象（按名字）
      */
     @SuppressWarnings("unchecked")
-    public <T> T get(String name) {
+    public <T> T get(String name, boolean ex) {
         Object obj = nameMap.get(name);
         if (obj == null) {
-            throw new BeanNotFoundException("Bean not found with name: " + name);
+            if (ex) {
+                throw new BeanNotFoundException("Bean not found with name: " + name);
+            } else {
+                return null;
+            }
         }
         return (T) obj;
+    }
+
+    public <T> T get(String name) {
+        return get(name, true);
     }
 
     /**
      * 获取对象（按类型，唯一实现）
      */
-    @SuppressWarnings("unchecked")
     public <T> T get(Class<T> type) {
+        return get(type, true);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get(Class<T> type, boolean ex) {
         Set<String> names = typeMap.get(type);
         if (names == null || names.isEmpty()) {
-            throw new BeanNotFoundException("Bean not found for type: " + type.getName());
+            if (ex) {
+                throw new BeanNotFoundException("Bean not found for type: " + type.getName());
+            } else {
+                return null;
+            }
         }
         if (names.size() > 1) {
-            throw new BeanNotFoundException("Multiple beans found for type: " + type.getName() + ", specify name");
+            if (ex) {
+                throw new BeanNotFoundException("Multiple beans found for type: " + type.getName() + ", specify name");
+            } else {
+                return null;
+            }
         }
         String name = names.iterator().next();
         return (T) nameMap.get(name);

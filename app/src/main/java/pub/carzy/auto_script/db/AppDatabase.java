@@ -10,6 +10,7 @@ import androidx.room.TypeConverters;
 
 import java.util.concurrent.Executors;
 
+import pub.carzy.auto_script.db.config.ConvertManager;
 import pub.carzy.auto_script.db.config.DateConverter;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;

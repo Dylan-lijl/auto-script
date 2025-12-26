@@ -97,4 +97,12 @@
     <string name="infinite_loop">무한 반복</string>
     <string name="loop_format">%d회 반복</string>
     <string name="loop">반복</string>
+    <string name="ptr_pull_down_to_refresh">당겨서 새로고침</string>
+    <string name="ptr_release_to_refresh">놓아서 새로고침</string>
+    <string name="ptr_refreshing">새로고침 중…</string>
+    <string name="ptr_refresh_complete">새로고침 완료</string>
+    <string name="ptr_last_update">마지막 업데이트:</string>
+    <string name="ptr_seconds_ago">초 전</string>
+    <string name="ptr_minutes_ago">분 전</string>
+    <string name="ptr_hours_ago">시간 전</string>
 </resources>

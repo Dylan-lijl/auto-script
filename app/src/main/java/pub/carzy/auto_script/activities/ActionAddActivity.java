@@ -49,8 +49,6 @@ public class ActionAddActivity extends BaseActivity {
             //报错
         }
         index = (index = intent.getIntExtra("index", -1)) == -1 ? null : index;
-        //更新标题
-        updateActionBarTitle(getActionBarTitle());
         upTime = (upTime = intent.getLongExtra("upTime", -1)) == -1 ? null : upTime;
         downTime = (downTime = intent.getLongExtra("downTime", -1)) == -1 ? null : downTime;
         maxTime = (maxTime = intent.getLongExtra("maxTime", -1)) == -1 ? null : maxTime;

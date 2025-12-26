@@ -3,14 +3,18 @@ package pub.carzy.auto_script.activities;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
+import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheetBaseBuilder;
+import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheetListItemModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.controller.BaseController;
 import pub.carzy.auto_script.entity.SupportLocaleResult;
+import pub.carzy.auto_script.ui.entity.ActionInflater;
 
 
 /**
@@ -33,10 +38,18 @@ public abstract class BaseActivity extends AppCompatActivity {
         controller = new BaseController();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.common, menu);
-        return true;
+    public void addDefaultMenu(QMUIBottomSheet.BottomListSheetBuilder builder) {
+        List<ActionInflater.ActionItem> list = ActionInflater.inflate(this, R.xml.actions_common);
+        for (ActionInflater.ActionItem item:list){
+            if (!item.isEnabled()){
+                continue;
+            }
+            QMUIBottomSheetListItemModel model = new QMUIBottomSheetListItemModel(item.getTitle(), item.idToString());
+            if (item.getIcon()!=null){
+                model.image(item.getIcon());
+            }
+            builder.addItem(model);
+        }
     }
 
     @Override
@@ -95,21 +108,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected String getActionBarTitle() {
         return getString(R.string.app_name);
-    }
-
-    protected void updateActionBarTitle(String title) {
-        if (title != null && getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(title);
-        }
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        //设置标题
-        if (getActionBarTitle() != null && getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(getActionBarTitle());
-        }
     }
 
     private AlertDialog.Builder createBuilder(SupportLocaleResult result, List<String> keys) {

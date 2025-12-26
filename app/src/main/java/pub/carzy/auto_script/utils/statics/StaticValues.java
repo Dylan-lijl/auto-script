@@ -5,4 +5,13 @@ package pub.carzy.auto_script.utils.statics;
  */
 public class StaticValues {
     public static final int DEFAULT_INDEX = -1;
+    public static final int DEFAULT = 0;
+    public static final int DELETE = -1;
+    public static final int EDIT = 2;
+    public static final int ADD = 1;
+    public static final int OPEN = 3;
+    public static final int RUN = 4;
+    public static final int UP = 1;
+    public static final int DOWN = -1;
+
 }
