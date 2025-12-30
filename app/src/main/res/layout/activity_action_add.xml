@@ -22,198 +22,209 @@
             type="Integer" />
     </data>
 
-    <LinearLayout
+    <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            style="@style/FormVerticalItemStyle"
-            android:baselineAligned="true">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/add_start"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add_start"
-                android:textColor="@color/warning" />
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/common_top_bar" />
 
-            <Button
-                android:id="@+id/add_before"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add_before"
-                android:textColor="@color/warning"
-                android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
+            <LinearLayout
+                style="@style/FormVerticalItemStyle"
+                android:baselineAligned="true">
 
-            <Button
-                android:id="@+id/add_after"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add_after"
-                android:textColor="@color/warning"
-                android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
-
-            <Button
-                android:id="@+id/add_end"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add_end"
-                android:textColor="@color/warning" />
-        </LinearLayout>
-
-        <TextView style="@style/MenuDivider" />
-
-        <LinearLayout
-            style="@style/FormVerticalItemStyle"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/type_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_type))}" />
-
-            <RadioGroup
-                android:id="@+id/type_group"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="horizontal"
-                app:actionType="@={data.type}">
-
-                <RadioButton
-                    android:id="@+id/type_gesture"
+                <Button
+                    android:id="@+id/add_start"
+                    style="@style/TransparentButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/gesture" />
+                    android:text="@string/add_start"
+                    android:textColor="@color/warning" />
 
-                <RadioButton
-                    android:id="@+id/type_key_event"
+                <Button
+                    android:id="@+id/add_before"
+                    style="@style/TransparentButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/key_event" />
-            </RadioGroup>
+                    android:text="@string/add_before"
+                    android:textColor="@color/warning"
+                    android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
+
+                <Button
+                    android:id="@+id/add_after"
+                    style="@style/TransparentButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/add_after"
+                    android:textColor="@color/warning"
+                    android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
+
+                <Button
+                    android:id="@+id/add_end"
+                    style="@style/TransparentButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/add_end"
+                    android:textColor="@color/warning" />
+            </LinearLayout>
+
+            <TextView style="@style/MenuDivider" />
+
+            <LinearLayout
+                style="@style/FormVerticalItemStyle"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/type_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_type))}" />
+
+                <RadioGroup
+                    android:id="@+id/type_group"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    app:actionType="@={data.type}">
+
+                    <RadioButton
+                        android:id="@+id/type_gesture"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gesture" />
+
+                    <RadioButton
+                        android:id="@+id/type_key_event"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/key_event" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <LinearLayout style="@style/FormVerticalItemStyle">
+
+                <TextView
+                    android:id="@+id/down_time_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
+
+                <EditText
+                    android:id="@+id/down_time_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_label_down_time))}"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:labelFor="@id/down_time_input_label"
+                    android:text="@={Converter.longToString(data.downTime)}" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/FormVerticalItemStyle"
+                android:visibility="@{data.type == ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
+
+                <TextView
+                    android:id="@+id/duration_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_duration))}" />
+
+                <EditText
+                    android:id="@+id/duration_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_duration))}"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:labelFor="@id/duration_input_label" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/FormVerticalItemStyle"
+                android:visibility="@{data.type==ScriptActionEntity.GESTURE?View.VISIBLE:View.GONE}">
+
+                <TextView
+                    android:id="@+id/index_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_index))}" />
+
+                <EditText
+                    android:id="@+id/index_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_label_index))}"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:labelFor="@id/index_input_label"
+                    android:text="@={Converter.intToString(data.index)}" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/FormVerticalItemStyle"
+                android:visibility="@{data.type==ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/auto_adjust_input"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.auto_adjust))}" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/FormVerticalItemStyle"
+                android:visibility="@{data.type==ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
+
+                <TextView
+                    android:id="@+id/code_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_code))}" />
+
+                <Spinner
+                    android:id="@+id/code_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:selectedValue="@={data.code}" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/FormVerticalItemStyle"
+                android:gravity="end">
+
+                <Button
+                    android:id="@+id/btn_cancel"
+                    style="@style/TransparentButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cancel"
+                    android:textColor="@color/safe" />
+
+                <Button
+                    android:id="@+id/btn_submit"
+                    style="@style/TransparentButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/add"
+                    android:textColor="@color/link" />
+            </LinearLayout>
         </LinearLayout>
-
-        <LinearLayout style="@style/FormVerticalItemStyle">
-
-            <TextView
-                android:id="@+id/down_time_input_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
-
-            <EditText
-                android:id="@+id/down_time_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ems="10"
-                android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_label_down_time))}"
-                android:importantForAutofill="no"
-                android:inputType="number"
-                android:labelFor="@id/down_time_input_label"
-                android:text="@={Converter.longToString(data.downTime)}" />
-        </LinearLayout>
-
-        <LinearLayout
-            style="@style/FormVerticalItemStyle"
-            android:visibility="@{data.type == ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
-
-            <TextView
-                android:id="@+id/duration_input_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_duration))}" />
-
-            <EditText
-                android:id="@+id/duration_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ems="10"
-                android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_duration))}"
-                android:importantForAutofill="no"
-                android:inputType="number"
-                android:labelFor="@id/duration_input_label" />
-        </LinearLayout>
-
-        <LinearLayout
-            style="@style/FormVerticalItemStyle"
-            android:visibility="@{data.type==ScriptActionEntity.GESTURE?View.VISIBLE:View.GONE}">
-
-            <TextView
-                android:id="@+id/index_input_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_index))}" />
-
-            <EditText
-                android:id="@+id/index_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ems="10"
-                android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_label_index))}"
-                android:importantForAutofill="no"
-                android:inputType="number"
-                android:labelFor="@id/index_input_label"
-                android:text="@={Converter.intToString(data.index)}" />
-        </LinearLayout>
-        <LinearLayout
-            style="@style/FormVerticalItemStyle"
-            android:visibility="@{data.type==ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/auto_adjust_input"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.auto_adjust))}" />
-
-        </LinearLayout>
-        <LinearLayout
-            style="@style/FormVerticalItemStyle"
-            android:visibility="@{data.type==ScriptActionEntity.KEY_EVENT?View.VISIBLE:View.GONE}">
-
-            <TextView
-                android:id="@+id/code_input_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_code))}" />
-
-            <Spinner
-                android:id="@+id/code_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:selectedValue="@={data.code}" />
-        </LinearLayout>
-
-        <LinearLayout
-            style="@style/FormVerticalItemStyle"
-            android:gravity="end">
-
-            <Button
-                android:id="@+id/btn_cancel"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/cancel"
-                android:textColor="@color/safe" />
-
-            <Button
-                android:id="@+id/btn_submit"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add"
-                android:textColor="@color/link" />
-        </LinearLayout>
-    </LinearLayout>
+    </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
 </layout>

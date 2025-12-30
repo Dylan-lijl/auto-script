@@ -1,0 +1,67 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+    <!-- 齿轮 + 中心挖空圆 -->
+    <group
+        android:name="gear"
+        android:pivotX="512"
+        android:pivotY="512">
+        <path
+            android:fillColor="#FFCC80"
+            android:fillType="evenOdd"
+            android:pathData="
+            M512,64
+            L588,80
+            L624,176
+            L720,212
+            L816,160
+            L864,208
+            L812,304
+            L848,400
+            L944,436
+            L960,512
+            L944,588
+            L848,624
+            L812,720
+            L864,816
+            L816,864
+            L720,812
+            L624,848
+            L588,944
+            L512,960
+            L436,944
+            L400,848
+            L304,812
+            L208,864
+            L160,816
+            L212,720
+            L176,624
+            L80,588
+            L64,512
+            L80,436
+            L176,400
+            L212,304
+            L160,208
+            L208,160
+            L304,212
+            L400,176
+            L436,80
+            Z
+            M512,256
+            A256,256 0 1,1 511.9,256
+            Z
+        " />
+    </group>
+    <!-- 播放三角形 -->
+    <group android:name="play">
+        <path
+            android:fillColor="#388E3C"
+            android:pathData="
+            M428,352
+            L684,512
+            L428,672
+            Z" />
+    </group>
+</vector>

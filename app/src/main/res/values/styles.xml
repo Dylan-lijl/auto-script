@@ -54,10 +54,4 @@
         <attr name="android:icon" format="reference" />
         <attr name="android:hint" format="color" />
     </declare-styleable>
-
-    <style name="AppTheme" parent="QMUI.Compat.NoActionBar">
-        <!-- 你自己的颜色 -->
-        <item name="colorPrimary">@color/design_default_color_primary</item>
-        <item name="colorPrimaryDark">@color/qmui_config_color_separator_darken</item>
-    </style>
 </resources>

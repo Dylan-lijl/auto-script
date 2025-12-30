@@ -5,17 +5,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -23,7 +19,6 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ObservableMap;
@@ -38,8 +33,11 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
+import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
+import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -47,10 +45,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import pub.carzy.auto_script.R;
@@ -58,8 +56,6 @@ import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.databinding.ActionInfoBinding;
 import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
-import pub.carzy.auto_script.databinding.AutoAlignDialogBinding;
-import pub.carzy.auto_script.databinding.ChatToolbarMoreMenuBinding;
 import pub.carzy.auto_script.databinding.PointInfoBinding;
 import pub.carzy.auto_script.db.AppDatabase;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
@@ -71,7 +67,9 @@ import pub.carzy.auto_script.model.ScriptVoEntityModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.ReplayScriptAction;
+import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
+import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.StoreUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
@@ -83,10 +81,6 @@ import pub.carzy.auto_script.utils.TypeToken;
 public class MacroInfoActivity extends BaseActivity {
 
     private ActivityMacroInfoBinding binding;
-    private AutoAlignDialogBinding dataBinding;
-    private ActionInfoBinding actionInfoBinding;
-    private PointInfoBinding pointInfoBinding;
-    private ChatToolbarMoreMenuBinding moreMenuBinding;
     private ScriptVoEntityModel model;
     private MacroInfoRefreshModel refresh;
     private IdGenerator<Long> idWorker;
@@ -97,14 +91,108 @@ public class MacroInfoActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        init();
+        initChat();
+        initIntent();
+        initTopBar();
+        initFlowChatLayout();
+    }
+
+    private void initFlowChatLayout() {
+        // 设置没有数据时显示的文字,,,按照mvvm思想这个属性应该写在xml,但是这个库未提供xml属性
+        binding.flowChatLayout.actionBarChart.setNoDataText(getString(R.string.message_no_data));
+        binding.flowChatLayout.pointBarChart.setNoDataText(getString(R.string.message_no_data));
+        binding.flowChatLayout.btnDelete.setOnClickListener(e -> deleteActionItem());
+        binding.flowChatLayout.btnDeleteDetail.setOnClickListener(e -> deletePointItem());
+        binding.flowChatLayout.btnInfo.setOnClickListener(e -> showInfo());
+        binding.flowChatLayout.btnDetailInfo.setOnClickListener(e -> showDetailInfo());
+        binding.flowChatLayout.btnAdd.setOnClickListener(e -> addAction());
+        binding.flowChatLayout.btnInfoAdd.setOnClickListener(e -> addPoint());
+        addLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), createProcessAddResult());
+        addInfoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), createProcessAddInfoResult());
+    }
+
+    private void initTopBar() {
+        binding.topBarLayout.actionBar.setTitle(getActionBarTitle());
+        QMUIAlphaImageButton manyBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
+        manyBtn.setOnClickListener(e -> openBottomSheet());
+        binding.flowChatToolbar.actionStartBtn.setOnClickListener(e -> changeRunService());
+    }
+
+    private void openBottomSheet() {
+        QMUIBottomSheet.BottomListSheetBuilder builder = new QMUIBottomSheet.BottomListSheetBuilder(this)
+                .setGravityCenter(false)
+                .setAddCancelBtn(false)
+                .setOnSheetItemClickListener((dialog, itemView, position, tag) -> {
+                    if (tag == null) {
+                        dialog.dismiss();
+                        return;
+                    }
+                    int id = ActionInflater.ActionItem.stringToId(tag);
+                    if (id == R.id.action_run) {
+                        dialog.dismiss();
+                        changeRunService();
+                    } else if (id == R.id.action_rename) {
+                        dialog.dismiss();
+                        //这里需要弹窗来修改名字
+                        if (model.getRoot() != null) {
+                            showRenameDialog();
+                        }
+                    } else if (id == R.id.action_remark) {
+                        dialog.dismiss();
+                        //这里需要弹窗来修改名字
+                        if (model.getRoot() != null) {
+                            showRemarkDialog();
+                        }
+                    } else if (id == R.id.action_save) {
+                        dialog.dismiss();
+                        saveData();
+                    } else if (id == R.id.action_remove) {
+                        showDeleteDialog(dialog);
+                    } else if (id == R.id.action_export) {
+                        Toast.makeText(this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
+                        ThreadUtil.runOnCpu(() -> {
+                            //将脚本保存为json文件
+                            Gson gson = new Gson();
+                            ScriptVoEntity entity = new ScriptVoEntity();
+                            entity.setRoot(model.getRoot());
+                            entity.setActions(new ArrayList<>(model.getActions().values()));
+                            entity.setPoints(new ArrayList<>(model.getPoints().values()));
+                            //调用报错文件api
+                            StoreUtil.promptAndSaveFile(gson.toJson(entity),
+                                    "file_" + new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss", getSyncLanguage()).format(new Date()) + ".json",
+                                    result -> ThreadUtil.runOnUi(() -> {
+                                        Toast.makeText(MacroInfoActivity.this, getString(R.string.message_saved_successfully_ph, result)
+                                                , Toast.LENGTH_SHORT).show();
+                                        //打开对应文件夹位置
+                                        showFileInFolder(this, new File(result));
+                                    }));
+                        });
+                    } else {
+                        dialog.dismiss();
+                    }
+                });
+        addActionByXml(builder, this, R.xml.actions_macro_info);
+        QMUIBottomSheet build = builder.build();
+        build.show();
+    }
+
+    private void changeRunService() {
+        MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
+        if (service != null) {
+            ScriptVoEntity entity = new ScriptVoEntity();
+            entity.setRoot(model.getRoot());
+            entity.getActions().addAll(model.getActions().values());
+            entity.getPoints().addAll(model.getPoints().values());
+            service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(entity));
+        }
+    }
+
+    private void init() {
         idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
         });
         db = BeanFactory.getInstance().get(AppDatabase.class);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_macro_info);
-        dataBinding = AutoAlignDialogBinding.inflate(LayoutInflater.from(this));
-        moreMenuBinding = ChatToolbarMoreMenuBinding.inflate(LayoutInflater.from(this));
-        actionInfoBinding = ActionInfoBinding.inflate(LayoutInflater.from(this));
-        pointInfoBinding = PointInfoBinding.inflate(LayoutInflater.from(this));
         model = new ScriptVoEntityModel();
         for (int c : getResources().getIntArray(R.array.script_info_chat_color)) {
             model.getColorsResource().add(c);
@@ -113,15 +201,6 @@ public class MacroInfoActivity extends BaseActivity {
         refresh.setInfo(true);
         binding.setModel(model);
         binding.setRefresh(refresh);
-        moreMenuBinding.setModel(model);
-        initChat();
-        initIntent();
-        // 设置没有数据时显示的文字,,,按照mvvm思想这个属性应该写在xml,但是这个库未提供xml属性
-        binding.flowChatLayout.actionBarChart.setNoDataText(getString(R.string.message_no_data));
-        binding.flowChatLayout.pointBarChart.setNoDataText(getString(R.string.message_no_data));
-        initialListeners();
-        addLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), createProcessAddResult());
-        addInfoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), createProcessAddInfoResult());
     }
 
     private ActivityResultCallback<ActivityResult> createProcessAddInfoResult() {
@@ -246,314 +325,240 @@ public class MacroInfoActivity extends BaseActivity {
         };
     }
 
-    private void initialListeners() {
-        binding.flowChatToolbar.btnMoreAction.setOnClickListener(e -> {
-            PopupWindow popupWindow = new PopupWindow(
-                    ActivityUtils.reinstatedView(moreMenuBinding.getRoot()),
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    true // 点击外部消失
-            );
-            popupWindow.setOutsideTouchable(true);
-            popupWindow.setFocusable(true);
-            moreMenuBinding.actionRun.setOnClickListener(event -> {
-                //打开对应service悬浮窗口
-                popupWindow.dismiss();
-                MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class,false);
-                if (service != null) {
-                    ScriptVoEntity entity = new ScriptVoEntity();
-                    entity.setRoot(model.getRoot());
-                    entity.getActions().addAll(model.getActions().values());
-                    entity.getPoints().addAll(model.getPoints().values());
-                    service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(entity));
-                }
-            });
-            moreMenuBinding.actionRename.setOnClickListener(event -> {
-                popupWindow.dismiss();
-                //这里需要弹窗来修改名字
-                if (model.getRoot() != null) {
-                    showRenameDialog();
-                }
-            });
-            moreMenuBinding.actionRemark.setOnClickListener(event -> {
-                popupWindow.dismiss();
-                //这里需要弹窗来修改名字
-                if (model.getRoot() != null) {
-                    showRemarkDialog();
-                }
-            });
-            moreMenuBinding.actionExport.setOnClickListener(event -> {
-                popupWindow.dismiss();
-                Toast.makeText(this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
-                ThreadUtil.runOnCpu(() -> {
-                    //将脚本保存为json文件
-                    Gson gson = new Gson();
-                    ScriptVoEntity entity = new ScriptVoEntity();
-                    entity.setRoot(model.getRoot());
-                    entity.setActions(new ArrayList<>(model.getActions().values()));
-                    entity.setPoints(new ArrayList<>(model.getPoints().values()));
-                    //调用报错文件api
-                    StoreUtil.promptAndSaveFile(gson.toJson(entity),
-                            "file_" + new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss", Locale.getDefault()).format(new Date()) + ".json",
-                            result -> ThreadUtil.runOnUi(() -> {
-                                Toast.makeText(MacroInfoActivity.this, getString(R.string.message_saved_successfully_ph, result)
-                                        , Toast.LENGTH_SHORT).show();
-                                //打开对应文件夹位置
-                                showFileInFolder(this, new File(result));
-                            }));
-                });
-            });
-            moreMenuBinding.actionSave.setOnClickListener(createSaveListener());
-            moreMenuBinding.actionRemove.setOnClickListener(event -> {
-                if (refresh.getDelete()) {
-                    return;
-                }
-                //删除当前整个脚本
-                AlertDialog d = new MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.delete_dialog_title)
-                        .setMessage(R.string.delete_dialog_message)
-                        .setPositiveButton(R.string.confirm, (dialog, which) -> ThreadUtil.runOnCpu(() -> {
+
+    private void showDeleteDialog(QMUIBottomSheet sheet) {
+        if (refresh.getDelete()) {
+            return;
+        }
+        //删除当前整个脚本
+        ActivityUtils.createDeleteMessageDialog(this,
+                        (d, i) -> {
                             refresh.setDelete(true);
-                            try {
-                                db.runInTransaction(() -> {
-                                    //查找并删除
-                                    List<Long> actionIds = db.scriptActionMapper().findIdByParentId(model.getRoot().getId());
-                                    if (!actionIds.isEmpty()) {
-                                        List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
-                                        if (!pointIds.isEmpty()) {
-                                            db.scriptPointMapper().deleteByIds(pointIds);
+                            ThreadUtil.runOnCpu(() -> {
+                                try {
+                                    db.runInTransaction(() -> {
+                                        //查找并删除
+                                        List<Long> actionIds = db.scriptActionMapper().findIdByParentId(model.getRoot().getId());
+                                        if (!actionIds.isEmpty()) {
+                                            List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
+                                            if (!pointIds.isEmpty()) {
+                                                db.scriptPointMapper().deleteByIds(pointIds);
+                                            }
+                                            db.scriptActionMapper().deleteByIds(actionIds);
                                         }
-                                        db.scriptActionMapper().deleteByIds(actionIds);
-                                    }
-                                    db.scriptMapper().deleteById(model.getRoot().getId());
-                                });
-                                model.setSaved(false);
-                                popupWindow.dismiss();
-                            } finally {
-                                refresh.setDelete(false);
-                            }
-                        })).create();
-                d.show();
-            });
-            Button button = binding.flowChatToolbar.btnMoreAction;
-            moreMenuBinding.getRoot().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            popupWindow.showAsDropDown(button, -moreMenuBinding.getRoot().getMeasuredWidth() * 3 / 4, 0);
+                                        db.scriptMapper().deleteById(model.getRoot().getId());
+                                    });
+                                    ThreadUtil.runOnUi(() -> {
+                                        model.setSaved(false);
+                                        sheet.dismiss();
+                                    });
+                                } finally {
+                                    ThreadUtil.runOnUi(() -> refresh.setDelete(false));
+                                }
+                            });
+                        },
+                        (d, i) -> d.dismiss())
+                .show();
+    }
+
+    private void saveData() {
+        if (refresh.getSave()) {
+            return;
+        }
+        refresh.setSave(true);
+        ThreadUtil.runOnCpu(() -> {
+            try {
+                //存数据
+                db.runInTransaction(() -> {
+                    //删除旧数据
+                    List<Long> actionIds = db.scriptActionMapper().findIdByParentId(model.getRoot().getId());
+                    if (!actionIds.isEmpty()) {
+                        List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
+                        if (!pointIds.isEmpty()) {
+                            db.scriptPointMapper().deleteByIds(pointIds);
+                        }
+                        db.scriptActionMapper().deleteByIds(actionIds);
+                    }
+
+                    ScriptEntity entity = model.getRoot();
+                    if (entity == null) {
+                        return;
+                    }
+                    Date now = new Date();
+                    if (Objects.isNull(entity.getCreateTime())) {
+                        entity.setCreateTime(now);
+                    }
+                    entity.setUpdateTime(now);
+                    //保存
+                    db.scriptMapper().save(model.getRoot());
+                    db.scriptActionMapper().save(model.getActions().values());
+                    db.scriptPointMapper().save(model.getPoints().values());
+                });
+                //修改状态
+                model.setSaved(false);
+            } catch (Exception ex) {
+                ThreadUtil.runOnUi(() -> Toast.makeText(MacroInfoActivity.this, "保存失败:" + ex.getMessage(), Toast.LENGTH_SHORT).show());
+            } finally {
+                refresh.setSave(false);
+            }
         });
-        binding.flowChatLayout.btnDelete.setOnClickListener(createDeleteActionItemListener());
-        binding.flowChatLayout.btnDeleteDetail.setOnClickListener(createDeletePointItemListener());
-        binding.flowChatLayout.btnInfo.setOnClickListener(createInfoListener());
-        binding.flowChatLayout.btnDetailInfo.setOnClickListener(createDetailInfoListener());
-        binding.flowChatLayout.btnAdd.setOnClickListener(createAddActionListener());
-        binding.flowChatLayout.btnInfoAdd.setOnClickListener(createAddPointListener());
     }
 
-    private View.OnClickListener createSaveListener() {
-
-        return e -> {
-            if (refresh.getSave()) {
-                return;
-            }
-            refresh.setSave(true);
-            ThreadUtil.runOnCpu(() -> {
-                try {
-                    //存数据
-                    db.runInTransaction(() -> {
-                        //删除旧数据
-                        List<Long> actionIds = db.scriptActionMapper().findIdByParentId(model.getRoot().getId());
-                        if (!actionIds.isEmpty()) {
-                            List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
-                            if (!pointIds.isEmpty()) {
-                                db.scriptPointMapper().deleteByIds(pointIds);
-                            }
-                            db.scriptActionMapper().deleteByIds(actionIds);
-                        }
-
-                        ScriptEntity entity = model.getRoot();
-                        if (entity == null) {
-                            return;
-                        }
-                        Date now = new Date();
-                        if (Objects.isNull(entity.getCreateTime())) {
-                            entity.setCreateTime(now);
-                        }
-                        entity.setUpdateTime(now);
-                        //保存
-                        db.scriptMapper().save(model.getRoot());
-                        db.scriptActionMapper().save(model.getActions().values());
-                        db.scriptPointMapper().save(model.getPoints().values());
-                    });
-                    //修改状态
-                    model.setSaved(false);
-                } catch (Exception ex) {
-                    ThreadUtil.runOnUi(() -> Toast.makeText(MacroInfoActivity.this, "保存失败:" + ex.getMessage(), Toast.LENGTH_SHORT).show());
-                } finally {
-                    refresh.setSave(false);
+    private void addPoint() {
+        Map.Entry<Long, ScriptActionEntity> action = model.getLastCheckedAction();
+        if (action == null) {
+            return;
+        }
+        ScriptPointEntity entity = new ScriptPointEntity();
+        Intent intent = new Intent(this, PointAddActivity.class);
+        Map.Entry<Long, ScriptPointEntity> point = model.getLastCheckedPoint();
+        Set<Long> ids = model.getPointMapByParentId().get(action.getValue().getId());
+        if (ids != null && !ids.isEmpty()) {
+            ScriptPointEntity first = null;
+            ScriptPointEntity last = null;
+            int i = 0;
+            for (Long id : ids) {
+                if (i == 0) {
+                    first = model.getPoints().get(id);
                 }
-            });
-        };
+                if (i == ids.size() - 1) {
+                    last = model.getPoints().get(id);
+                }
+                i++;
+            }
+            intent.putExtra("minTime", first.getTime());
+            intent.putExtra("maxTime", last.getTime());
+            entity.setX(last.getX());
+            entity.setY(last.getY());
+        } else {
+            intent.putExtra("minTime", action.getValue().getDownTime());
+            intent.putExtra("maxTime", action.getValue().getDownTime());
+        }
+        if (point != null) {
+            entity.setX(point.getValue().getX());
+            entity.setY(point.getValue().getY());
+            entity.setTime(point.getValue().getTime());
+        } else {
+            entity.setX(200F);
+            entity.setY(200F);
+        }
+        intent.putExtra("time", entity.getTime());
+        intent.putExtra("data", entity);
+        Integer index = model.getLastCheckedPointIndex();
+        if (index != null) {
+            intent.putExtra("index", index);
+        }
+        //跳转到新增界面
+        addInfoLauncher.launch(intent);
     }
 
-    private View.OnClickListener createAddPointListener() {
-        return e -> {
-            Map.Entry<Long, ScriptActionEntity> action = model.getLastCheckedAction();
-            if (action == null) {
-                return;
+    private void addAction() {
+        ScriptActionEntity entity = new ScriptActionEntity();
+        entity.setMaxTime(0L);
+        entity.setUpTime(0L);
+        entity.setCode(KeyEvent.KEYCODE_HOME);
+        entity.setCount(0);
+        entity.setIndex(0);
+        entity.setType(ScriptActionEntity.GESTURE);
+        Intent intent = new Intent(this, ActionAddActivity.class);
+        intent.putExtra("data", entity);
+        Map.Entry<Long, ScriptActionEntity> entry = model.getLastCheckedAction();
+        if (entry != null) {
+            intent.putExtra("upTime", entry.getValue().getUpTime());
+            intent.putExtra("downTime", entry.getValue().getDownTime());
+        }
+        Integer index = model.getLastCheckedActionIndex();
+        if (index != null) {
+            intent.putExtra("index", index);
+        }
+        if (!model.getActions().isEmpty()) {
+            ScriptActionEntity last = model.getActions().get(ScriptVoEntityModel.getLastKey(model.getActions()));
+            if (last != null) {
+                intent.putExtra("maxTime", last.getUpTime());
             }
-            ScriptPointEntity entity = new ScriptPointEntity();
-            Intent intent = new Intent(this, PointAddActivity.class);
-            Map.Entry<Long, ScriptPointEntity> point = model.getLastCheckedPoint();
-            Set<Long> ids = model.getPointMapByParentId().get(action.getValue().getId());
-            if (ids != null && !ids.isEmpty()) {
-                ScriptPointEntity first = null;
-                ScriptPointEntity last = null;
-                int i = 0;
-                for (Long id : ids) {
-                    if (i == 0) {
-                        first = model.getPoints().get(id);
-                    }
-                    if (i == ids.size() - 1) {
-                        last = model.getPoints().get(id);
-                    }
-                    i++;
-                }
-                intent.putExtra("minTime", first.getTime());
-                intent.putExtra("maxTime", last.getTime());
-                entity.setX(last.getX());
-                entity.setY(last.getY());
-            } else {
-                intent.putExtra("minTime", action.getValue().getDownTime());
-                intent.putExtra("maxTime", action.getValue().getDownTime());
-            }
-            if (point != null) {
-                entity.setX(point.getValue().getX());
-                entity.setY(point.getValue().getY());
-                entity.setTime(point.getValue().getTime());
-            } else {
-                entity.setX(200F);
-                entity.setY(200F);
-            }
-            intent.putExtra("time", entity.getTime());
-            intent.putExtra("data", entity);
-            Integer index = model.getLastCheckedPointIndex();
-            if (index != null) {
-                intent.putExtra("index", index);
-            }
-            //跳转到新增界面
-            addInfoLauncher.launch(intent);
-        };
-    }
-
-    private View.OnClickListener createAddActionListener() {
-        return e -> {
-            ScriptActionEntity entity = new ScriptActionEntity();
-            entity.setMaxTime(0L);
-            entity.setUpTime(0L);
-            entity.setCode(KeyEvent.KEYCODE_HOME);
-            entity.setCount(0);
-            entity.setIndex(0);
-            entity.setType(ScriptActionEntity.GESTURE);
-            Intent intent = new Intent(this, ActionAddActivity.class);
-            intent.putExtra("data", entity);
-            Map.Entry<Long, ScriptActionEntity> entry = model.getLastCheckedAction();
-            if (entry != null) {
-                intent.putExtra("upTime", entry.getValue().getUpTime());
-                intent.putExtra("downTime", entry.getValue().getDownTime());
-            }
-            Integer index = model.getLastCheckedActionIndex();
-            if (index != null) {
-                intent.putExtra("index", index);
-            }
-            if (!model.getActions().isEmpty()) {
-                ScriptActionEntity last = model.getActions().get(ScriptVoEntityModel.getLastKey(model.getActions()));
-                if (last != null) {
-                    intent.putExtra("maxTime", last.getUpTime());
-                }
-            }
-            //跳转到新增界面
-            addLauncher.launch(intent);
-        };
+        }
+        //跳转到新增界面
+        addLauncher.launch(intent);
     }
 
     private void showRemarkDialog() {
-        // 创建一个 EditText 作为输入框
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setHint(getString(R.string.message_input_prompt, getString(R.string.remark)));
-        input.setText(model.getRoot().getRemark());
-        input.setFocusable(true);
-        input.setFocusableInTouchMode(true);
-        AlertDialog alertDialog = new MaterialAlertDialogBuilder(this)
+        AtomicReference<String> text = new AtomicReference<>();
+        QMUIDialog qmuiDialog = new QMUIDialog.EditTextDialogBuilder(this)
                 .setTitle(R.string.remark)
-                .setView(input)
-                .setPositiveButton(R.string.confirm, (dialog, which) -> {
-                    String value = input.getText().toString().trim();
-                    if (!value.isEmpty()) {
+                .setInputType(InputType.TYPE_CLASS_TEXT)
+                .setPlaceholder(getString(R.string.message_input_prompt, getString(R.string.remark)))
+                .setDefaultText(model.getRoot().getName())
+                .setTextWatcher(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        text.set(s.toString());
+                    }
+                })
+                .addAction(R.string.cancel, (dialog, index) -> {
+                    dialog.dismiss();
+                })
+                .addAction(R.string.confirm, (dialog, index) -> {
+                    String t = text.get();
+                    if (t == null) {
+                        return;
+                    }
+                    String v = t.trim();
+                    if (!v.isEmpty()) {
                         if (model.getRoot() != null) {
-                            model.getRoot().setRemark(value);
+                            model.getRoot().setRemark(v);
                         }
                     } else {
                         Toast.makeText(this, getString(R.string.message_error_empty_ph, getString(R.string.remark)), Toast.LENGTH_SHORT).show();
                     }
-                    model.setSaved(true);
                 })
-                .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss()).create();
-
-        alertDialog.setOnShowListener(d -> {
-            input.requestFocus();
-            input.postDelayed(() -> {
-                if (alertDialog.getWindow() == null) {
-                    return;
-                }
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                alertDialog.getWindow().clearFlags(
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                );
-                alertDialog.getWindow().setSoftInputMode(
-                        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
-                );
-                imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
-            }, 150);
-        });
-        alertDialog.show();
+                .create();
+        qmuiDialog.show();
     }
 
-    private View.OnClickListener createDetailInfoListener() {
-        return v -> {
-            if (model.getCheckedPoint().isEmpty()) {
-                return;
-            }
-            pointInfoBinding.setEntity(model.getLastCheckedPoint().getValue());
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(getString(R.string.dialog_point_info_title, model.getLastCheckedPointIndex()))
-                    .setView(ActivityUtils.reinstatedView(pointInfoBinding.getRoot()))
-                    .setNegativeButton(R.string.cancel, null)
-                    .show();
-        };
+    private void showDetailInfo() {
+        if (model.getCheckedPoint().isEmpty()) {
+            return;
+        }
+        PointInfoBinding binding = PointInfoBinding.inflate(LayoutInflater.from(this));
+        binding.setEntity(model.getLastCheckedPoint().getValue());
+        BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
+        builder.addView(binding.getRoot())
+                .setContentPaddingDp(20, 20)
+                .setTitle(getString(R.string.dialog_action_info_title, model.getLastCheckedActionIndex()));
+        builder.build().show();
     }
 
-    private View.OnClickListener createInfoListener() {
-        return v -> {
-            if (model.getCheckedAction().isEmpty()) {
-                return;
-            }
-            actionInfoBinding.setEntity(model.getLastCheckedAction().getValue());
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(getString(R.string.dialog_action_info_title, model.getLastCheckedActionIndex()))
-                    .setView(ActivityUtils.reinstatedView(actionInfoBinding.getRoot()))
-                    .setNegativeButton(R.string.cancel, null)
-                    .show();
-        };
+    private void showInfo() {
+        if (model.getCheckedAction().isEmpty()) {
+            return;
+        }
+        ActionInfoBinding binding = ActionInfoBinding.inflate(LayoutInflater.from(this));
+        binding.setEntity(model.getLastCheckedAction().getValue());
+        BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
+        builder.addView(binding.getRoot())
+                .setContentPaddingDp(20, 20)
+                .setTitle(getString(R.string.dialog_action_info_title, model.getLastCheckedActionIndex()));
+        builder.build().show();
     }
 
-    private View.OnClickListener createDeletePointItemListener() {
-        return e -> new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.delete_dialog_title)
-                .setMessage(R.string.delete_dialog_message)
-                .setView(ActivityUtils.reinstatedView(dataBinding.getRoot()))
-                .setPositiveButton(R.string.confirm, (dialog, which) -> removeCheckedPoint(dataBinding.checkBox.isChecked()))
-                .setNegativeButton(R.string.cancel, null)
-                .show();
+    private void deletePointItem() {
+        QMUIDialog.CheckBoxMessageDialogBuilder builder = new QMUIDialog.CheckBoxMessageDialogBuilder(this)
+                .setChecked(true)
+                .setMessage(R.string.auto_adjust)
+                .setTitle(R.string.delete_dialog_title);
+        builder.addAction(R.string.cancel, (d, i) -> d.dismiss())
+                .addAction(R.string.confirm, (d, i) -> removeCheckedPoint(builder.isChecked()))
+                .create().show();
     }
 
     private void removeCheckedPoint(boolean checked) {
@@ -619,14 +624,14 @@ public class MacroInfoActivity extends BaseActivity {
         });
     }
 
-    private View.OnClickListener createDeleteActionItemListener() {
-        return e -> new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.delete_dialog_title)
-                .setMessage(R.string.delete_dialog_message)
-                .setView(ActivityUtils.reinstatedView(dataBinding.getRoot()))
-                .setPositiveButton(R.string.confirm, (dialog, which) -> removeCheckedAction(dataBinding.checkBox.isChecked()))
-                .setNegativeButton(R.string.cancel, null)
-                .show();
+    private void deleteActionItem() {
+        QMUIDialog.CheckBoxMessageDialogBuilder builder = new QMUIDialog.CheckBoxMessageDialogBuilder(this)
+                .setChecked(true)
+                .setMessage(R.string.auto_adjust)
+                .setTitle(R.string.delete_dialog_title);
+        builder.addAction(R.string.cancel, (d, i) -> d.dismiss())
+                .addAction(R.string.confirm, (d, i) -> removeCheckedAction(builder.isChecked()))
+                .create().show();
     }
 
     private void initChat() {
@@ -689,15 +694,15 @@ public class MacroInfoActivity extends BaseActivity {
                 if (item.compareTo(id) == 0) {
                     if (pre == null) {
                         ScriptActionEntity action = model.getActions().get(point.getParentId());
-                        return action == null ? "?" : point.getTime() - action.getDownTime() + "ms";
+                        return action == null ? "?" : point.getTime() - action.getDownTime() + getString(R.string.unit_ms);
                     } else {
                         ScriptPointEntity preEntity = model.getPoints().get(pre);
-                        return preEntity == null ? "?" : point.getTime() - preEntity.getTime() + "ms";
+                        return preEntity == null ? "?" : point.getTime() - preEntity.getTime() + getString(R.string.unit_ms);
                     }
                 }
                 pre = item;
             }
-            return point.getX() + "ms";
+            return point.getX() + getString(R.string.unit_ms);
         });
         //给checkAction添加监听
         model.getCheckedAction().addOnMapChangedCallback(new ObservableMap.OnMapChangedCallback<>() {
@@ -856,18 +861,37 @@ public class MacroInfoActivity extends BaseActivity {
     }
 
     private void showRenameDialog() {
-        // 创建一个 EditText 作为输入框
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setHint(getString(R.string.message_input_prompt, getString(R.string.name)));
-        input.setText(model.getRoot().getName());
-        input.setFocusable(true);
-        input.setFocusableInTouchMode(true);
-        AlertDialog alertDialog = new MaterialAlertDialogBuilder(this)
+        AtomicReference<String> text = new AtomicReference<>();
+        QMUIDialog qmuiDialog = new QMUIDialog.EditTextDialogBuilder(this)
                 .setTitle(R.string.rename)
-                .setView(input)
-                .setPositiveButton(R.string.confirm, (dialog, which) -> {
-                    String newName = input.getText().toString().trim();
+                .setInputType(InputType.TYPE_CLASS_TEXT)
+                .setPlaceholder(getString(R.string.message_input_prompt, getString(R.string.name)))
+                .setDefaultText(model.getRoot().getName())
+                .setTextWatcher(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        text.set(s.toString());
+                    }
+                })
+                .addAction(R.string.cancel, (dialog, index) -> {
+                    dialog.dismiss();
+                })
+                .addAction(R.string.confirm, (dialog, index) -> {
+                    String t = text.get();
+                    if (t == null) {
+                        return;
+                    }
+                    String newName = t.trim();
                     if (!newName.isEmpty()) {
                         if (model.getRoot() != null) {
                             model.getRoot().setName(newName);
@@ -876,26 +900,8 @@ public class MacroInfoActivity extends BaseActivity {
                         Toast.makeText(this, getString(R.string.message_error_empty_ph, getString(R.string.name)), Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss()).create();
-
-        alertDialog.setOnShowListener(d -> {
-            input.requestFocus();
-            input.postDelayed(() -> {
-                if (alertDialog.getWindow() == null) {
-                    return;
-                }
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                alertDialog.getWindow().clearFlags(
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                );
-                alertDialog.getWindow().setSoftInputMode(
-                        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
-                );
-                imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
-            }, 150);
-        });
-        alertDialog.show();
+                .create();
+        qmuiDialog.show();
     }
 
     private void initIntent() {

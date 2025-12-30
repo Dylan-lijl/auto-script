@@ -1,5 +1,7 @@
 package pub.carzy.auto_script.ui.entity;
 
+import static com.google.android.material.internal.ViewUtils.parseTintMode;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -11,6 +13,9 @@ import android.util.Xml;
 import android.view.View;
 
 import androidx.annotation.XmlRes;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -43,14 +48,21 @@ public class ActionInflater {
             this.icon = icon;
             this.enabled = enabled;
         }
-        public String idToString(){
+
+        public String idToString() {
             return String.valueOf(id);
         }
-        public boolean equalsId(int id){
+
+        public static int stringToId(String id) {
+            return Integer.parseInt(id);
+        }
+
+        public boolean equalsId(int id) {
             return this.id == id;
         }
-        public boolean equalsId(String id){
-            if (id==null||id.isEmpty()){
+
+        public boolean equalsId(String id) {
+            if (id == null || id.isEmpty()) {
                 return false;
             }
             return this.id == Integer.parseInt(id);
@@ -90,37 +102,64 @@ public class ActionInflater {
         return items;
     }
 
+    public static final String NAMESPACE = "http://schemas.android.com/apk/res/android";
     private static ActionItem parseAction(Context context, AttributeSet attrs) {
-        try (TypedArray a = context.obtainStyledAttributes(
-                attrs,
-                new int[]{
-                        android.R.attr.id,
-                        android.R.attr.title,
-                        android.R.attr.icon,
-                        android.R.attr.enabled,
-                        android.R.attr.tint
+
+        int id = attrs.getAttributeResourceValue(
+                NAMESPACE,
+                "id",
+                View.NO_ID
+        );
+
+        int titleRes = attrs.getAttributeResourceValue(
+                NAMESPACE,
+                "title",
+                0
+        );
+        CharSequence title = titleRes != 0
+                ? context.getText(titleRes)
+                : attrs.getAttributeValue(
+                NAMESPACE,
+                "title"
+        );
+
+        int iconRes = attrs.getAttributeResourceValue(
+                NAMESPACE,
+                "icon",
+                0
+        );
+        boolean enabled = attrs.getAttributeBooleanValue(
+                NAMESPACE,
+                "enabled",
+                true
+        );
+        int tint = attrs.getAttributeResourceValue(
+                NAMESPACE,
+                "tint",
+                0
+        );
+        Drawable icon = null;
+        if (iconRes != 0) {
+            icon = AppCompatResources.getDrawable(context, iconRes);
+            if (icon != null) {
+                icon = DrawableCompat.wrap(icon).mutate();
+                if (tint != 0) {
+                    int color = ContextCompat.getColor(context, tint);
+                    DrawableCompat.setTint(icon, color);
                 }
-        )) {
-            int id = a.getResourceId(0, View.NO_ID);
-            CharSequence title = a.getText(1);
-            Drawable icon = a.getDrawable(2);
-            boolean enabled = a.getBoolean(3, true);
-            ColorStateList tint = a.getColorStateList(4);
-            a.recycle();
-            if (id == View.NO_ID) {
-                throw new IllegalStateException("<action> must have android:id");
             }
-            if (title == null) {
-                throw new IllegalStateException(
-                        "<action> must define android:title");
-            }
-            if (icon != null && tint != null) {
-                icon = icon.mutate();
-                icon.setTintList(tint);
-            }
-            return new ActionItem(id, title, icon, enabled);
         }
+
+        if (id == View.NO_ID) {
+            throw new IllegalStateException("<action> must have android:id");
+        }
+        if (title == null) {
+            throw new IllegalStateException("<action> must have android:title");
+        }
+
+        return new ActionItem(id, title, icon, enabled);
     }
+
 
     private static boolean isActionTag(String name) {
         return "action".equals(name) || "item".equals(name);

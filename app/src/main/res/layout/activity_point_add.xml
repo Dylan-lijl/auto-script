@@ -26,130 +26,138 @@
             type="androidx.databinding.ObservableBoolean" />
     </data>
 
-    <LinearLayout
+    <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            style="@style/FormVerticalItemStyle"
-            android:baselineAligned="true">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/common_top_bar" />
+
+            <LinearLayout
+                style="@style/FormVerticalItemStyle"
+                android:baselineAligned="true">
+
+                <com.qmuiteam.qmui.layout.QMUIButton
+                    android:id="@+id/add_info_start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/transparent"
+                    android:text="@string/add_start"
+                    android:textColor="@color/warning" />
+
+                <com.qmuiteam.qmui.layout.QMUIButton
+                    android:id="@+id/add_info_current"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/currently_selected"
+                    android:textColor="@color/warning"
+                    android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
+
+                <com.qmuiteam.qmui.layout.QMUIButton
+                    android:id="@+id/add_info_end"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/add_end"
+                    android:textColor="@color/warning" />
+
+            </LinearLayout>
+
+            <LinearLayout style="@style/FormVerticalItemStyle">
+
+                <TextView
+                    android:id="@+id/down_time_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
+
+                <EditText
+                    android:id="@+id/down_time_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_label_down_time))}"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:labelFor="@id/down_time_input_label"
+                    android:text="@={Converter.longToString(data.time)}" />
+            </LinearLayout>
 
             <Button
-                android:id="@+id/add_info_start"
-                style="@style/TransparentButton"
+                android:id="@+id/btn_show"
+                style="@style/TextButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/add_start"
-                android:textColor="@color/warning" />
-
-            <Button
-                android:id="@+id/add_info_current"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="当前选中"
-                android:textColor="@color/warning"
-                android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
-
-            <Button
-                android:id="@+id/add_info_end"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add_end"
-                android:textColor="@color/warning" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/FormVerticalItemStyle">
-
-            <TextView
-                android:id="@+id/down_time_input_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
-
-            <EditText
-                android:id="@+id/down_time_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ems="10"
-                android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_label_down_time))}"
-                android:importantForAutofill="no"
-                android:inputType="number"
-                android:labelFor="@id/down_time_input_label"
-                android:text="@={Converter.longToString(data.time)}" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btn_show"
-            style="@style/TextButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/transparent"
-            android:text="@{Boolean.TRUE.equals(show)?context.getString(R.string.hide):context.getString(R.string.show)}"
-            android:textColor="@color/link" />
-
-        <LinearLayout style="@style/FormVerticalItemStyle">
-
-            <TextView
-                android:id="@+id/x_input_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_x))}" />
-
-            <EditText
-                android:id="@+id/x_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:autofillHints=""
-                android:ems="10"
-                android:hint="@string/point_label_x"
-                android:inputType="numberDecimal"
-                android:text="@={Converter.floatToString(data.x)}" />
-        </LinearLayout>
-
-        <LinearLayout style="@style/FormVerticalItemStyle">
-
-            <TextView
-                android:id="@+id/y_input_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_y))}" />
-
-            <EditText
-                android:id="@+id/y_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:autofillHints=""
-                android:ems="10"
-                android:hint="@string/point_label_y"
-                android:inputType="numberDecimal"
-                android:text="@={Converter.floatToString(data.y)}" />
-        </LinearLayout>
-
-        <LinearLayout
-            style="@style/FormVerticalItemStyle"
-            android:gravity="end">
-
-            <Button
-                android:id="@+id/btn_cancel"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/cancel"
-                android:textColor="@color/safe" />
-
-            <Button
-                android:id="@+id/btn_submit"
-                style="@style/TransparentButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add"
+                android:background="@color/transparent"
+                android:text="@{Boolean.TRUE.equals(show)?context.getString(R.string.hide):context.getString(R.string.show)}"
                 android:textColor="@color/link" />
+
+            <LinearLayout style="@style/FormVerticalItemStyle">
+
+                <TextView
+                    android:id="@+id/x_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_x))}" />
+
+                <EditText
+                    android:id="@+id/x_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:autofillHints=""
+                    android:ems="10"
+                    android:hint="@string/point_label_x"
+                    android:inputType="numberDecimal"
+                    android:text="@={Converter.floatToString(data.x)}" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/FormVerticalItemStyle">
+
+                <TextView
+                    android:id="@+id/y_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_y))}" />
+
+                <EditText
+                    android:id="@+id/y_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:autofillHints=""
+                    android:ems="10"
+                    android:hint="@string/point_label_y"
+                    android:inputType="numberDecimal"
+                    android:text="@={Converter.floatToString(data.y)}" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/FormVerticalItemStyle"
+                android:gravity="end">
+
+                <Button
+                    android:id="@+id/btn_cancel"
+                    style="@style/TransparentButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cancel"
+                    android:textColor="@color/safe" />
+
+                <Button
+                    android:id="@+id/btn_submit"
+                    style="@style/TransparentButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/add"
+                    android:textColor="@color/link" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
 </layout>

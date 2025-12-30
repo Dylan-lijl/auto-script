@@ -4,15 +4,17 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.Observable;
 import androidx.databinding.ObservableList;
@@ -23,6 +25,7 @@ import com.qmuiteam.qmui.recyclerView.QMUIRVItemSwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeViewHolder;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+import com.qmuiteam.qmui.util.QMUIKeyboardHelper;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout;
@@ -34,7 +37,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.adapter.MacroTableAdapter;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.databinding.ActivityMacroListBinding;
 import pub.carzy.auto_script.databinding.MacroListTableBinding;
@@ -48,6 +50,7 @@ import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.RecordScriptAction;
 import pub.carzy.auto_script.service.impl.ReplayScriptAction;
+import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -133,27 +136,77 @@ public class MacroListActivity extends BaseActivity {
     }
 
     private void initToolbar() {
-        binding.actionBar.addLeftBackImageButton().setOnClickListener(v -> {
-        });
-        binding.actionBar.setTitle(getActionBarTitle());
-        QMUIAlphaImageButton searchBtn = binding.actionBar.addRightImageButton(R.drawable.search, QMUIViewHelper.generateViewId());
-        searchBtn.setOnClickListener(e -> {
-            Log.d(this.getClass().getCanonicalName(), "查询按钮一点击");
-        });
-        QMUIAlphaImageButton manyBtn = binding.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
+        binding.topBarLayout.actionBar.setTitle(getActionBarTitle());
+        QMUIAlphaImageButton manyBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
         manyBtn.setOnClickListener(e -> openBottomSheet());
+        QMUIAlphaImageButton searchBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.search, QMUIViewHelper.generateViewId());
+        EditText searchEdit = createSearchEditText();
+        searchBtn.setOnClickListener(v -> {
+            binding.topBarLayout.actionBar.removeAllRightViews();
+            binding.topBarLayout.actionBar.setTitle(null);
+            binding.topBarLayout.actionBar.setCenterView(searchEdit);
+            binding.topBarLayout.actionBar.addLeftBackImageButton().setOnClickListener(e -> {
+                binding.topBarLayout.actionBar.removeCenterViewAndTitleView();
+                binding.topBarLayout.actionBar.removeAllLeftViews();
+                initToolbar();
+            });
+            searchEdit.post(() -> {
+                searchEdit.requestFocus();
+                QMUIKeyboardHelper.showKeyboard(searchEdit, true);
+            });
+        });
+        binding.searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                model.reloadData();
+            }
+        });
 //        binding.btnRecord.setOnClickListener((e) -> openService());
     }
 
-    private void openBottomSheet() {
-        new QMUIBottomSheet.BottomListSheetBuilder(this)
-                .setGravityCenter(false)
-                .setAddCancelBtn(false)
-                .addItem(ContextCompat.getDrawable(this, R.drawable.start),getString(R.string.help_script_list_record))
-                .build();
+    private EditText createSearchEditText() {
+        EditText et = new EditText(this);
+        et.setHint(R.string.search_keyword);
+        et.setSingleLine(true);
+        et.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+        et.setBackground(null);
+        et.setTextSize(16);
+        et.setPadding(0, 0, 0, 0);
+        return et;
     }
 
-    private void addListeners(MacroTableAdapter adapter) {
+
+    private void openBottomSheet() {
+        QMUIBottomSheet.BottomListSheetBuilder builder = new QMUIBottomSheet.BottomListSheetBuilder(this)
+                .setGravityCenter(false)
+                .setAddCancelBtn(false)
+                .setOnSheetItemClickListener((dialog, itemView, position, tag) -> {
+                    dialog.dismiss();
+                    if (tag == null) {
+                        return;
+                    }
+                    int id = ActionInflater.ActionItem.stringToId(tag);
+                    if (defaultProcessMenu(id)) {
+                        return;
+                    }
+                    if (id == R.id.record_script) {
+                        openService();
+                    }
+                });
+        addActionByXml(builder, this, R.xml.actions_macro_list);
+        addDefaultMenu(builder);
+        QMUIBottomSheet build = builder.build();
+        build.show();
     }
 
     private void runScript(ScriptEntity script) {

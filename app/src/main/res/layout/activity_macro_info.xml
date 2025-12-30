@@ -4,6 +4,8 @@
 
     <data>
 
+        <import type="android.view.View" />
+
         <variable
             name="model"
             type="pub.carzy.auto_script.model.ScriptVoEntityModel" />
@@ -13,37 +15,53 @@
             type="pub.carzy.auto_script.model.MacroInfoRefreshModel" />
     </data>
 
-    <pub.carzy.auto_script.ui.SpinLayout
+    <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:spinning="@{refresh.info||refresh.save}">
+        android:layout_height="match_parent">
 
-        <!--甘特图-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
-            <!--工具栏-->
-            <include
-                android:id="@+id/flow_chat_toolbar"
-                layout="@layout/flow_chat_toolbar"
-                app:model="@{model}" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:background="@color/frosted_glass" />
 
             <include
-                android:id="@+id/flow_chat_layout"
-                layout="@layout/script_flow_chat"
+                android:id="@+id/top_bar_layout"
+                layout="@layout/common_top_bar" />
+
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                app:refresh="@{refresh}"
-                app:model="@{model}" />
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <!--工具栏-->
+                <include
+                    android:id="@+id/flow_chat_toolbar"
+                    layout="@layout/flow_chat_toolbar"
+                    app:model="@{model}" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@color/frosted_glass" />
+
+                <include
+                    android:id="@+id/flow_chat_layout"
+                    layout="@layout/script_flow_chat"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    app:model="@{model}"
+                    app:refresh="@{refresh}" />
+            </LinearLayout>
+
+            <com.qmuiteam.qmui.widget.QMUIEmptyView
+                android:id="@+id/empty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/white"
+                android:visibility="@{(refresh.info||refresh.save)?View.VISIBLE:View.GONE}" />
         </LinearLayout>
-    </pub.carzy.auto_script.ui.SpinLayout>
+    </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
 </layout>

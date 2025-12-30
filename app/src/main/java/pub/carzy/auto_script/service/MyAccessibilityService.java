@@ -1,6 +1,7 @@
 package pub.carzy.auto_script.service;
 
 import android.accessibilityservice.AccessibilityService;
+import android.content.Context;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.view.accessibility.AccessibilityEvent;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,10 +19,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
+import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.dto.UpdateParam;
 import pub.carzy.auto_script.service.impl.RecordScriptAction;
+import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -31,6 +35,8 @@ public class MyAccessibilityService extends AccessibilityService {
     private final Map<String, String> keys;
     private final Map<String, ScriptAction> opens;
     private final AtomicBoolean initing;
+    private Locale locale;
+    private Setting setting;
 
     public MyAccessibilityService() {
         groupActions = new LinkedHashMap<>();
@@ -39,6 +45,20 @@ public class MyAccessibilityService extends AccessibilityService {
         keys = new HashMap<>();
     }
 
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        setting = BeanFactory.getInstance().get(Setting.class);
+        String language = setting.getLanguage();
+        if (language != null) {
+            locale = Locale.forLanguageTag(language);
+        }
+        Map<String, Locale> localeMap = ActivityUtils.getLocaleMap(newBase);
+        if (localeMap == null || !localeMap.containsKey(language)) {
+            return;
+        }
+        locale = localeMap.get(language);
+        super.attachBaseContext(ActivityUtils.updateLocale(newBase, locale));
+    }
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {

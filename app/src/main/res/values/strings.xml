@@ -105,4 +105,6 @@
     <string name="ptr_seconds_ago">seconds ago</string>
     <string name="ptr_minutes_ago">minutes ago</string>
     <string name="ptr_hours_ago">hours ago</string>
+    <string name="search_keyword">Search keywords</string>
+    <string name="currently_selected">Currently selected</string>
 </resources>

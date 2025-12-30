@@ -14,73 +14,31 @@
     <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
-            <com.qmuiteam.qmui.widget.QMUITopBarLayout
-                android:id="@+id/action_bar"
+
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/common_top_bar" />
+
+            <EditText
+                android:id="@+id/search_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fitsSystemWindows="true"
-                android:foregroundGravity="right">
-
-               <!-- <ImageButton
-                    android:id="@+id/btnRecord"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button_bg"
-                    android:contentDescription="@string/help_script_list_record"
-                    android:padding="2dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/record"
-                    app:tint="@color/danger" />
-
-                <pub.carzy.auto_script.ui.ExtImageButton
-                    android:id="@+id/btnRun"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button_bg"
-                    android:padding="2dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/start"
-                    android:tint="@color/safe"
-                    android:visibility="gone"
-                    app:tooltipText="@string/help_script_list_run" />
-
-                <pub.carzy.auto_script.ui.ExtImageButton
-                    android:id="@+id/btnPause"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button_bg"
-                    android:padding="2dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/pause"
-                    android:tint="@color/danger"
-                    android:visibility="gone"
-                    app:tooltipText="@string/help_script_list_pause" />
-
-                <pub.carzy.auto_script.ui.ExtImageButton
-                    android:id="@+id/btnStop"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/button_bg"
-                    android:padding="2dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/stop"
-                    android:tint="@color/danger"
-                    android:visibility="gone"
-                    app:tooltipText="@string/help_script_list_stop" />-->
-
-            </com.qmuiteam.qmui.widget.QMUITopBarLayout>
-
+                android:autofillHints=""
+                android:hint="@string/search_keyword"
+                android:inputType="text"
+                android:text="@={model.keyword}" />
             <!-- 内容区 -->
             <com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout
                 android:id="@+id/pull_layout"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:background="?attr/qmui_skin_support_color_background"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:background="?attr/qmui_skin_support_color_background">
 
                 <com.qmuiteam.qmui.widget.pullLayout.QMUIPullRefreshView
                     android:layout_width="wrap_content"
@@ -110,7 +68,9 @@
                 <com.qmuiteam.qmui.widget.pullLayout.QMUIPullLoadMoreView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:qmui_pull_edge="bottom" />
+                    app:qmui_pull_edge="bottom"
+                    app:qmui_pull_load_more_pull_text="@string/ptr_pull_down_to_refresh"
+                    app:qmui_pull_load_more_release_text="@string/ptr_release_to_refresh" />
             </com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout>
         </LinearLayout>
     </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>

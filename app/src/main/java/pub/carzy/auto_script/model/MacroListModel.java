@@ -44,7 +44,6 @@ public class MacroListModel extends BaseObservable {
     public void setKeyword(String keyword) {
         this.keyword = keyword;
         notifyPropertyChanged(BR.keyword);
-        reloadData();
     }
 
     private final AppDatabase database;

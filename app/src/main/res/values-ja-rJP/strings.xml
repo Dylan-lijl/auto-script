@@ -105,4 +105,6 @@
     <string name="ptr_seconds_ago">秒前</string>
     <string name="ptr_minutes_ago">分前</string>
     <string name="ptr_hours_ago">時間前</string>
+    <string name="search_keyword">検索キーワード</string>
+    <string name="currently_selected">現在選択中</string>
 </resources>

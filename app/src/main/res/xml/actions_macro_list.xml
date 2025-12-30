@@ -1,0 +1,8 @@
+<actions xmlns:android="http://schemas.android.com/apk/res/android">
+    <action
+        android:id="@+id/record_script"
+        android:title="@string/help_script_list_record"
+        android:icon="@drawable/record"
+        android:tint="@color/danger"
+        />
+</actions>

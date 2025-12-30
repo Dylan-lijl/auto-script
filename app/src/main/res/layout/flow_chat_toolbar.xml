@@ -88,16 +88,16 @@
                 android:src="@drawable/asterisk"
                 android:tint="@color/warning"
                 android:visibility="@{model.saved?View.VISIBLE:View.GONE}" />
-            <!--弹出的菜单内容 @see /menu/macro_info_more_action_menus.xml-->
-            <Button
-                android:id="@+id/btn_more_action"
+            <ImageButton
+                android:id="@+id/action_start_btn"
                 style="@style/TextButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
+                android:src="@drawable/start"
+                android:contentDescription="@string/help_script_list_run"
                 android:background="@color/transparent"
-                android:text="@string/more"
-                android:textColor="@color/link" />
+                android:tint="@color/safe" />
         </LinearLayout>
     </LinearLayout>
 </layout>

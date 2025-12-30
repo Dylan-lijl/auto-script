@@ -11,6 +11,10 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
+import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
+import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +22,7 @@ import java.util.List;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.ActivityActionAddBinding;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
+import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.Option;
 
 /**
@@ -35,25 +40,8 @@ public class ActionAddActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_action_add);
-        Intent intent = getIntent();
-        if (intent == null) {
-            //抛异常
-            return;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            data = intent.getParcelableExtra("data", ScriptActionEntity.class);
-        } else {
-            data = intent.getParcelableExtra("data");
-        }
-        if (data == null) {
-            //报错
-        }
-        index = (index = intent.getIntExtra("index", -1)) == -1 ? null : index;
-        upTime = (upTime = intent.getLongExtra("upTime", -1)) == -1 ? null : upTime;
-        downTime = (downTime = intent.getLongExtra("downTime", -1)) == -1 ? null : downTime;
-        maxTime = (maxTime = intent.getLongExtra("maxTime", -1)) == -1 ? null : maxTime;
-        binding.setIndex(index);
-        binding.setData(data);
+        initIntent();
+        initTopBar();
         List<Option<Integer>> options = Arrays.asList(
                 new Option<>(KeyEvent.keyCodeToString(KeyEvent.KEYCODE_HOME), KeyEvent.KEYCODE_HOME),
                 new Option<>(KeyEvent.keyCodeToString(KeyEvent.KEYCODE_BACK), KeyEvent.KEYCODE_BACK),
@@ -73,6 +61,53 @@ public class ActionAddActivity extends BaseActivity {
         );
         binding.codeInput.setAdapter(adapter);
         initListener();
+    }
+
+    private void initTopBar() {
+        binding.topBarLayout.actionBar.setTitle(getActionBarTitle());
+        QMUIAlphaImageButton manyBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
+        manyBtn.setOnClickListener(e -> openBottomSheet());
+    }
+
+    private void openBottomSheet() {
+        QMUIBottomSheet.BottomListSheetBuilder builder = new QMUIBottomSheet.BottomListSheetBuilder(this)
+                .setGravityCenter(false)
+                .setAddCancelBtn(false)
+                .setOnSheetItemClickListener((dialog, itemView, position, tag) -> {
+                    dialog.dismiss();
+                    if (tag == null) {
+                        return;
+                    }
+                    int id = ActionInflater.ActionItem.stringToId(tag);
+                    if (defaultProcessMenu(id)) {
+                        return;
+                    }
+                });
+        addDefaultMenu(builder);
+        QMUIBottomSheet build = builder.build();
+        build.show();
+    }
+
+
+    private void initIntent() {
+        Intent intent = getIntent();
+        if (intent == null) {
+            //抛异常 todo
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            data = intent.getParcelableExtra("data", ScriptActionEntity.class);
+        } else {
+            data = intent.getParcelableExtra("data");
+        }
+        if (data == null) {
+            //报错 todo
+        }
+        index = (index = intent.getIntExtra("index", -1)) == -1 ? null : index;
+        upTime = (upTime = intent.getLongExtra("upTime", -1)) == -1 ? null : upTime;
+        downTime = (downTime = intent.getLongExtra("downTime", -1)) == -1 ? null : downTime;
+        maxTime = (maxTime = intent.getLongExtra("maxTime", -1)) == -1 ? null : maxTime;
+        binding.setIndex(index);
+        binding.setData(data);
     }
 
     private void initListener() {
