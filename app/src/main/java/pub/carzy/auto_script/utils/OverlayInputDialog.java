@@ -12,7 +12,7 @@ import androidx.databinding.ObservableInt;
 import java.util.function.Consumer;
 
 import lombok.Getter;
-import pub.carzy.auto_script.databinding.DialogEditCountBinding;
+import pub.carzy.auto_script.databinding.WindowDialogEditCountBinding;
 
 /**
  * @author admin
@@ -20,13 +20,13 @@ import pub.carzy.auto_script.databinding.DialogEditCountBinding;
 public class OverlayInputDialog {
 
     private final WindowManager wm;
-    private final DialogEditCountBinding view;
+    private final WindowDialogEditCountBinding view;
     @Getter
     private boolean isShowing;
 
     public OverlayInputDialog(Context context) {
         wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        view = DialogEditCountBinding.inflate(LayoutInflater.from(context));
+        view = WindowDialogEditCountBinding.inflate(LayoutInflater.from(context));
         view.setCount(new ObservableInt(-1));
         view.getRoot().post(() -> {
             view.countInput.requestFocus();

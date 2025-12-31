@@ -1,16 +1,12 @@
 package pub.carzy.auto_script.service.impl;
 
-import android.content.DialogInterface;
 import android.graphics.PixelFormat;
-import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ObservableInt;
 
@@ -20,9 +16,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
-import pub.carzy.auto_script.databinding.DialogEditCountBinding;
-import pub.carzy.auto_script.databinding.MaskViewBinding;
-import pub.carzy.auto_script.databinding.ReplayFloatingButtonBinding;
+import pub.carzy.auto_script.databinding.WindowMaskViewBinding;
+import pub.carzy.auto_script.databinding.WindowReplayFloatingButtonBinding;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.PreviewFloatingStatus;
 import pub.carzy.auto_script.service.BasicAction;
@@ -31,7 +26,6 @@ import pub.carzy.auto_script.service.dto.BasicParam;
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.dto.UpdateParam;
-import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.OverlayInputDialog;
 
 /**
@@ -42,9 +36,9 @@ public class ReplayScriptAction extends BasicAction {
     private ScriptVoEntity entity;
     private final ReentrantLock lock = new ReentrantLock();
     private boolean initialized;
-    private ReplayFloatingButtonBinding binding;
+    private WindowReplayFloatingButtonBinding binding;
     private WindowManager.LayoutParams bindingParams;
-    private MaskViewBinding mask;
+    private WindowMaskViewBinding mask;
     private OverlayInputDialog dialog;
     public static final String ACTION_KEY = "replay_script";
     private SimpleReplay player;
@@ -64,7 +58,7 @@ public class ReplayScriptAction extends BasicAction {
                 BeanFactory.getInstance().register(this);
                 binding = DataBindingUtil.inflate(
                         LayoutInflater.from(service),
-                        R.layout.replay_floating_button,
+                        R.layout.window_replay_floating_button,
                         null,
                         false
                 );
@@ -75,7 +69,7 @@ public class ReplayScriptAction extends BasicAction {
                 dialog = new OverlayInputDialog(service);
                 mask = DataBindingUtil.inflate(
                         LayoutInflater.from(service),
-                        R.layout.mask_view,
+                        R.layout.window_mask_view,
                         null,
                         false
                 );

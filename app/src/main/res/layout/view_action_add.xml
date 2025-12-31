@@ -33,7 +33,7 @@
 
             <include
                 android:id="@+id/top_bar_layout"
-                layout="@layout/common_top_bar" />
+                layout="@layout/com_common_top_bar" />
 
             <LinearLayout
                 style="@style/FormVerticalItemStyle"

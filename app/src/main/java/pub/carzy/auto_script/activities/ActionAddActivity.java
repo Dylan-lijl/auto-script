@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.databinding.ActivityActionAddBinding;
+import pub.carzy.auto_script.databinding.ViewActionAddBinding;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.Option;
@@ -34,12 +34,12 @@ public class ActionAddActivity extends BaseActivity {
     private Long downTime;
     private Long maxTime;
     private ScriptActionEntity data;
-    private ActivityActionAddBinding binding;
+    private ViewActionAddBinding binding;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_action_add);
+        binding = DataBindingUtil.setContentView(this, R.layout.view_action_add);
         initIntent();
         initTopBar();
         List<Option<Integer>> options = Arrays.asList(

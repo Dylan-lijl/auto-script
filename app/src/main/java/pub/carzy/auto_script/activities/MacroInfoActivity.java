@@ -11,7 +11,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -54,9 +53,9 @@ import java.util.function.Function;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
-import pub.carzy.auto_script.databinding.ActionInfoBinding;
-import pub.carzy.auto_script.databinding.ActivityMacroInfoBinding;
-import pub.carzy.auto_script.databinding.PointInfoBinding;
+import pub.carzy.auto_script.databinding.DialogActionInfoBinding;
+import pub.carzy.auto_script.databinding.ViewMacroInfoBinding;
+import pub.carzy.auto_script.databinding.DialogPointInfoBinding;
 import pub.carzy.auto_script.db.AppDatabase;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
@@ -80,7 +79,7 @@ import pub.carzy.auto_script.utils.TypeToken;
  */
 public class MacroInfoActivity extends BaseActivity {
 
-    private ActivityMacroInfoBinding binding;
+    private ViewMacroInfoBinding binding;
     private ScriptVoEntityModel model;
     private MacroInfoRefreshModel refresh;
     private IdGenerator<Long> idWorker;
@@ -192,7 +191,7 @@ public class MacroInfoActivity extends BaseActivity {
         idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
         });
         db = BeanFactory.getInstance().get(AppDatabase.class);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_macro_info);
+        binding = DataBindingUtil.setContentView(this, R.layout.view_macro_info);
         model = new ScriptVoEntityModel();
         for (int c : getResources().getIntArray(R.array.script_info_chat_color)) {
             model.getColorsResource().add(c);
@@ -529,7 +528,7 @@ public class MacroInfoActivity extends BaseActivity {
         if (model.getCheckedPoint().isEmpty()) {
             return;
         }
-        PointInfoBinding binding = PointInfoBinding.inflate(LayoutInflater.from(this));
+        DialogPointInfoBinding binding = DialogPointInfoBinding.inflate(LayoutInflater.from(this));
         binding.setEntity(model.getLastCheckedPoint().getValue());
         BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
         builder.addView(binding.getRoot())
@@ -542,7 +541,7 @@ public class MacroInfoActivity extends BaseActivity {
         if (model.getCheckedAction().isEmpty()) {
             return;
         }
-        ActionInfoBinding binding = ActionInfoBinding.inflate(LayoutInflater.from(this));
+        DialogActionInfoBinding binding = DialogActionInfoBinding.inflate(LayoutInflater.from(this));
         binding.setEntity(model.getLastCheckedAction().getValue());
         BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
         builder.addView(binding.getRoot())

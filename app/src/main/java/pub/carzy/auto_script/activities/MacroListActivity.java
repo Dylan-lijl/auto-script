@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -24,6 +26,7 @@ import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.recyclerView.QMUIRVItemSwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeViewHolder;
+import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.util.QMUIKeyboardHelper;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
@@ -38,8 +41,8 @@ import java.util.stream.Collectors;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
-import pub.carzy.auto_script.databinding.ActivityMacroListBinding;
-import pub.carzy.auto_script.databinding.MacroListTableBinding;
+import pub.carzy.auto_script.databinding.ViewMacroListBinding;
+import pub.carzy.auto_script.databinding.ComListItemMacroListBinding;
 import pub.carzy.auto_script.db.AppDatabase;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
@@ -60,7 +63,7 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 public class MacroListActivity extends BaseActivity {
     private Boolean ok = false;
 
-    private ActivityMacroListBinding binding;
+    private ViewMacroListBinding binding;
     private MacroListModel model;
     private AppDatabase db;
 
@@ -85,7 +88,7 @@ public class MacroListActivity extends BaseActivity {
     private void initBase() {
         db = BeanFactory.getInstance().get(AppDatabase.class);
         model = new MacroListModel();
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_macro_list);
+        binding = DataBindingUtil.setContentView(this, R.layout.view_macro_list);
         binding.setModel(model);
     }
 
@@ -426,8 +429,8 @@ public class MacroListActivity extends BaseActivity {
         @Override
         public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-            MacroListTableBinding binding =
-                    MacroListTableBinding.inflate(inflater, parent, false);
+            ComListItemMacroListBinding binding =
+                    ComListItemMacroListBinding.inflate(inflater, parent, false);
             final VH vh = new VH(binding);
             vh.addSwipeAction(deleteAction);
             vh.addSwipeAction(runAction);
@@ -450,9 +453,9 @@ public class MacroListActivity extends BaseActivity {
     }
 
     static class VH extends QMUISwipeViewHolder {
-        final MacroListTableBinding binding;
+        final ComListItemMacroListBinding binding;
 
-        VH(MacroListTableBinding binding) {
+        VH(ComListItemMacroListBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

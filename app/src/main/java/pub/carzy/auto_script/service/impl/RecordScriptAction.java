@@ -24,8 +24,8 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
-import pub.carzy.auto_script.databinding.FloatingButtonBinding;
-import pub.carzy.auto_script.databinding.MaskViewBinding;
+import pub.carzy.auto_script.databinding.WindowRecordFloatingButtonBinding;
+import pub.carzy.auto_script.databinding.WindowMaskViewBinding;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
@@ -46,7 +46,7 @@ import pub.carzy.auto_script.utils.TypeToken;
  * @author admin
  */
 public class RecordScriptAction extends BasicAction {
-    private MaskViewBinding mask;
+    private WindowMaskViewBinding mask;
     private RecordStateModel recordStateModel;
     private WindowManager.LayoutParams maskParams;
     private List<MotionEntity> motionList;
@@ -56,7 +56,7 @@ public class RecordScriptAction extends BasicAction {
     private IdGenerator<Long> idWorker;
     private final ReentrantLock lock = new ReentrantLock();
     private boolean initialized = false;
-    private FloatingButtonBinding binding;
+    private WindowRecordFloatingButtonBinding binding;
     private WindowManager.LayoutParams bindingParams;
     public static final String ACTION_KEY = "record";
     private final Stopwatch watch = new Stopwatch();
@@ -81,7 +81,7 @@ public class RecordScriptAction extends BasicAction {
                 keyList = new ArrayList<>();
                 binding = DataBindingUtil.inflate(
                         LayoutInflater.from(service),
-                        R.layout.floating_button,
+                        R.layout.window_record_floating_button,
                         null,
                         false
                 );
@@ -89,7 +89,7 @@ public class RecordScriptAction extends BasicAction {
                 bindingParams = createBindingParams(binding);
                 mask = DataBindingUtil.inflate(
                         LayoutInflater.from(service),
-                        R.layout.mask_view,
+                        R.layout.window_mask_view,
                         null,
                         false
                 );

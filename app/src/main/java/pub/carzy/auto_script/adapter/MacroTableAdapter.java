@@ -7,19 +7,16 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import pub.carzy.auto_script.databinding.MacroListTableBinding;
+import pub.carzy.auto_script.databinding.ComListItemMacroListBinding;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 
 import androidx.databinding.ObservableList;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.qmuiteam.qmui.recyclerView.QMUISwipeAction;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author admin
@@ -94,8 +91,8 @@ public class MacroTableAdapter extends RecyclerView.Adapter<MacroTableAdapter.Vi
             int viewType
     ) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        MacroListTableBinding binding =
-                MacroListTableBinding.inflate(inflater, parent, false);
+        ComListItemMacroListBinding binding =
+                ComListItemMacroListBinding.inflate(inflater, parent, false);
         return new ViewHolder(binding);
     }
 
@@ -117,9 +114,9 @@ public class MacroTableAdapter extends RecyclerView.Adapter<MacroTableAdapter.Vi
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        final MacroListTableBinding binding;
+        final ComListItemMacroListBinding binding;
 
-        public ViewHolder(@NonNull MacroListTableBinding binding) {
+        public ViewHolder(@NonNull ComListItemMacroListBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

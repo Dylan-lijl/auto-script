@@ -3,7 +3,6 @@ package pub.carzy.auto_script.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.view.LayoutInflater;
 import android.widget.Toast;
 
 import androidx.databinding.DataBindingUtil;
@@ -11,7 +10,7 @@ import androidx.databinding.DataBindingUtil;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.controller.DisclaimerController;
-import pub.carzy.auto_script.databinding.ActivityDisclaimerBinding;
+import pub.carzy.auto_script.databinding.ViewDisclaimerBinding;
 import pub.carzy.auto_script.model.DisclaimerCount;
 import pub.carzy.auto_script.model.DisclaimerStatus;
 import pub.carzy.auto_script.utils.ThreadUtil;
@@ -27,7 +26,7 @@ public class DisclaimerActivity extends BaseActivity {
     private static DisclaimerController CONTROLLER;
     private DisclaimerStatus status;
     private DisclaimerCount counter;
-    private ActivityDisclaimerBinding binding;
+    private ViewDisclaimerBinding binding;
 
     @Override
     protected String getActionBarTitle() {
@@ -39,7 +38,7 @@ public class DisclaimerActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         status = new DisclaimerStatus();
         counter = new DisclaimerCount();
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_disclaimer);
+        binding = DataBindingUtil.setContentView(this, R.layout.view_disclaimer);
         binding.setStatus(status);
         binding.setCounter(counter);
         CONTROLLER = new DisclaimerController();

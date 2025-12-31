@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.databinding.ActivityPointAddBinding;
+import pub.carzy.auto_script.databinding.ViewPointAddBinding;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.utils.DraggableDotView;
 
@@ -28,7 +28,7 @@ public class PointAddActivity extends BaseActivity {
     private Long minTime;
     private Long maxTime;
     private ScriptPointEntity data;
-    private ActivityPointAddBinding binding;
+    private ViewPointAddBinding binding;
     private DraggableDotView dotView;
     private ViewGroup overlay;
     private int r = 20;
@@ -36,7 +36,7 @@ public class PointAddActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_point_add);
+        binding = DataBindingUtil.setContentView(this, R.layout.view_point_add);
         binding.setShow(new ObservableBoolean(false));
         Intent intent = getIntent();
         if (intent == null) {
