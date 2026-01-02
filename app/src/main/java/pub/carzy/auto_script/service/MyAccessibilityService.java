@@ -47,17 +47,20 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        setting = BeanFactory.getInstance().get(Setting.class);
-        String language = setting.getLanguage();
-        if (language != null) {
-            locale = Locale.forLanguageTag(language);
+        setting = BeanFactory.getInstance().get(Setting.class, false);
+        if (setting != null) {
+            String language = setting.getLanguage();
+            if (language != null) {
+                locale = Locale.forLanguageTag(language);
+            }
+            Map<String, Locale> localeMap = ActivityUtils.getLocaleMap(newBase);
+            if (localeMap != null&&localeMap.containsKey(language)) {
+                locale = localeMap.get(language);
+                super.attachBaseContext(ActivityUtils.updateLocale(newBase, locale));
+                return;
+            }
         }
-        Map<String, Locale> localeMap = ActivityUtils.getLocaleMap(newBase);
-        if (localeMap == null || !localeMap.containsKey(language)) {
-            return;
-        }
-        locale = localeMap.get(language);
-        super.attachBaseContext(ActivityUtils.updateLocale(newBase, locale));
+        super.attachBaseContext(newBase);
     }
 
     @Override
