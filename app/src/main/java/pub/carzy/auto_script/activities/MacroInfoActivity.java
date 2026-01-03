@@ -507,6 +507,7 @@ public class MacroInfoActivity extends BaseActivity {
                     dialog.dismiss();
                 })
                 .addAction(R.string.confirm, (dialog, index) -> {
+                    dialog.dismiss();
                     String t = text.get();
                     if (t == null) {
                         return;
@@ -886,6 +887,7 @@ public class MacroInfoActivity extends BaseActivity {
                     dialog.dismiss();
                 })
                 .addAction(R.string.confirm, (dialog, index) -> {
+                    dialog.dismiss();
                     String t = text.get();
                     if (t == null) {
                         return;
