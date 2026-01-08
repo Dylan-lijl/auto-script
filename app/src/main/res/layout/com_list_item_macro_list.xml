@@ -38,7 +38,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{item.maxTime+context.getString(R.string.unit_ms)}" />
+                android:text="@{item.totalDuration+context.getString(R.string.unit_ms)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -49,7 +49,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{StringUtils.format(item.count)}" />
+                android:text="@{StringUtils.format(item.actionCount)}" />
 
             <TextView
                 android:layout_width="0dp"
@@ -69,7 +69,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{StringUtils.format(item.remark)}" />
+                android:text="@{StringUtils.format(item.description)}" />
         </LinearLayout>
     </LinearLayout>
 </layout>

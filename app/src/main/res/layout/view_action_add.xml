@@ -126,7 +126,7 @@
                     android:importantForAutofill="no"
                     android:inputType="number"
                     android:labelFor="@id/down_time_input_label"
-                    android:text="@={Converter.longToString(data.downTime)}" />
+                    android:text="@={Converter.longToString(data.startTime)}" />
             </LinearLayout>
 
             <LinearLayout

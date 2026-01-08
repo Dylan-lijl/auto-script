@@ -17,16 +17,14 @@ public class PointEntity implements Parcelable {
     private Float x;
     private Float y;
     private Long time;
-    private Integer toolType;
 
     public PointEntity() {
     }
 
-    public PointEntity(Float x, Float y, Long time, Integer toolType) {
+    public PointEntity(Float x, Float y, Long time) {
         this.x = x;
         this.y = y;
         this.time = time;
-        this.toolType = toolType;
     }
 
     protected PointEntity(Parcel in) {
@@ -44,11 +42,6 @@ public class PointEntity implements Parcelable {
             time = null;
         } else {
             time = in.readLong();
-        }
-        if (in.readByte() == 0) {
-            toolType = null;
-        } else {
-            toolType = in.readInt();
         }
     }
 
@@ -88,12 +81,6 @@ public class PointEntity implements Parcelable {
         } else {
             dest.writeByte((byte) 1);
             dest.writeLong(time);
-        }
-        if (toolType == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeInt(toolType);
         }
     }
 }

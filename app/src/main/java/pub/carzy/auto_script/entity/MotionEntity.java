@@ -18,8 +18,6 @@ import lombok.Data;
 public class MotionEntity implements Parcelable {
     private Integer index;
     private Long downTime;
-    private Long eventTime;
-    private Long upTime;
     private List<PointEntity> points = new ArrayList<>();
 
     public MotionEntity() {
@@ -34,16 +32,6 @@ public class MotionEntity implements Parcelable {
             downTime = null;
         } else {
             downTime = in.readLong();
-        }
-        if (in.readByte() == 0) {
-            eventTime = null;
-        } else {
-            eventTime = in.readLong();
-        }
-        if (in.readByte() == 0) {
-            upTime = null;
-        } else {
-            upTime = in.readLong();
         }
         points = in.createTypedArrayList(PointEntity.CREATOR);
     }
@@ -78,18 +66,6 @@ public class MotionEntity implements Parcelable {
         } else {
             dest.writeByte((byte) 1);
             dest.writeLong(downTime);
-        }
-        if (eventTime == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeLong(eventTime);
-        }
-        if (upTime == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeLong(upTime);
         }
         dest.writeTypedList(points);
     }

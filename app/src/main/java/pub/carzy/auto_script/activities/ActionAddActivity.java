@@ -30,8 +30,8 @@ import pub.carzy.auto_script.utils.Option;
  */
 public class ActionAddActivity extends BaseActivity {
     private Integer index;
-    private Long upTime;
-    private Long downTime;
+    private Long endTime;
+    private Long startTime;
     private Long maxTime;
     private ScriptActionEntity data;
     private ViewActionAddBinding binding;
@@ -103,8 +103,8 @@ public class ActionAddActivity extends BaseActivity {
             //报错 todo
         }
         index = (index = intent.getIntExtra("index", -1)) == -1 ? null : index;
-        upTime = (upTime = intent.getLongExtra("upTime", -1)) == -1 ? null : upTime;
-        downTime = (downTime = intent.getLongExtra("downTime", -1)) == -1 ? null : downTime;
+        endTime = (endTime = intent.getLongExtra("endTime", -1)) == -1 ? null : endTime;
+        startTime = (startTime = intent.getLongExtra("downTime", -1)) == -1 ? null : startTime;
         maxTime = (maxTime = intent.getLongExtra("maxTime", -1)) == -1 ? null : maxTime;
         binding.setIndex(index);
         binding.setData(data);
@@ -112,16 +112,16 @@ public class ActionAddActivity extends BaseActivity {
 
     private void initListener() {
         binding.addStart.setOnClickListener(e -> {
-            data.setDownTime(0L);
+            data.setStartTime(0L);
         });
         binding.addEnd.setOnClickListener(e -> {
-            data.setDownTime(maxTime);
+            data.setStartTime(maxTime);
         });
         binding.addBefore.setOnClickListener(e -> {
-            data.setDownTime(downTime);
+            data.setStartTime(startTime);
         });
         binding.addAfter.setOnClickListener(e -> {
-            data.setDownTime(upTime);
+            data.setStartTime(endTime);
         });
         binding.btnSubmit.setOnClickListener(createSubmitListener());
         binding.btnCancel.setOnClickListener(createCancelListener());
@@ -143,7 +143,7 @@ public class ActionAddActivity extends BaseActivity {
             }
             //如果是按键事件就要添加持续时长
             if (data.getType() == ScriptActionEntity.KEY_EVENT) {
-                data.setUpTime(data.getDownTime() + Integer.parseInt(binding.durationInput.getText().toString()));
+                data.setDuration(Long.parseLong(binding.durationInput.getText().toString()));
             }
             Intent intent = new Intent();
             intent.putExtra("data", data);

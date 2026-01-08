@@ -22,20 +22,6 @@ import pub.carzy.auto_script.R;
 @EqualsAndHashCode(callSuper = true)
 @Entity(tableName = "script_action")
 public class ScriptActionEntity extends BaseObservable implements Parcelable {
-    public static final int GESTURE = 1;
-    public static final int KEY_EVENT = 2;
-
-    public static int getTypeName(int type) {
-        switch (type) {
-            case GESTURE:
-                return R.string.gesture;
-            case KEY_EVENT:
-                return R.string.key_event;
-            default:
-                return R.string.unknown;
-        }
-    }
-
     /**
      * 主键
      */
@@ -44,42 +30,35 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     /**
      * 父级主键
      */
-    @ColumnInfo(name = "parent_id")
-    private Long parentId;
+    @ColumnInfo(name = "script_id")
+    private Long scriptId;
     /**
      * 手势索引
      */
     private Integer index;
     /**
-     * 序列
-     */
-    @ColumnInfo(name = "down_time")
-    private Long downTime;
-    /**
      * 按下时间
      */
-    @ColumnInfo(name = "event_time")
-    private Long eventTime;
+    @ColumnInfo(name = "start_time")
+    private Long startTime;
     /**
-     * 抬起时间
+     * 持续时长
      */
-    @ColumnInfo(name = "up_time")
-    private Long upTime;
-    /**
-     * 最大的时间,一般来说这个时间是upTime,但是有的时候upTime为null,这个时候就需要遍历points
-     */
-    @ColumnInfo(name = "max_time")
-    private Long maxTime;
+    @ColumnInfo(name = "duration")
+    private Long duration;
     /**
      * 移动点数量
      */
-    private Integer count;
+    private Integer pointCount;
     /**
-     * 类型,当point小于等于2,说明是点击时间,大于2说明是滑动
+     * 类型,1是手势,2是按键
      */
     private Integer type;
-
+    /**
+     * 键
+     */
     private Integer code;
+    private String description;
 
     public ScriptActionEntity() {
     }
@@ -91,9 +70,9 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
             id = in.readLong();
         }
         if (in.readByte() == 0) {
-            parentId = null;
+            scriptId = null;
         } else {
-            parentId = in.readLong();
+            scriptId = in.readLong();
         }
         if (in.readByte() == 0) {
             index = null;
@@ -101,29 +80,19 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
             index = in.readInt();
         }
         if (in.readByte() == 0) {
-            downTime = null;
+            startTime = null;
         } else {
-            downTime = in.readLong();
+            startTime = in.readLong();
         }
         if (in.readByte() == 0) {
-            eventTime = null;
+            duration = null;
         } else {
-            eventTime = in.readLong();
+            duration = in.readLong();
         }
         if (in.readByte() == 0) {
-            upTime = null;
+            pointCount = null;
         } else {
-            upTime = in.readLong();
-        }
-        if (in.readByte() == 0) {
-            maxTime = null;
-        } else {
-            maxTime = in.readLong();
-        }
-        if (in.readByte() == 0) {
-            count = null;
-        } else {
-            count = in.readInt();
+            pointCount = in.readInt();
         }
         if (in.readByte() == 0) {
             type = null;
@@ -134,6 +103,21 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
             code = null;
         } else {
             code = in.readInt();
+        }
+        description = in.readString();
+    }
+
+    public static final int GESTURE = 1;
+    public static final int KEY_EVENT = 2;
+
+    public static int getTypeName(int type) {
+        switch (type) {
+            case GESTURE:
+                return R.string.gesture;
+            case KEY_EVENT:
+                return R.string.key_event;
+            default:
+                return R.string.unknown;
         }
     }
 
@@ -162,11 +146,11 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeLong(id);
         }
-        if (parentId == null) {
+        if (scriptId == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeLong(parentId);
+            dest.writeLong(scriptId);
         }
         if (index == null) {
             dest.writeByte((byte) 0);
@@ -174,35 +158,23 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(index);
         }
-        if (downTime == null) {
+        if (startTime == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeLong(downTime);
+            dest.writeLong(startTime);
         }
-        if (eventTime == null) {
+        if (duration == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeLong(eventTime);
+            dest.writeLong(duration);
         }
-        if (upTime == null) {
+        if (pointCount == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeLong(upTime);
-        }
-        if (maxTime == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeLong(maxTime);
-        }
-        if (count == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeInt(count);
+            dest.writeInt(pointCount);
         }
         if (type == null) {
             dest.writeByte((byte) 0);
@@ -216,6 +188,7 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeInt(code);
         }
+        dest.writeString(description);
     }
 
     @Bindable
@@ -229,13 +202,13 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Long getParentId() {
-        return parentId;
+    public Long getScriptId() {
+        return scriptId;
     }
 
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-        notifyPropertyChanged(BR.parentId);
+    public void setScriptId(Long scriptId) {
+        this.scriptId = scriptId;
+        notifyPropertyChanged(BR.scriptId);
     }
 
     @Bindable
@@ -249,23 +222,13 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Long getDownTime() {
-        return downTime;
+    public Long getStartTime() {
+        return startTime;
     }
 
-    public void setDownTime(Long downTime) {
-        this.downTime = downTime;
-        notifyPropertyChanged(BR.downTime);
-    }
-
-    @Bindable
-    public Long getEventTime() {
-        return eventTime;
-    }
-
-    public void setEventTime(Long eventTime) {
-        this.eventTime = eventTime;
-        notifyPropertyChanged(BR.eventTime);
+    public void setStartTime(Long startTime) {
+        this.startTime = startTime;
+        notifyPropertyChanged(BR.startTime);
     }
 
     @Bindable
@@ -279,33 +242,33 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Long getUpTime() {
-        return upTime;
+    public Integer getPointCount() {
+        return pointCount;
     }
 
-    public void setUpTime(Long upTime) {
-        this.upTime = upTime;
-        notifyPropertyChanged(BR.upTime);
-    }
-
-    @Bindable
-    public Long getMaxTime() {
-        return maxTime;
-    }
-
-    public void setMaxTime(Long maxTime) {
-        this.maxTime = maxTime;
-        notifyPropertyChanged(BR.maxTime);
-    }
-
-    @Bindable
-    public Integer getCount() {
-        return count;
-    }
-
-    public void setCount(Integer count) {
-        this.count = count;
+    public void setPointCount(Integer pointCount) {
+        this.pointCount = pointCount;
         notifyPropertyChanged(BR.count);
+    }
+
+    @Bindable
+    public Long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Long duration) {
+        this.duration = duration;
+        notifyPropertyChanged(BR.duration);
+    }
+
+    @Bindable
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+        notifyPropertyChanged(BR.description);
     }
 
     @Bindable
@@ -316,16 +279,5 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     public void setType(Integer type) {
         this.type = type;
         notifyPropertyChanged(BR.type);
-    }
-
-    public boolean checkTime() {
-        return checkTime(upTime, downTime);
-    }
-
-    public static boolean checkTime(Long upTime, Long downTime) {
-        if (upTime == null || downTime == null) {
-            return false;
-        }
-        return upTime < downTime;
     }
 }

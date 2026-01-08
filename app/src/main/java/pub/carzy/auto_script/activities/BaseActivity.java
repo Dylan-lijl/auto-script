@@ -41,11 +41,14 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private void init(Context context) {
         String language = setting.getLanguage();
-        if (language != null) {
-            locale = Locale.forLanguageTag(language);
+        if (language == null) {
+            locale = Locale.getDefault();
+            return;
         }
+        locale = Locale.forLanguageTag(language);
         Map<String, Locale> localeMap = ActivityUtils.getLocaleMap(context);
         if (localeMap == null || !localeMap.containsKey(language)) {
+            locale = Locale.getDefault();
             return;
         }
         locale = localeMap.get(language);

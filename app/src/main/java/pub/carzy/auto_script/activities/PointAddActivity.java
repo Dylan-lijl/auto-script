@@ -24,9 +24,10 @@ import pub.carzy.auto_script.utils.DraggableDotView;
  */
 public class PointAddActivity extends BaseActivity {
     private Integer index;
-    private Long time;
-    private Long minTime;
-    private Long maxTime;
+    private Float beforeOrder;
+    private Float afterOrder;
+    private Float minOrder;
+    private Float maxOrder;
     private ScriptPointEntity data;
     private ViewPointAddBinding binding;
     private DraggableDotView dotView;
@@ -52,14 +53,10 @@ public class PointAddActivity extends BaseActivity {
             //报错
         }
         index = (index = intent.getIntExtra("index", -1)) == -1 ? null : index;
-        time = (time = intent.getLongExtra("time", -1)) == -1 ? null : time;
-        minTime = (minTime = intent.getLongExtra("minTime", -1)) == -1 ? null : minTime;
-        maxTime = (maxTime = intent.getLongExtra("maxTime", -1)) == -1 ? null : maxTime;
-        if (index != null && time != null) {
-            data.setTime(time);
-        } else if (maxTime != null) {
-            data.setTime(maxTime);
-        }
+        minOrder = (minOrder = intent.getFloatExtra("minOrder", -1)) == -1 ? null : minOrder;
+        maxOrder = (maxOrder = intent.getFloatExtra("maxOrder", -1)) == -1 ? null : maxOrder;
+        beforeOrder = (beforeOrder = intent.getFloatExtra("beforeOrder", -1)) == -1 ? null : beforeOrder;
+        afterOrder = (afterOrder = intent.getFloatExtra("afterOrder", -1)) == -1 ? null : afterOrder;
         binding.setIndex(index);
         binding.setData(data);
         initListener();
@@ -69,19 +66,24 @@ public class PointAddActivity extends BaseActivity {
         binding.btnSubmit.setOnClickListener(createSubmitListener());
         binding.btnCancel.setOnClickListener(createCancelListener());
         binding.btnShow.setOnClickListener(createShowListener());
-        binding.addInfoCurrent.setOnClickListener(e -> {
-            if (time != null) {
-                data.setTime(time);
+        binding.addInfoBefore.setOnClickListener(e -> {
+            if (beforeOrder != null) {
+                data.setOrder(beforeOrder);
+            }
+        });
+        binding.addInfoAfter.setOnClickListener(e -> {
+            if (afterOrder != null) {
+                data.setOrder(afterOrder);
             }
         });
         binding.addInfoStart.setOnClickListener(e -> {
-            if (minTime != null) {
-                data.setTime(minTime);
+            if (minOrder != null) {
+                data.setOrder(minOrder);
             }
         });
         binding.addInfoEnd.setOnClickListener(e -> {
-            if (maxTime != null) {
-                data.setTime(maxTime);
+            if (maxOrder != null) {
+                data.setOrder(maxOrder);
             }
         });
     }
@@ -154,6 +156,9 @@ public class PointAddActivity extends BaseActivity {
             if (!errors.isEmpty()) {
                 Toast.makeText(this, String.join("\n", errors), Toast.LENGTH_LONG).show();
                 return;
+            }
+            if (data.getOrder() == null) {
+                data.setOrder(maxOrder + 10);
             }
             //如果是按键事件就要添加持续时长
             Intent intent = new Intent();

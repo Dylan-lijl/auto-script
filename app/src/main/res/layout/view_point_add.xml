@@ -38,11 +38,13 @@
             <include
                 android:id="@+id/top_bar_layout"
                 layout="@layout/com_common_top_bar" />
+
             <LinearLayout
-                android:layout_marginStart="10dp"
                 android:layout_width="match_parent"
-                android:orientation="vertical"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:orientation="vertical">
+
                 <LinearLayout
                     style="@style/FormVerticalItemStyle"
                     android:baselineAligned="true">
@@ -55,10 +57,18 @@
                         android:textColor="@color/warning" />
 
                     <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
-                        android:id="@+id/add_info_current"
+                        android:id="@+id/add_info_before"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/currently_selected"
+                        android:text="@string/add_before"
+                        android:textColor="@color/warning"
+                        android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
+
+                    <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+                        android:id="@+id/add_info_after"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/add_after"
                         android:textColor="@color/warning"
                         android:visibility="@{index==null?View.GONE:View.VISIBLE}" />
 
@@ -89,16 +99,16 @@
                         android:importantForAutofill="no"
                         android:inputType="number"
                         android:labelFor="@id/down_time_input_label"
-                        android:text="@={Converter.longToString(data.time)}" />
+                        android:text="@={Converter.longToString(data.deltaTime)}" />
                 </LinearLayout>
 
                 <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
                     android:id="@+id/btn_show"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
                     android:text="@{Boolean.TRUE.equals(show)?context.getString(R.string.hide):context.getString(R.string.show)}"
-                    android:textColor="@color/link" />
+                    android:textColor="@color/link"
+                    android:textSize="14sp" />
 
                 <LinearLayout style="@style/FormVerticalItemStyle">
 

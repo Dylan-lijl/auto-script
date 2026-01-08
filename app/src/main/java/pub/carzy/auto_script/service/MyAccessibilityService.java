@@ -54,6 +54,7 @@ public class MyAccessibilityService extends AccessibilityService {
         }
         Map<String, Locale> localeMap = ActivityUtils.getLocaleMap(newBase);
         if (localeMap == null || !localeMap.containsKey(language)) {
+            super.attachBaseContext(newBase);
             return;
         }
         locale = localeMap.get(language);

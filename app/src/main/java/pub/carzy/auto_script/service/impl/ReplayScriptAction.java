@@ -15,13 +15,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
-import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.databinding.WindowMaskViewBinding;
 import pub.carzy.auto_script.databinding.WindowReplayFloatingButtonBinding;
-import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.PreviewFloatingStatus;
 import pub.carzy.auto_script.service.BasicAction;
-import pub.carzy.auto_script.service.data.SimpleReplay;
+import pub.carzy.auto_script.service.data.ReplayModel;
+import pub.carzy.auto_script.service.sub.SimpleReplay;
 import pub.carzy.auto_script.service.dto.BasicParam;
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
@@ -33,7 +32,7 @@ import pub.carzy.auto_script.utils.OverlayInputDialog;
  */
 public class ReplayScriptAction extends BasicAction {
     private WindowManager.LayoutParams maskParams;
-    private ScriptVoEntity entity;
+    private ReplayModel model;
     private final ReentrantLock lock = new ReentrantLock();
     private boolean initialized;
     private WindowReplayFloatingButtonBinding binding;
@@ -91,10 +90,9 @@ public class ReplayScriptAction extends BasicAction {
         try {
             if (param != null) {
                 Object data = param.getData();
-                if (data instanceof ScriptVoEntity) {
-                    this.entity = (ScriptVoEntity) data;
-                    player.setActions(entity.getActions());
-                    player.setPoints(entity.getPoints());
+                if (data instanceof ReplayModel) {
+                    this.model = (ReplayModel) data;
+                    player.setModel(model);
                 } else {
                     Log.e("open", "data is not ScriptVoEntity");
                     return false;
@@ -108,12 +106,6 @@ public class ReplayScriptAction extends BasicAction {
     }
 
     private void addListeners() {
-        ControllerCallback<Integer> callback = result -> {
-            if (result == SimpleReplay.STOP) {
-                binding.getStatus().setStatus(PreviewFloatingStatus.NONE);
-                removeView(mask);
-            }
-        };
         AtomicBoolean closed = new AtomicBoolean(false);
         binding.btnRun.setOnClickListener(v -> {
             if (player.getStatus() == SimpleReplay.PAUSE) {
@@ -135,7 +127,7 @@ public class ReplayScriptAction extends BasicAction {
             } else {
                 dialog.show(count.get(), (result) -> {
                     count.set(result);
-                    player.setCount(result);
+                    player.setRepeatCount(result);
                 });
             }
         });
@@ -225,7 +217,7 @@ public class ReplayScriptAction extends BasicAction {
     @Override
     public boolean close(CloseParam param) {
         try {
-            entity = null;
+            model = null;
             binding.getStatus().setStatus(PreviewFloatingStatus.NONE);
             removeView(mask);
             removeView(binding);

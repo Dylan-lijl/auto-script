@@ -39,14 +39,14 @@ import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -64,6 +64,7 @@ import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
+import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.ReplayScriptAction;
 import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
@@ -155,8 +156,8 @@ public class MacroInfoActivity extends BaseActivity {
                             Gson gson = new Gson();
                             ScriptVoEntity entity = new ScriptVoEntity();
                             entity.setRoot(model.getRoot());
-                            entity.setActions(new ArrayList<>(model.getActions().values()));
-                            entity.setPoints(new ArrayList<>(model.getPoints().values()));
+                            entity.setActions(model.getActionData());
+                            entity.setPoints(model.getPointData());
                             //调用报错文件api
                             StoreUtil.promptAndSaveFile(gson.toJson(entity),
                                     "file_" + new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss", getSyncLanguage()).format(new Date()) + ".json",
@@ -179,11 +180,9 @@ public class MacroInfoActivity extends BaseActivity {
     private void changeRunService() {
         MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
         if (service != null) {
-            ScriptVoEntity entity = new ScriptVoEntity();
-            entity.setRoot(model.getRoot());
-            entity.getActions().addAll(model.getActions().values());
-            entity.getPoints().addAll(model.getPoints().values());
-            service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(entity));
+            //重放这里需要剔除无用字段来节省内存
+            ReplayModel replayModel = ReplayModel.create(model.getRoot(), model.getActionData(), model.getPointData());
+            service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(replayModel));
         }
     }
 
@@ -209,6 +208,10 @@ public class MacroInfoActivity extends BaseActivity {
                 if (data == null) {
                     return;
                 }
+                ScriptVoEntityModel.ScriptActionModel actionModel = model.getLastCheckAction();
+                if (actionModel == null) {
+                    return;
+                }
                 ScriptPointEntity entity;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     entity = data.getParcelableExtra("data", ScriptPointEntity.class);
@@ -218,57 +221,13 @@ public class MacroInfoActivity extends BaseActivity {
                 if (entity == null) {
                     return;
                 }
-                ScriptActionEntity action = model.getLastCheckedAction().getValue();
                 entity.setId(idWorker.nextId());
-                entity.setParentId(action.getId());
-                Set<Long> ids = model.getPointMapByParentId().get(entity.getParentId());
-                if (ids != null && !ids.isEmpty()) {
-                    long pre = -1;
-                    for (Long id : ids) {
-                        if (model.getPoints().get(id).getTime() >= entity.getTime()) {
-                            break;
-                        }
-                        pre = id;
-                    }
-                    if (pre != -1) {
-                        //计算差值
-                        long d = entity.getTime() - model.getPoints().get(pre).getTime();
-                        if (d > 0) {
-                            model.adjustPointTime(entity.getId(), d);
-                        }
-
-                    }
-                } else {
-                    long d = entity.getTime() - model.getLastCheckedAction().getValue().getDownTime();
-                    if (d > 0) {
-                        model.adjustActionTime(entity.getParentId(), d);
-                        action.setUpTime(entity.getTime());
-                    }
-                }
-                Set<ScriptPointEntity> map = new LinkedHashSet<>(model.getPoints().values());
-                map.add(entity);
-                model.setPoints(map);
-                Set<Long> set = model.getPointMapByParentId().get(action.getId());
-                if (set != null) {
-                    long maxTime = -1;
-                    for (Long l : set) {
-                        maxTime = Math.max(maxTime, model.getPoints().get(l).getTime());
-                    }
-                    //重新计算一下最大时间
-                    if (maxTime != -1) {
-                        action.setMaxTime(maxTime);
-                        action.setUpTime(maxTime);
-                        model.getRoot().setMaxTime(Math.max(model.getRoot().getMaxTime(), maxTime));
-                    }
-                }
-                //重新触发一下选中
-                Highlight highlight = model.getCheckedAction().remove(action.getId());
-                model.getCheckedAction().put(action.getId(), highlight);
+                entity.setActionId(actionModel.getKey());
+                entity.setScriptId(model.getRoot().getId());
+                model.addPoint(actionModel.getKey(), entity);
                 ThreadUtil.runOnUi(() -> {
-                    updateChartData(binding.flowChatLayout.actionBarChart,
-                            new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()));
-                    updateChartData(binding.flowChatLayout.pointBarChart,
-                            new ArrayList<>(model.getPointBars().values()), new ArrayList<>(model.getPointColors().values()));
+                    updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
+                    updateChartData(binding.flowChatLayout.pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors());
                 });
             }
         };
@@ -292,33 +251,14 @@ public class MacroInfoActivity extends BaseActivity {
                 }
                 // 处理返回数据
                 entity.setId(idWorker.nextId());
-                entity.setEventTime(System.nanoTime());
-                entity.setParentId(model.getRoot().getId());
+                entity.setScriptId(model.getRoot().getId());
                 if (entity.getType() == ScriptActionEntity.GESTURE) {
-                    entity.setUpTime(entity.getDownTime());
+                    entity.setDuration(0L);
                 }
-                long d = entity.getUpTime() - entity.getDownTime();
-                if (entity.getType() == ScriptActionEntity.KEY_EVENT && data.getBooleanExtra("auto", false) && d > 0) {
-                    //需要对齐
-                    long id = -1;
-                    for (ScriptActionEntity e : model.getActions().values()) {
-                        if (e.getDownTime() >= entity.getDownTime()) {
-                            break;
-                        }
-                        id = e.getId();
-                    }
-                    if (id != -1) {
-                        model.adjustActionTime(id, d);
-                    }
-                }
-                List<ScriptActionEntity> list = new ArrayList<>(model.getActions().values());
-                list.add(entity);
-                model.setActions(list);
-                model.getRoot().setCount(model.getRoot().getCount() + 1);
+                model.addAction(entity);
                 ThreadUtil.runOnUi(() -> {
                     //触发图表更新
-                    updateChartData(binding.flowChatLayout.actionBarChart,
-                            new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()));
+                    updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
                 });
             }
         };
@@ -336,16 +276,11 @@ public class MacroInfoActivity extends BaseActivity {
                             ThreadUtil.runOnCpu(() -> {
                                 try {
                                     db.runInTransaction(() -> {
-                                        //查找并删除
-                                        List<Long> actionIds = db.scriptActionMapper().findIdByParentId(model.getRoot().getId());
-                                        if (!actionIds.isEmpty()) {
-                                            List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
-                                            if (!pointIds.isEmpty()) {
-                                                db.scriptPointMapper().deleteByIds(pointIds);
-                                            }
-                                            db.scriptActionMapper().deleteByIds(actionIds);
-                                        }
-                                        db.scriptMapper().deleteById(model.getRoot().getId());
+                                        //删除对应数据
+                                        Long id = model.getRoot().getId();
+                                        db.scriptMapper().deleteById(id);
+                                        db.scriptActionMapper().deleteByScriptId(id);
+                                        db.scriptPointMapper().deleteByScriptId(id);
                                     });
                                     ThreadUtil.runOnUi(() -> {
                                         model.setSaved(false);
@@ -370,9 +305,9 @@ public class MacroInfoActivity extends BaseActivity {
                 //存数据
                 db.runInTransaction(() -> {
                     //删除旧数据
-                    List<Long> actionIds = db.scriptActionMapper().findIdByParentId(model.getRoot().getId());
+                    List<Long> actionIds = db.scriptActionMapper().findIdByScriptId(model.getRoot().getId());
                     if (!actionIds.isEmpty()) {
-                        List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
+                        List<Long> pointIds = db.scriptPointMapper().findIdByActionIds(actionIds);
                         if (!pointIds.isEmpty()) {
                             db.scriptPointMapper().deleteByIds(pointIds);
                         }
@@ -390,8 +325,8 @@ public class MacroInfoActivity extends BaseActivity {
                     entity.setUpdateTime(now);
                     //保存
                     db.scriptMapper().save(model.getRoot());
-                    db.scriptActionMapper().save(model.getActions().values());
-                    db.scriptPointMapper().save(model.getPoints().values());
+                    db.scriptActionMapper().save(model.getActionData());
+                    db.scriptPointMapper().save(model.getPointData());
                 });
                 //修改状态
                 model.setSaved(false);
@@ -404,76 +339,107 @@ public class MacroInfoActivity extends BaseActivity {
     }
 
     private void addPoint() {
-        Map.Entry<Long, ScriptActionEntity> action = model.getLastCheckedAction();
-        if (action == null) {
+        ScriptVoEntityModel.ScriptActionModel action = model.getLastCheckAction();
+        if (action == null || action.getData().getType() != ScriptActionEntity.GESTURE) {
             return;
         }
         ScriptPointEntity entity = new ScriptPointEntity();
         Intent intent = new Intent(this, PointAddActivity.class);
-        Map.Entry<Long, ScriptPointEntity> point = model.getLastCheckedPoint();
-        Set<Long> ids = model.getPointMapByParentId().get(action.getValue().getId());
-        if (ids != null && !ids.isEmpty()) {
-            ScriptPointEntity first = null;
-            ScriptPointEntity last = null;
-            int i = 0;
-            for (Long id : ids) {
-                if (i == 0) {
-                    first = model.getPoints().get(id);
+        ScriptVoEntityModel.ScriptPointModel point = model.getLastCheckShowPoint();
+        List<Long> ids = new ArrayList<>(new LinkedHashSet<>(action.getPointIds()));
+        if (!ids.isEmpty()) {
+            int index = ids.indexOf(point.getKey());
+            intent.putExtra("minOrder", model.getPoints().get(ids.get(0)).getOrder());
+            intent.putExtra("maxOrder", model.getPoints().get(ids.get(ids.size() - 1)).getOrder());
+            if (index != -1) {
+                if (index > 0) {
+                    intent.putExtra("beforeOrder", calculatedOrder(model.getPoints().get(ids.get(index - 1)).getOrder(), point.getData().getOrder()));
                 }
-                if (i == ids.size() - 1) {
-                    last = model.getPoints().get(id);
+                if (index < ids.size() - 1) {
+                    intent.putExtra("afterOrder", calculatedOrder(point.getData().getOrder(), model.getPoints().get(ids.get(index + 1)).getOrder()));
                 }
-                i++;
             }
-            intent.putExtra("minTime", first.getTime());
-            intent.putExtra("maxTime", last.getTime());
-            entity.setX(last.getX());
-            entity.setY(last.getY());
+            entity.setX(point.getData().getX());
+            entity.setY(point.getData().getY());
         } else {
-            intent.putExtra("minTime", action.getValue().getDownTime());
-            intent.putExtra("maxTime", action.getValue().getDownTime());
+            intent.putExtra("minOrder", 50);
+            intent.putExtra("maxOrder", 50);
         }
         if (point != null) {
-            entity.setX(point.getValue().getX());
-            entity.setY(point.getValue().getY());
-            entity.setTime(point.getValue().getTime());
+            entity.setX(point.getData().getX());
+            entity.setY(point.getData().getY());
+            entity.setDeltaTime(point.getData().getDeltaTime());
+            intent.putExtra("index", point.getBarEntry().getX());
         } else {
             entity.setX(200F);
             entity.setY(200F);
+            entity.setDeltaTime(0L);
         }
-        intent.putExtra("time", entity.getTime());
         intent.putExtra("data", entity);
-        Integer index = model.getLastCheckedPointIndex();
-        if (index != null) {
-            intent.putExtra("index", index);
-        }
         //跳转到新增界面
         addInfoLauncher.launch(intent);
     }
 
+    /**
+     * 这个计算目的是防止小数位增长等于分化次数
+     *
+     * @param start 开始
+     * @param end   结束
+     * @return 中间值
+     */
+    private float calculatedOrder(float start, float end) {
+        BigDecimal min = BigDecimal.valueOf(Math.min(start, end));
+        BigDecimal max = BigDecimal.valueOf(Math.max(start, end));
+
+        BigDecimal avg = min.add(max).divide(BigDecimal.valueOf(2), 10, RoundingMode.HALF_UP);
+
+        int minScale = min.stripTrailingZeros().scale();
+        int maxScale = max.stripTrailingZeros().scale();
+        int targetScale = Math.max(minScale, maxScale);
+
+        // 规则 1：如果在当前精度下 avg 已经能区分
+        BigDecimal avgAtScale = avg.setScale(targetScale, RoundingMode.HALF_UP);
+        if (avgAtScale.compareTo(min) > 0 && avgAtScale.compareTo(max) < 0) {
+            return avgAtScale.floatValue();
+        }
+
+        // 规则 2 / 3：在当前精度下尝试 ±1
+        BigDecimal step = BigDecimal.ONE.movePointLeft(targetScale);
+        BigDecimal down = avgAtScale.subtract(step);
+        if (down.compareTo(min) > 0) {
+            return down.floatValue();
+        }
+
+        BigDecimal up = avgAtScale.add(step);
+        if (up.compareTo(max) < 0) {
+            return up.floatValue();
+        }
+
+        // 都不行 → 增加一位小数
+        BigDecimal finer = avg.setScale(targetScale + 1, RoundingMode.HALF_UP);
+        return finer.floatValue();
+    }
+
+
     private void addAction() {
         ScriptActionEntity entity = new ScriptActionEntity();
-        entity.setMaxTime(0L);
-        entity.setUpTime(0L);
+        entity.setStartTime(0L);
         entity.setCode(KeyEvent.KEYCODE_HOME);
-        entity.setCount(0);
+        entity.setPointCount(0);
         entity.setIndex(0);
         entity.setType(ScriptActionEntity.GESTURE);
         Intent intent = new Intent(this, ActionAddActivity.class);
         intent.putExtra("data", entity);
-        Map.Entry<Long, ScriptActionEntity> entry = model.getLastCheckedAction();
-        if (entry != null) {
-            intent.putExtra("upTime", entry.getValue().getUpTime());
-            intent.putExtra("downTime", entry.getValue().getDownTime());
-        }
-        Integer index = model.getLastCheckedActionIndex();
-        if (index != null) {
-            intent.putExtra("index", index);
+        ScriptVoEntityModel.ScriptActionModel actionModel = model.getLastCheckAction();
+        if (actionModel != null) {
+            intent.putExtra("startTime", actionModel.getData().getStartTime());
+            intent.putExtra("endTime", actionModel.getData().getStartTime() + actionModel.getData().getDuration());
+            intent.putExtra("index", actionModel.getBarEntry().getX());
         }
         if (!model.getActions().isEmpty()) {
-            ScriptActionEntity last = model.getActions().get(ScriptVoEntityModel.getLastKey(model.getActions()));
+            ScriptVoEntityModel.ScriptActionModel last = model.getLastAction();
             if (last != null) {
-                intent.putExtra("maxTime", last.getUpTime());
+                intent.putExtra("maxTime", last.getData().getStartTime() + last.getData().getDuration());
             }
         }
         //跳转到新增界面
@@ -507,6 +473,7 @@ public class MacroInfoActivity extends BaseActivity {
                     dialog.dismiss();
                 })
                 .addAction(R.string.confirm, (dialog, index) -> {
+                    dialog.dismiss();
                     String t = text.get();
                     if (t == null) {
                         return;
@@ -514,7 +481,7 @@ public class MacroInfoActivity extends BaseActivity {
                     String v = t.trim();
                     if (!v.isEmpty()) {
                         if (model.getRoot() != null) {
-                            model.getRoot().setRemark(v);
+                            model.getRoot().setDescription(v);
                         }
                     } else {
                         Toast.makeText(this, getString(R.string.message_error_empty_ph, getString(R.string.remark)), Toast.LENGTH_SHORT).show();
@@ -529,11 +496,11 @@ public class MacroInfoActivity extends BaseActivity {
             return;
         }
         DialogPointInfoBinding binding = DialogPointInfoBinding.inflate(LayoutInflater.from(this));
-        binding.setEntity(model.getLastCheckedPoint().getValue());
+        binding.setEntity(model.getLastCheckShowPoint().getData());
         BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
         builder.addView(binding.getRoot())
                 .setContentPaddingDp(20, 20)
-                .setTitle(getString(R.string.dialog_action_info_title, model.getLastCheckedActionIndex()));
+                .setTitle(getString(R.string.dialog_action_info_title, (int) model.getLastCheckShowPoint().getBarEntry().getX()));
         builder.build().show();
     }
 
@@ -542,11 +509,11 @@ public class MacroInfoActivity extends BaseActivity {
             return;
         }
         DialogActionInfoBinding binding = DialogActionInfoBinding.inflate(LayoutInflater.from(this));
-        binding.setEntity(model.getLastCheckedAction().getValue());
+        binding.setEntity(model.getLastCheckAction().getData());
         BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
         builder.addView(binding.getRoot())
                 .setContentPaddingDp(20, 20)
-                .setTitle(getString(R.string.dialog_action_info_title, model.getLastCheckedActionIndex()));
+                .setTitle(getString(R.string.dialog_action_info_title, (int) model.getLastCheckAction().getBarEntry().getX()));
         builder.build().show();
     }
 
@@ -567,54 +534,13 @@ public class MacroInfoActivity extends BaseActivity {
         refresh.setDeleteDetail(true);
         ThreadUtil.runOnCpu(() -> {
             try {
-                for (Long id : new ArrayList<>(model.getCheckedPoint().keySet())) {
-                    ScriptPointEntity point = model.getPoints().get(id);
-                    if (point == null) {
-                        continue;
-                    }
-                    //删除对应索引数据
-                    if (checked) {
-                        Set<Long> ids = model.getPointMapByParentId().get(point.getParentId());
-                        if (ids == null) {
-                            continue;
-                        }
-                        Long pre = null;
-                        for (Long id1 : ids) {
-                            if (id1.compareTo(id) == 0) {
-                                break;
-                            }
-                            pre = id1;
-                        }
-                        Long time;
-                        if (pre == null) {
-                            ScriptActionEntity action = model.getActions().get(point.getParentId());
-                            if (action == null) {
-                                continue;
-                            }
-                            time = action.getDownTime();
-                        } else {
-                            ScriptPointEntity scriptPoint = model.getPoints().get(pre);
-                            if (scriptPoint == null) {
-                                continue;
-                            }
-                            time = scriptPoint.getTime();
-                        }
-                        long duration = point.getTime() - time;
-                        if (duration > 0) {
-                            //更新后续节点
-                            model.adjustPointTime(id, -duration);
-                        }
-                    }
-                    ScriptActionEntity action = model.getActions().get(point.getParentId());
-                    if (action != null) {
-                        action.setCount(action.getCount() - 1);
-                    }
-                    model.getPoints().remove(id);
-                }
-                updateChartData(binding.flowChatLayout.actionBarChart, new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()));
-                updateChartData(binding.flowChatLayout.pointBarChart, new ArrayList<>(model.getPointBars().values()), new ArrayList<>(model.getPointColors().values()));
-                //标记未保存
-                model.setSaved(false);
+                model.deletePoint(model.getCheckedAction().keySet(), checked);
+                ThreadUtil.runOnUi(() -> {
+                    updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
+                    updateChartData(binding.flowChatLayout.pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors());
+                    //标记未保存
+                    model.setSaved(false);
+                });
             } catch (Exception e) {
                 Log.d(this.getClass().getCanonicalName(), "removeCheckedPoint", e);
             } finally {
@@ -653,12 +579,13 @@ public class MacroInfoActivity extends BaseActivity {
         rightAxis.setAxisMinimum(-1f);
         actionBarChart.setRenderer(new SingleStackRender(actionBarChart, actionBarChart.getAnimator(), actionBarChart.getViewPortHandler()));
         actionBarChart.setOnChartValueSelectedListener(createActionSelectedListener());
-        setChartData(actionBarChart, new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()), (Long id) -> {
-            ScriptActionEntity action = model.getActions().get(id);
-            if (action == null) {
+        setChartData(actionBarChart, model.getActionBarEntries(), model.getActionColors(), (Long id) -> {
+            ScriptVoEntityModel.ScriptActionModel actionModel = model.getActions().get(id);
+            if (actionModel == null) {
                 return "--" + getString(R.string.unit_ms);
             }
-            return (action.getUpTime() - action.getDownTime()) + getString(R.string.unit_ms) + "(" + getString(ScriptActionEntity.getTypeName(action.getType())) + ")";
+            ScriptActionEntity data = actionModel.getData();
+            return data.getDuration() + getString(R.string.unit_ms) + "(" + getString(ScriptActionEntity.getTypeName(data.getType())) + ")";
         });
         actionBarChart.getLegend().setEnabled(false);
         //pointBar
@@ -679,37 +606,12 @@ public class MacroInfoActivity extends BaseActivity {
         pointBarChart.setRenderer(new SingleStackRender(pointBarChart, pointBarChart.getAnimator(), pointBarChart.getViewPortHandler()));
         pointBarChart.setOnChartValueSelectedListener(createPointSelectedListener());
         pointBarChart.getLegend().setEnabled(false);
-        setChartData(pointBarChart, new ArrayList<>(model.getPointBars().values()), new ArrayList<>(model.getPointColors().values()), (Long id) -> {
+        setChartData(pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors(), (Long id) -> {
             ScriptPointEntity point = model.getPoints().get(id);
             if (point == null) {
-                return "?";
+                return "--" + getString(R.string.unit_ms);
             }
-            Set<Long> ids = model.getPointMapByParentId().get(point.getParentId());
-            if (ids == null || ids.isEmpty()) {
-                return "?";
-            }
-            Long pre = null;
-            for (Long item : ids) {
-                if (item.compareTo(id) == 0) {
-                    if (pre == null) {
-                        ScriptActionEntity action = model.getActions().get(point.getParentId());
-                        return action == null ? "?" : point.getTime() - action.getDownTime() + getString(R.string.unit_ms);
-                    } else {
-                        ScriptPointEntity preEntity = model.getPoints().get(pre);
-                        return preEntity == null ? "?" : point.getTime() - preEntity.getTime() + getString(R.string.unit_ms);
-                    }
-                }
-                pre = item;
-            }
-            return point.getX() + getString(R.string.unit_ms);
-        });
-        //给checkAction添加监听
-        model.getCheckedAction().addOnMapChangedCallback(new ObservableMap.OnMapChangedCallback<>() {
-
-            @Override
-            public void onMapChanged(ObservableMap<Long, Highlight> sender, Long key) {
-                updateChartData(pointBarChart, new ArrayList<>(model.getPointBars().values()), new ArrayList<>(model.getPointColors().values()));
-            }
+            return point.getDeltaTime() + getString(R.string.unit_ms);
         });
     }
 
@@ -717,15 +619,9 @@ public class MacroInfoActivity extends BaseActivity {
         return new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-                ObservableMap<Long, Highlight> map = model.getCheckedPoint();
-                Long id = (Long) e.getData();
-                if (map.containsKey(id)) {
-                    map.remove(id);
-                } else {
-                    map.put(id, h);
-                }
+                model.addCheckPoint((Long) e.getData(), h);
                 // Manually update the chart's highlights
-                Highlight[] highlightsArray = map.values().toArray(new Highlight[0]);
+                Highlight[] highlightsArray = model.getCheckedPoint().values().toArray(new Highlight[0]);
                 binding.flowChatLayout.pointBarChart.highlightValues(highlightsArray);
             }
 
@@ -741,22 +637,18 @@ public class MacroInfoActivity extends BaseActivity {
         return new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-                ObservableMap<Long, Highlight> map = model.getCheckedAction();
-                Long id = (Long) e.getData();
-                if (map.containsKey(id)) {
-                    map.remove(id);
-                } else {
-                    map.put(id, h);
-                }
+                model.addCheckAction((Long) e.getData(), h);
                 // Manually update the chart's highlights
-                Highlight[] highlightsArray = map.values().toArray(new Highlight[0]);
+                Highlight[] highlightsArray = model.getCheckedAction().values().toArray(new Highlight[0]);
                 binding.flowChatLayout.actionBarChart.highlightValues(highlightsArray);
+                updateChartData(binding.flowChatLayout.pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors());
             }
 
             @Override
             public void onNothingSelected() {
                 Highlight[] highlightsArray = model.getCheckedAction().values().toArray(new Highlight[0]);
                 binding.flowChatLayout.actionBarChart.highlightValues(highlightsArray);
+                updateChartData(binding.flowChatLayout.pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors());
             }
         };
     }
@@ -802,25 +694,16 @@ public class MacroInfoActivity extends BaseActivity {
         refresh.setDelete(true);
         ThreadUtil.runOnCpu(() -> {
             try {
-                for (Long id : new ArrayList<>(model.getCheckedAction().keySet())) {
-                    ScriptActionEntity action = model.getActions().get(id);
-                    if (action == null) {
-                        continue;
-                    }
-                    long duration = action.getMaxTime() - action.getDownTime();
-                    //更新后续步骤
-                    if (checked && duration > 0) {
-                        model.adjustActionTime(id, -duration);
-                    }
-                    if (model.getRoot() != null) {
-                        model.getRoot().setCount(model.getRoot().getCount() - 1);
-                    }
-                    model.getActions().remove(id);
+                if (model.getCheckedAction().isEmpty()) {
+                    return;
                 }
-                updateChartData(binding.flowChatLayout.actionBarChart, new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()));
-                updateChartData(binding.flowChatLayout.pointBarChart, new ArrayList<>(model.getPointBars().values()), new ArrayList<>(model.getPointColors().values()));
-                //标记未保存
-                model.setSaved(false);
+                model.deleteAction(model.getCheckedAction().keySet(), checked);
+                ThreadUtil.runOnUi(() -> {
+                    updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
+                    updateChartData(binding.flowChatLayout.pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors());
+                    //标记未保存
+                    model.setSaved(false);
+                });
             } catch (Exception e) {
                 Log.d(this.getClass().getCanonicalName(), "removeCheckedAction", e);
             } finally {
@@ -886,6 +769,7 @@ public class MacroInfoActivity extends BaseActivity {
                     dialog.dismiss();
                 })
                 .addAction(R.string.confirm, (dialog, index) -> {
+                    dialog.dismiss();
                     String t = text.get();
                     if (t == null) {
                         return;
@@ -910,27 +794,26 @@ public class MacroInfoActivity extends BaseActivity {
         }
         Intent intent = getIntent();
         ThreadUtil.runOnCpu(() -> {
-            ScriptVoEntity entity = null;
             try {
-                entity = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
+                ScriptVoEntity entity = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
                         intent.getParcelableExtra("data", ScriptVoEntity.class) : intent.getParcelableExtra("data");
                 if (intent.getBooleanExtra("add", false)) {
-                    model.setSaved(true);
-                    model.setAdd(true);
+                    ThreadUtil.runOnUi(() -> {
+                        model.setSaved(true);
+                        model.setAdd(true);
+                    });
                 }
-            } catch (Exception e) {
-                Log.d(MacroInfoActivity.class.getCanonicalName(), "从intent获取数据失败! ", e);
-                return;
-            } finally {
-                refresh.setInfo(false);
-            }
-            if (entity != null) {
+                if (entity == null) {
+                    return;
+                }
                 model.setRoot(entity.getRoot());
                 model.setActions(entity.getActions());
                 model.setPoints(entity.getPoints());
-                ThreadUtil.runOnUi(() -> {
-                    updateChartData(binding.flowChatLayout.actionBarChart, new ArrayList<>(model.getActionBars().values()), new ArrayList<>(model.getActionColors().values()));
-                });
+                ThreadUtil.runOnUi(() -> updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors()));
+            } catch (Exception e) {
+                Log.d(MacroInfoActivity.class.getCanonicalName(), "从intent获取数据失败! ", e);
+            } finally {
+                ThreadUtil.runOnUi(() -> refresh.setInfo(false));
             }
         });
     }

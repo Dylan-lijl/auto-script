@@ -102,13 +102,10 @@ public class SingleStackRender extends HorizontalBarChartRenderer {
         int bufferIndex = 0;
         float barWidth = mChart.getBarData().getBarWidth();
         float barWidthHalf = barWidth / 2f;
-
         for (int i = 0; i < dataSet.getEntryCount(); i++) {
             BarEntry entry = dataSet.getEntryForIndex(i);
             float[] vals = entry.getYVals();
-
             if (vals == null || vals.length < 2) continue;
-
             float start = vals[0];
             for (int k = 1; k < vals.length; k++) {
                 float end = start + vals[k];

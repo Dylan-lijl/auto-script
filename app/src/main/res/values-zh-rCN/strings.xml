@@ -63,9 +63,8 @@
     <string name="unsaved_message">当前内容已修改，但尚未保存。</string>
     <string name="play_action">播放步骤</string>
     <string name="play_point">播放坐标</string>
-    <string name="action_label_down_time">按下时间</string>
-    <string name="action_label_up_time">抬起时间</string>
-    <string name="action_label_event_time">事件时间</string>
+    <string name="action_label_down_time">触发时间</string>
+    <string name="action_label_duration">持续时长</string>
     <string name="action_label_count">移动数量</string>
     <string name="action_label_type">类型</string>
     <string name="action_label_index">手势索引</string>

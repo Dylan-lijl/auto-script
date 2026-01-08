@@ -63,9 +63,8 @@
     <string name="unsaved_message">현재 내용이 수정되었지만 아직 저장되지 않았습니다.</string>
     <string name="play_action">단계 재생</string>
     <string name="play_point">좌표 재생</string>
-    <string name="action_label_down_time">누른 시간</string>
-    <string name="action_label_up_time">뗀 시간</string>
-    <string name="action_label_event_time">이벤트 시간</string>
+    <string name="action_label_down_time">트리거 시간</string>
+    <string name="action_label_duration">지속 시간</string>
     <string name="action_label_count">이동 횟수</string>
     <string name="action_label_type">유형</string>
     <string name="action_label_index">제스처 인덱스</string>

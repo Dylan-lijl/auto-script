@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -26,7 +24,6 @@ import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.recyclerView.QMUIRVItemSwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeViewHolder;
-import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.util.QMUIKeyboardHelper;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
@@ -215,12 +212,12 @@ public class MacroListActivity extends BaseActivity {
     private void runScript(ScriptEntity script) {
         ThreadUtil.runOnCpu(() -> {
             //根据id查询action数据和point数据
-            List<ScriptActionEntity> actions = db.scriptActionMapper().findByParentId(script.getId());
+            List<ScriptActionEntity> actions = db.scriptActionMapper().findByScriptId(script.getId());
             if (actions.isEmpty()) {
                 return;
             }
             Set<Long> actionIds = actions.stream().map(ScriptActionEntity::getId).collect(Collectors.toSet());
-            List<ScriptPointEntity> points = db.scriptPointMapper().findByParentIds(actionIds);
+            List<ScriptPointEntity> points = db.scriptPointMapper().findByActionIds(actionIds);
             ScriptVoEntity entity = new ScriptVoEntity();
             entity.setRoot(script);
             entity.getActions().addAll(actions);
@@ -244,10 +241,10 @@ public class MacroListActivity extends BaseActivity {
                             //删除数据
                             db.runInTransaction(() -> {
                                 db.scriptMapper().delete(script);
-                                List<Long> actionIds = db.scriptActionMapper().findIdByParentId(script.getId());
+                                List<Long> actionIds = db.scriptActionMapper().findIdByScriptId(script.getId());
                                 if (!actionIds.isEmpty()) {
                                     db.scriptActionMapper().deleteByIds(actionIds);
-                                    List<Long> pointIds = db.scriptPointMapper().findIdByParentIds(actionIds);
+                                    List<Long> pointIds = db.scriptPointMapper().findIdByActionIds(actionIds);
                                     if (!pointIds.isEmpty()) {
                                         db.scriptPointMapper().deleteByIds(pointIds);
                                     }
@@ -348,10 +345,10 @@ public class MacroListActivity extends BaseActivity {
         ThreadUtil.runOnCpu(() -> {
             ScriptVoEntity data = new ScriptVoEntity();
             data.setRoot(entity);
-            List<ScriptActionEntity> actions = db.scriptActionMapper().findByParentId(entity.getId());
+            List<ScriptActionEntity> actions = db.scriptActionMapper().findByScriptId(entity.getId());
             data.getActions().addAll(actions);
             if (!actions.isEmpty()) {
-                List<ScriptPointEntity> points = db.scriptPointMapper().findByParentIds(actions.stream().map(ScriptActionEntity::getId).collect(Collectors.toSet()));
+                List<ScriptPointEntity> points = db.scriptPointMapper().findByActionIds(actions.stream().map(ScriptActionEntity::getId).collect(Collectors.toSet()));
                 data.getPoints().addAll(points);
             }
             ThreadUtil.runOnUi(() -> {

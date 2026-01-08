@@ -41,7 +41,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{StringUtils.format(entity.time)+context.getString(R.string.unit_ms)}" />
+                    android:text="@{StringUtils.format(entity.deltaTime)+context.getString(R.string.unit_ms)}" />
             </LinearLayout>
 
             <LinearLayout style="@style/FormVerticalItemStyle">

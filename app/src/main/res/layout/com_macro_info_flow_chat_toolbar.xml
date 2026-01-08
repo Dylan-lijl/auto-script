@@ -41,7 +41,7 @@
                 android:id="@+id/time_element"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{!model.hasMaxTime()?`--`:model.root.maxTime+context.getString(R.string.unit_ms)}" />
+                android:text="@{!model.hasMaxTime()?`--`:model.root.totalDuration+context.getString(R.string.unit_ms)}" />
             <!--脚本数量-->
             <TextView
                 android:id="@+id/step_label"
@@ -54,7 +54,7 @@
                 android:id="@+id/step_element"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{!model.hasCount()?`--`:model.root.count+``}" />
+                android:text="@{!model.hasCount()?`--`:model.root.actionCount+``}" />
             <!--脚本名称-->
             <TextView
                 android:id="@+id/name_label"

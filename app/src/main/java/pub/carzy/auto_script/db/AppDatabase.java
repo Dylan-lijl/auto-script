@@ -28,7 +28,7 @@ import pub.carzy.auto_script.db.mapper.ScriptPointMapper;
                 ScriptActionEntity.class,
                 ScriptPointEntity.class
         },
-        version = 1,
+        version = 2,
         exportSchema = false
 )
 @TypeConverters({
@@ -60,7 +60,7 @@ public abstract class AppDatabase extends RoomDatabase {
                                         Log.d("ROOM_SQL", "ARGS => " + bindArgs);
                                     },
                                     Executors.newSingleThreadExecutor()
-                            )
+                            ).fallbackToDestructiveMigration(true)
                             .build();
                 }
             }

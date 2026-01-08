@@ -46,7 +46,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{StringUtils.format(entity.downTime)+context.getString(R.string.unit_ms)}" />
+                        android:text="@{StringUtils.format(entity.startTime)+context.getString(R.string.unit_ms)}" />
                 </LinearLayout>
 
                 <LinearLayout style="@style/FormVerticalItemStyle">
@@ -54,12 +54,12 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_up_time))}" />
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_duration))}" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{StringUtils.format(entity.upTime)+context.getString(R.string.unit_ms)}" />
+                        android:text="@{StringUtils.format(entity.duration)+context.getString(R.string.unit_ms)}" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -74,7 +74,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{StringUtils.format(entity.count)}" />
+                        android:text="@{StringUtils.format(entity.pointCount)}" />
                 </LinearLayout>
 
                 <LinearLayout style="@style/FormVerticalItemStyle">

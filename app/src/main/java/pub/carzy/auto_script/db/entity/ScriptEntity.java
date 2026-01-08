@@ -28,10 +28,10 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
     private Date createTime;
     @ColumnInfo(name = "update_time")
     private Date updateTime;
-    private Integer count;
-    @ColumnInfo(name = "max_time")
-    private Long maxTime;
-    private String remark;
+    private Integer actionCount;
+    @ColumnInfo(name = "total_duration")
+    private Long totalDuration;
+    private String description;
 
     public ScriptEntity() {
     }
@@ -44,14 +44,14 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
         }
         name = in.readString();
         if (in.readByte() == 0) {
-            count = null;
+            actionCount = null;
         } else {
-            count = in.readInt();
+            actionCount = in.readInt();
         }
         if (in.readByte() == 0) {
-            maxTime = null;
+            totalDuration = null;
         } else {
-            maxTime = in.readLong();
+            totalDuration = in.readLong();
         }
         if (in.readByte() == 0) {
             createTime = null;
@@ -63,7 +63,7 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
         } else {
             updateTime = new Date(in.readLong());
         }
-        remark = in.readString();
+        description = in.readString();
     }
 
     public static final Creator<ScriptEntity> CREATOR = new Creator<>() {
@@ -92,17 +92,17 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
             dest.writeLong(id);
         }
         dest.writeString(name);
-        if (count == null) {
+        if (actionCount == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeInt(count);
+            dest.writeInt(actionCount);
         }
-        if (maxTime == null) {
+        if (totalDuration == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeLong(maxTime);
+            dest.writeLong(totalDuration);
         }
         if (createTime == null) {
             dest.writeByte((byte) 0);
@@ -116,7 +116,7 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeLong(updateTime.getTime());
         }
-        dest.writeString(remark);
+        dest.writeString(description);
     }
 
     @Bindable
@@ -160,32 +160,32 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Integer getCount() {
-        return count;
+    public Integer getActionCount() {
+        return actionCount;
     }
 
-    public void setCount(Integer count) {
-        this.count = count;
+    public void setActionCount(Integer actionCount) {
+        this.actionCount = actionCount;
         notifyPropertyChanged(BR.count);
     }
 
     @Bindable
-    public Long getMaxTime() {
-        return maxTime;
+    public Long getTotalDuration() {
+        return totalDuration;
     }
 
-    public void setMaxTime(Long maxTime) {
-        this.maxTime = maxTime;
-        notifyPropertyChanged(BR.maxTime);
+    public void setTotalDuration(Long totalDuration) {
+        this.totalDuration = totalDuration;
+        notifyPropertyChanged(BR.totalDuration);
     }
 
     @Bindable
-    public String getRemark() {
-        return remark;
+    public String getDescription() {
+        return description;
     }
 
-    public void setRemark(String remark) {
-        this.remark = remark;
-        notifyPropertyChanged(BR.remark);
+    public void setDescription(String description) {
+        this.description = description;
+        notifyPropertyChanged(BR.description);
     }
 }

@@ -24,18 +24,20 @@ public class Converter {
             return 0L;
         }
     }
+
     @InverseMethod("stringToInt")
-    public static String intToString(int value) {
-        return String.valueOf(value);
+    public static String intToString(Integer value) {
+        return value == null ? "" : String.valueOf(value);
     }
 
-    public static int stringToInt(String value) {
+    public static Integer stringToInt(String value) {
         try {
-            return Integer.parseInt(value);
+            return "".equals(value) ? null : Integer.parseInt(value);
         } catch (NumberFormatException e) {
             return 0;
         }
     }
+
     @InverseMethod("stringToFloat")
     public static String floatToString(float value) {
         return String.valueOf(value);
@@ -48,6 +50,7 @@ public class Converter {
             return 0;
         }
     }
+
     @BindingAdapter("minVal")
     public static void setMinVal(EditText view, int min) {
         view.addTextChangedListener(new TextWatcher() {

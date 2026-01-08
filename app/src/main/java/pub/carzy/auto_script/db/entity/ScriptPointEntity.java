@@ -21,14 +21,17 @@ import pub.carzy.auto_script.BR;
 public class ScriptPointEntity extends BaseObservable implements Parcelable {
     @PrimaryKey
     private Long id;
-    @ColumnInfo(name = "parent_id")
-    private Long parentId;
+    @ColumnInfo(name = "script_id")
+    private Long scriptId;
+    @ColumnInfo(name = "action_id")
+    private Long actionId;
     private Float x;
     private Float y;
-    private Long time;
-    @ColumnInfo(name = "tool_type")
-    private Integer toolType;
-
+    @ColumnInfo(name = "delta_time")
+    private Long deltaTime;
+    @ColumnInfo(name = "point_order")
+    public Float order;
+    public String description;
     public ScriptPointEntity() {
     }
 
@@ -39,9 +42,14 @@ public class ScriptPointEntity extends BaseObservable implements Parcelable {
             id = in.readLong();
         }
         if (in.readByte() == 0) {
-            parentId = null;
+            scriptId = null;
         } else {
-            parentId = in.readLong();
+            scriptId = in.readLong();
+        }
+        if (in.readByte() == 0) {
+            actionId = null;
+        } else {
+            actionId = in.readLong();
         }
         if (in.readByte() == 0) {
             x = null;
@@ -54,15 +62,16 @@ public class ScriptPointEntity extends BaseObservable implements Parcelable {
             y = in.readFloat();
         }
         if (in.readByte() == 0) {
-            time = null;
+            deltaTime = null;
         } else {
-            time = in.readLong();
+            deltaTime = in.readLong();
         }
         if (in.readByte() == 0) {
-            toolType = null;
+            order = null;
         } else {
-            toolType = in.readInt();
+            order = in.readFloat();
         }
+        description = in.readString();
     }
 
     public static final Creator<ScriptPointEntity> CREATOR = new Creator<>() {
@@ -90,11 +99,17 @@ public class ScriptPointEntity extends BaseObservable implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeLong(id);
         }
-        if (parentId == null) {
+        if (scriptId == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeLong(parentId);
+            dest.writeLong(scriptId);
+        }
+        if (actionId == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(actionId);
         }
         if (x == null) {
             dest.writeByte((byte) 0);
@@ -108,18 +123,19 @@ public class ScriptPointEntity extends BaseObservable implements Parcelable {
             dest.writeByte((byte) 1);
             dest.writeFloat(y);
         }
-        if (time == null) {
+        if (deltaTime == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeLong(time);
+            dest.writeLong(deltaTime);
         }
-        if (toolType == null) {
+        if (order == null) {
             dest.writeByte((byte) 0);
         } else {
             dest.writeByte((byte) 1);
-            dest.writeInt(toolType);
+            dest.writeFloat(order);
         }
+        dest.writeString(description);
     }
 
     @Bindable
@@ -133,13 +149,13 @@ public class ScriptPointEntity extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Long getParentId() {
-        return parentId;
+    public Long getActionId() {
+        return actionId;
     }
 
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-        notifyPropertyChanged(BR.parentId);
+    public void setActionId(Long actionId) {
+        this.actionId = actionId;
+        notifyPropertyChanged(BR.actionId);
     }
 
     @Bindable
@@ -163,22 +179,42 @@ public class ScriptPointEntity extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Long getTime() {
-        return time;
+    public Long getDeltaTime() {
+        return deltaTime;
     }
 
-    public void setTime(Long time) {
-        this.time = time;
-        notifyPropertyChanged(BR.time);
+    public void setDeltaTime(Long deltaTime) {
+        this.deltaTime = deltaTime;
+        notifyPropertyChanged(BR.deltaTime);
     }
 
     @Bindable
-    public Integer getToolType() {
-        return toolType;
+    public Long getScriptId() {
+        return scriptId;
     }
 
-    public void setToolType(Integer toolType) {
-        this.toolType = toolType;
-        notifyPropertyChanged(BR.toolType);
+    public void setScriptId(Long scriptId) {
+        this.scriptId = scriptId;
+        notifyPropertyChanged(BR.scriptId);
+    }
+
+    @Bindable
+    public Float getOrder() {
+        return order;
+    }
+
+    public void setOrder(Float order) {
+        this.order = order;
+        notifyPropertyChanged(BR.order);
+    }
+
+    @Bindable
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+        notifyPropertyChanged(BR.description);
     }
 }

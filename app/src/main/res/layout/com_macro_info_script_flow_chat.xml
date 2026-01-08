@@ -51,8 +51,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:text="@{model.lastCheckedAction.value.downTime+context.getString(R.string.unit_ms)+`~`+model.lastCheckedAction.value.upTime+context.getString(R.string.unit_ms)}"
-                    android:visibility="@{model.checkedAction.empty?View.GONE:View.VISIBLE}" />
+                    android:text="@{model.lastCheckAction.data.startTime+context.getString(R.string.unit_ms)+`~`+(model.lastCheckAction.data.startTime+model.lastCheckAction.data.duration)+context.getString(R.string.unit_ms)}"
+                    android:visibility="@{model.lastCheckAction==null?View.GONE:View.VISIBLE}" />
             </LinearLayout>
 
             <LinearLayout
@@ -123,7 +123,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@{context.getString(R.string.details)+(model.checkedAction.isEmpty()?``:`(`+model.lastCheckedActionIndex+`)`)}" />
+                android:text="@{context.getString(R.string.details)+(model.lastCheckAction==null?``:`(`+(int)model.lastCheckAction.barEntry.x+`)`)}" />
 
             <LinearLayout
                 android:layout_width="wrap_content"

@@ -148,11 +148,6 @@ public class RecordScriptAction extends BasicAction {
             intent.putExtra("add", true);
             // 4. 启动 Activity
             service.startActivity(intent);
-            // 5. 清空 motionList 数据
-            if (motionList != null) {
-                motionList.clear();
-                // 建议在这里加上日志或调试点，确认数据被清空
-            }
             service.close(ACTION_KEY, null);
         });
         binding.btnFloatingClose.setOnClickListener(v -> {
@@ -177,7 +172,6 @@ public class RecordScriptAction extends BasicAction {
                 KeyEntity keyEntity = new KeyEntity();
                 keyEntity.setCode(event.getKeyCode());
                 keyEntity.setDownTime(watch.getElapsedMillis());
-                keyEntity.setEventTime(event.getEventTime());
                 keyMap.put(event.getKeyCode(), keyEntity);
             } else if (event.getAction() == KeyEvent.ACTION_UP) {
                 KeyEntity keyEntity = keyMap.remove(event.getKeyCode());
@@ -196,46 +190,59 @@ public class RecordScriptAction extends BasicAction {
         entity.setRoot(root);
         root.setId(idWorker.nextId());
         root.setName(service.getString(R.string.untitled));
-        root.setCount(motionList.size() + keyList.size());
+        root.setActionCount(motionList.size() + keyList.size());
         long maxTime = 0L;
+        //手势
         for (MotionEntity motionEntity : motionList) {
-            if (motionEntity.getUpTime() != null) {
-                maxTime = Math.max(maxTime, motionEntity.getUpTime());
-            }
-            ScriptActionEntity script = BeanHandler.copy(motionEntity, ScriptActionEntity.class);
-            script.setType(ScriptActionEntity.GESTURE);
-            script.setId(idWorker.nextId());
-            script.setParentId(root.getId());
-            script.setCount(motionEntity.getPoints().size());
-            script.setMaxTime(script.getUpTime() != null ? script.getUpTime() : script.getDownTime());
-            for (PointEntity point : motionEntity.getPoints()) {
+            ScriptActionEntity actionEntity = BeanHandler.copy(motionEntity, ScriptActionEntity.class);
+            actionEntity.setType(ScriptActionEntity.GESTURE);
+            actionEntity.setId(idWorker.nextId());
+            actionEntity.setScriptId(root.getId());
+            actionEntity.setPointCount(motionEntity.getPoints().size());
+            actionEntity.setStartTime(motionEntity.getDownTime());
+            actionEntity.setDuration(0L);
+            int size = motionEntity.getPoints().size();
+            for (int i = 0; i < size; i++) {
+                PointEntity point = motionEntity.getPoints().get(i);
                 ScriptPointEntity pointEntity = BeanHandler.copy(point, ScriptPointEntity.class);
                 pointEntity.setId(idWorker.nextId());
-                pointEntity.setParentId(script.getId());
-                if (point.getTime() > script.getMaxTime()) {
-                    script.setMaxTime(point.getTime());
+                pointEntity.setActionId(actionEntity.getId());
+                pointEntity.setScriptId(root.getId());
+                //按照索引排序
+                pointEntity.setOrder((float) i);
+                //默认1ms
+                pointEntity.setDeltaTime(1L);
+                if (i + 1 < size) {
+                    //不是最后一个点时-->计算间隔时长:当前点的时间减去后一个点的时间,最小值为1ms
+                    pointEntity.setDeltaTime(Math.max(motionEntity.getPoints().get(i + 1).getTime() - point.getTime(), 1L));
                 }
-                maxTime = Math.max(point.getTime(), maxTime);
+                //累加时长
+                actionEntity.setDuration(actionEntity.getDuration() + pointEntity.getDeltaTime());
                 entity.getPoints().add(pointEntity);
             }
-            if (script.getUpTime() == null) {
-                script.setUpTime(script.getMaxTime());
+            //等于0说明没有点信息,一般不可能出现这种情况,直接忽略掉
+            if (actionEntity.getDuration() == 0L) {
+                continue;
             }
-            entity.getActions().add(script);
+            entity.getActions().add(actionEntity);
+            maxTime = Math.max(maxTime, actionEntity.getStartTime() + actionEntity.getDuration());
         }
+        //键
         for (KeyEntity keyEntity : keyList) {
-            ScriptActionEntity key = BeanHandler.copy(keyEntity, ScriptActionEntity.class);
-            key.setType(ScriptActionEntity.KEY_EVENT);
-            key.setMaxTime(keyEntity.getUpTime());
-            key.setId(idWorker.nextId());
-            key.setParentId(root.getId());
-            key.setIndex(0);
-            key.setCount(1);
-            key.setCode(keyEntity.getCode());
-            entity.getActions().add(key);
-            maxTime = Math.max(maxTime, keyEntity.getUpTime());
+            if (keyEntity.getUpTime() == null) {
+                keyEntity.setUpTime(keyEntity.getDownTime());
+            }
+            ScriptActionEntity actionEntity = BeanHandler.copy(keyEntity, ScriptActionEntity.class);
+            actionEntity.setType(ScriptActionEntity.KEY_EVENT);
+            actionEntity.setStartTime(keyEntity.getDownTime());
+            actionEntity.setDuration(Math.max(keyEntity.getUpTime() - keyEntity.getDownTime(), 1L));
+            actionEntity.setId(idWorker.nextId());
+            actionEntity.setScriptId(root.getId());
+            actionEntity.setCode(keyEntity.getCode());
+            entity.getActions().add(actionEntity);
+            maxTime = Math.max(maxTime, actionEntity.getStartTime() + actionEntity.getDuration());
         }
-        entity.getRoot().setMaxTime(maxTime);
+        entity.getRoot().setTotalDuration(maxTime);
         return entity;
     }
 
@@ -256,10 +263,9 @@ public class RecordScriptAction extends BasicAction {
                 MotionEntity entity = new MotionEntity();
                 motionList.add(entity);
                 entity.setIndex(index);
-                entity.setEventTime(event.getEventTime());
                 entity.setDownTime(watch.getElapsedMillis());
                 motionMap.put(index, entity);
-                entity.getPoints().add(new PointEntity(getEventRawX(event), getEventRawY(event), watch.getElapsedMillis(), event.getToolType(index)));
+                entity.getPoints().add(new PointEntity(getEventRawX(event), getEventRawY(event), watch.getElapsedMillis()));
             } else if (maskType == MotionEvent.ACTION_UP || maskType == MotionEvent.ACTION_POINTER_UP) {
                 //抬起事件就保存
                 int index = getPointIndex(action);
@@ -267,8 +273,7 @@ public class RecordScriptAction extends BasicAction {
                 if (entity == null) {
                     return true;
                 }
-                entity.setUpTime(watch.getElapsedMillis());
-                entity.getPoints().add(new PointEntity(getEventRawX(event), getEventRawY(event), watch.getElapsedMillis(), event.getToolType(index)));
+                entity.getPoints().add(new PointEntity(getEventRawX(event), getEventRawY(event), watch.getElapsedMillis()));
             } else if (maskType == MotionEvent.ACTION_MOVE) {
                 //记录触点的x,y坐标
                 for (int i = 0; i < event.getPointerCount(); i++) {
@@ -277,10 +282,15 @@ public class RecordScriptAction extends BasicAction {
                         continue;
                     }
                     event.getX(i);
-                    entity.getPoints().add(new PointEntity(getEventRawX(event, i), getEventRawY(event, i), watch.getElapsedMillis(), event.getToolType(i)));
+                    entity.getPoints().add(new PointEntity(getEventRawX(event, i), getEventRawY(event, i), watch.getElapsedMillis()));
                 }
             } else if (maskType == MotionEvent.ACTION_CANCEL) {
-                //这里如何处理
+                int index = getPointIndex(action);
+                MotionEntity entity = motionMap.remove(index);
+                if (entity == null) {
+                    return true;
+                }
+                entity.getPoints().add(new PointEntity(getEventRawX(event), getEventRawY(event), watch.getElapsedMillis()));
             }
             return true;
         };
@@ -363,6 +373,11 @@ public class RecordScriptAction extends BasicAction {
             removeView(mask);
             recordStateModel.setState(RecordStateModel.STATE_IDLE);
             removeView(binding);
+            //清理数据
+            motionList.clear();
+            motionMap.clear();
+            keyList.clear();
+            keyMap.clear();
             return true;
         } catch (Exception e) {
             return false;
