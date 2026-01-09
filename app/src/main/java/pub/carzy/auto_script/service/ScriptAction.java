@@ -16,6 +16,7 @@ public interface ScriptAction {
     }
 
     String key();
+
     default String group() {
         return "default";
     }
@@ -31,5 +32,10 @@ public interface ScriptAction {
     boolean onKeyEvent(KeyEvent event);
 
     void onInterrupt();
+
     boolean update(UpdateParam param);
+
+    default void screenChanged(String action) {
+
+    }
 }

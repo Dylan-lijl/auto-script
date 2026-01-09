@@ -1,6 +1,7 @@
 package pub.carzy.auto_script.service;
 
 import android.accessibilityservice.AccessibilityService;
+import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.util.DisplayMetrics;
@@ -165,5 +166,15 @@ public abstract class BasicAction implements ScriptAction{
         for (View view : views) {
             view.setOnTouchListener(listener);
         }
+    }
+
+    protected boolean isScreenOff(String action){
+        return Intent.ACTION_SCREEN_OFF.equals(action);
+    }
+    protected boolean isScreenOn(String action){
+        return Intent.ACTION_SCREEN_ON.equals(action);
+    }
+    protected boolean isUserPresent(String action){
+        return Intent.ACTION_USER_PRESENT.equals(action);
     }
 }

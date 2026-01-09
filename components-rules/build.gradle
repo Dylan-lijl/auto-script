@@ -1,0 +1,26 @@
+plugins {
+    id 'java-library'
+}
+
+configurations {
+    lintChecks
+}
+java {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
+}
+jar {
+    manifest {
+        // 确保这个类名和你定义的 IssueRegistry 完全一致
+        attributes("Lint-Registry": "pub.carzy.auto_script.components_rules.CustomerIssueRegistry")
+    }
+}
+dependencies {
+    compileOnly libs.lint.api
+    compileOnly libs.lint.checks
+}
+tasks.register('install', Copy) {
+    dependsOn build
+    from configurations.lintChecks
+    into System.getProperty('user.home') + '/.android/lint/'
+}

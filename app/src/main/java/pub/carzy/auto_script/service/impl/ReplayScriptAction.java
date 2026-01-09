@@ -50,6 +50,9 @@ public class ReplayScriptAction extends BasicAction {
 
     @Override
     public boolean open(OpenParam param) {
+        if (initialized){
+            return updateData(param);
+        }
         lock.lock();
         try {
             if (!initialized) {
@@ -230,5 +233,24 @@ public class ReplayScriptAction extends BasicAction {
     @Override
     public boolean update(UpdateParam param) {
         return updateData(param);
+    }
+
+    private boolean flag = false;
+    @Override
+    public void screenChanged(String action) {
+        super.screenChanged(action);
+        if (isScreenOff(action)&&player.getStatus()==SimpleReplay.RUNNING){
+            //暂停脚本
+            player.pause();
+            //标记暂停是由于熄屏导致的
+            flag = true;
+        }else if (isUserPresent(action)){
+            if (flag&&SimpleReplay.PAUSE == player.getStatus()){
+                //恢复
+                player.resume();
+                //重置标记位
+                flag = false;
+            }
+        }
     }
 }

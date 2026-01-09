@@ -31,7 +31,8 @@ public class ScriptPointEntity extends BaseObservable implements Parcelable {
     private Long deltaTime;
     @ColumnInfo(name = "point_order")
     public Float order;
-    public String description;
+    public String description = "";
+
     public ScriptPointEntity() {
     }
 

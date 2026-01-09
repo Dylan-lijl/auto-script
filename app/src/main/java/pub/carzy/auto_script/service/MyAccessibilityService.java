@@ -1,7 +1,10 @@
 package pub.carzy.auto_script.service;
 
 import android.accessibilityservice.AccessibilityService;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -38,26 +41,44 @@ public class MyAccessibilityService extends AccessibilityService {
     private Locale locale;
     private Setting setting;
 
+    private final BroadcastReceiver screenReceiver;
+
     public MyAccessibilityService() {
         groupActions = new LinkedHashMap<>();
         initing = new AtomicBoolean(false);
         opens = new LinkedHashMap<>();
         keys = new HashMap<>();
+        initing.set(true);
+        BeanFactory.getInstance().register(this);
+        ThreadUtil.runOnCpu(() -> {
+            //加载实现类
+            ServiceLoader<ScriptAction> load = ServiceLoader.load(ScriptAction.class);
+            for (ScriptAction action : load) {
+                keys.put(action.key(), action.group());
+                groupActions.computeIfAbsent(action.group(), k -> new LinkedHashSet<>()).add(action);
+            }
+            initing.set(false);
+        });
+        setting = BeanFactory.getInstance().get(Setting.class);
+        screenReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                //传递到已开启的组件
+                opens.forEach((k, v) -> {
+                    try {
+                        v.screenChanged(action);
+                    } catch (Exception e) {
+                        Log.e(this.getClass().getCanonicalName(), "screenChanged", e);
+                    }
+                });
+            }
+        };
     }
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        setting = BeanFactory.getInstance().get(Setting.class);
-        String language = setting.getLanguage();
-        if (language != null) {
-            locale = Locale.forLanguageTag(language);
-        }
-        Map<String, Locale> localeMap = ActivityUtils.getLocaleMap(newBase);
-        if (localeMap == null || !localeMap.containsKey(language)) {
-            super.attachBaseContext(newBase);
-            return;
-        }
-        locale = localeMap.get(language);
+        locale = ActivityUtils.getLocale(newBase, setting);
         super.attachBaseContext(ActivityUtils.updateLocale(newBase, locale));
     }
 
@@ -72,29 +93,38 @@ public class MyAccessibilityService extends AccessibilityService {
     }
 
     @Override
-    protected boolean onKeyEvent(KeyEvent event) {
-        opens.forEach((k, v) -> v.onKeyEvent(event));
-        return super.onKeyEvent(event);
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_USER_PRESENT);
+        registerReceiver(screenReceiver, filter);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        initing.set(true);
-        BeanFactory.getInstance().register(this);
-        ThreadUtil.runOnCpu(() -> {
-            //加载实现类
-            ServiceLoader<ScriptAction> load = ServiceLoader.load(ScriptAction.class);
-            for (ScriptAction action : load) {
-                keys.put(action.key(), action.group());
-                groupActions.computeIfAbsent(action.group(), k -> new LinkedHashSet<>()).add(action);
-                try {
-                    action.setContext(this);
-                } catch (Exception ignored) {
-                }
+        //由于service.getSystemService()需要在create之后,所以放在这里设置
+        groupActions.values().forEach(v -> v.forEach(item -> {
+            try {
+                item.setContext(this);
+            } catch (Exception e) {
+                Log.e(this.getClass().getCanonicalName(), "MyAccessibilityService()", e);
             }
-            initing.set(false);
-        });
+        }));
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        unregisterReceiver(screenReceiver);
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    protected boolean onKeyEvent(KeyEvent event) {
+        opens.forEach((k, v) -> v.onKeyEvent(event));
+        return super.onKeyEvent(event);
     }
 
     public boolean open(String key, OpenParam param) {
@@ -138,57 +168,6 @@ public class MyAccessibilityService extends AccessibilityService {
             }
         }
         return false;
-    }
-
-    public static void checkOpenAccessibility(ControllerCallback<Boolean> callback) {
-        ThreadUtil.runOnCpu(() -> {
-            boolean enabled = false;
-            try {
-                Startup context = BeanFactory.getInstance().get(Startup.class);
-                int accessibilityEnabled = 0;
-                final String service = context.getPackageName() + "/" + MyAccessibilityService.class.getCanonicalName();
-                try {
-                    accessibilityEnabled = Settings.Secure.getInt(context.getContentResolver(),
-                            Settings.Secure.ACCESSIBILITY_ENABLED);
-                } catch (Settings.SettingNotFoundException e) {
-                    Log.e(RecordScriptAction.class.getCanonicalName(), "Error finding setting, default accessibility to not found", e);
-                }
-
-                TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
-                if (accessibilityEnabled == 1) {
-                    String settingValue = Settings.Secure.getString(context.getContentResolver(),
-                            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-                    if (settingValue != null) {
-                        colonSplitter.setString(settingValue);
-                        while (colonSplitter.hasNext()) {
-                            String componentName = colonSplitter.next();
-                            if (componentName.equalsIgnoreCase(service)) {
-                                enabled = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                final boolean tmp = enabled;
-                ThreadUtil.runOnUi(() -> callback.complete(tmp));
-            } catch (Exception e) {
-                ThreadUtil.runOnUi(() -> callback.catchMethod(e));
-            } finally {
-                ThreadUtil.runOnUi(callback::finallyMethod);
-            }
-        });
-    }
-
-    public static void checkOpenFloatWindow(ControllerCallback<Boolean> callback) {
-        ThreadUtil.runOnCpu(() -> {
-            try {
-                ThreadUtil.runOnUi(() -> callback.complete(Settings.canDrawOverlays(BeanFactory.getInstance().get(Startup.class))));
-            } catch (Exception e) {
-                ThreadUtil.runOnUi(() -> callback.catchMethod(e));
-            } finally {
-                ThreadUtil.runOnUi(callback::finallyMethod);
-            }
-        });
     }
 
     public boolean update(String key, UpdateParam param) {

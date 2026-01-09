@@ -178,12 +178,15 @@ public class MacroInfoActivity extends BaseActivity {
     }
 
     private void changeRunService() {
-        MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
-        if (service != null) {
-            //重放这里需要剔除无用字段来节省内存
-            ReplayModel replayModel = ReplayModel.create(model.getRoot(), model.getActionData(), model.getPointData());
-            service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(replayModel));
-        }
+        ActivityUtils.checkAccessibilityServicePermission(this, ok ->
+                ThreadUtil.runOnCpu(() -> {
+                    MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
+                    if (service != null) {
+                        //重放这里需要剔除无用字段来节省内存
+                        ReplayModel replayModel = ReplayModel.create(model.getRoot(), model.getActionData(), model.getPointData());
+                        ThreadUtil.runOnUi(() -> service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(replayModel)));
+                    }
+                }));
     }
 
     private void init() {

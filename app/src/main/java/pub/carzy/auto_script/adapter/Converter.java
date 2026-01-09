@@ -26,13 +26,13 @@ public class Converter {
     }
 
     @InverseMethod("stringToInt")
-    public static String intToString(Integer value) {
-        return value == null ? "" : String.valueOf(value);
+    public static String intToString(int value) {
+        return String.valueOf(value);
     }
 
-    public static Integer stringToInt(String value) {
+    public static int stringToInt(String value) {
         try {
-            return "".equals(value) ? null : Integer.parseInt(value);
+            return Integer.parseInt(value);
         } catch (NumberFormatException e) {
             return 0;
         }

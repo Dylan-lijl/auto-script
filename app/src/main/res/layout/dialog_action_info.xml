@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -12,6 +14,8 @@
         <import type="pub.carzy.auto_script.db.entity.ScriptActionEntity" />
 
         <import type="android.view.KeyEvent" />
+
+        <import type="pub.carzy.auto_script.adapter.Converter" />
 
         <variable
             name="entity"
@@ -43,10 +47,25 @@
                         android:layout_height="wrap_content"
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
 
-                    <TextView
+                    <pub.carzy.auto_script.ui_components.components.FormField
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{StringUtils.format(entity.startTime)+context.getString(R.string.unit_ms)}" />
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{StringUtils.format(entity.startTime)+context.getString(R.string.unit_ms)}"
+                            app:slot="viewer" />
+
+                        <EditText
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:autofillHints=""
+                            android:inputType="number"
+                            android:text="@={Converter.longToString(entity.startTime)}"
+                            app:slot="editor"
+                            tools:ignore="LabelFor" />
+                    </pub.carzy.auto_script.ui_components.components.FormField>
                 </LinearLayout>
 
                 <LinearLayout style="@style/FormVerticalItemStyle">
@@ -55,6 +74,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_duration))}" />
+
+                    <pub.carzy.auto_script.ui_components.components.FormField
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                    </pub.carzy.auto_script.ui_components.components.FormField>
 
                     <TextView
                         android:layout_width="wrap_content"

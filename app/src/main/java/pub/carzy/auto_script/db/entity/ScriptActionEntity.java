@@ -2,6 +2,7 @@ package pub.carzy.auto_script.db.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
@@ -35,30 +36,30 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     /**
      * 手势索引
      */
-    private Integer index;
+    private Integer index = 0;
     /**
      * 按下时间
      */
     @ColumnInfo(name = "start_time")
-    private Long startTime;
+    private Long startTime = 0L;
     /**
      * 持续时长
      */
     @ColumnInfo(name = "duration")
-    private Long duration;
+    private Long duration = 0L;
     /**
      * 移动点数量
      */
-    private Integer pointCount;
+    private Integer pointCount = 0;
     /**
      * 类型,1是手势,2是按键
      */
-    private Integer type;
+    private Integer type = 1;
     /**
      * 键
      */
-    private Integer code;
-    private String description;
+    private Integer code = KeyEvent.KEYCODE_HOME;
+    private String description = "";
 
     public ScriptActionEntity() {
     }

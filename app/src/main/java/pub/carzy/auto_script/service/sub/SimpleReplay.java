@@ -131,7 +131,7 @@ public class SimpleReplay {
      */
     public void start() {
         //如果重复次数小于等于0则退出
-        if (repeatCount.get() <= 0) {
+        if (repeatCount.get() == 0) {
             //调用start失败回调
             callback.forEach(c -> c.start(ResultListener.FAIL, null, null));
             return;
@@ -140,9 +140,9 @@ public class SimpleReplay {
             //将标志位恢复成运行状态
             status.set(RUNNING);
             //重置或初始化
-            if (model.getInited()){
+            if (model.getInited()) {
                 model.recover();
-            }else{
+            } else {
                 model.init();
             }
             //调用时间片任务
@@ -215,17 +215,16 @@ public class SimpleReplay {
             //释放已经按下的键
             waitMap.forEach((key, value) -> {
                 while (value != null) {
-                    if (value.getType() != ScriptActionEntity.KEY_EVENT || value.getCode() == null) {
-                        continue;
-                    }
-                    long r = value.getRemainingTime().get();
-                    //小于0说明已经被释放了,大于等于时长说明未开始
-                    if (r >= value.getDuration() && r <= 0) {
-                        continue;
-                    }
-                    //释放
-                    if (!service.performGlobalAction(value.getCode())) {
-                        Log.w(SimpleReplay.class.getCanonicalName(), "pause#performGlobalAction: failure");
+                    if (value.getType() == ScriptActionEntity.KEY_EVENT && value.getCode() != null) {
+                        long r = value.getRemainingTime().get();
+                        //小于0说明已经被释放了,大于等于时长说明未开始
+                        if (r >= value.getDuration() && r <= 0) {
+                            continue;
+                        }
+                        //释放
+                        if (!service.performGlobalAction(value.getCode())) {
+                            Log.w(SimpleReplay.class.getCanonicalName(), "pause#performGlobalAction: failure");
+                        }
                     }
                     //递归处理
                     value = value.getLast();
@@ -281,7 +280,7 @@ public class SimpleReplay {
             if (replayActionModel.getType() == ScriptActionEntity.GESTURE) {
                 try {
                     //处理手势
-                    processGestureAction(builder, replayActionModel, unfinished,hasGesture);
+                    processGestureAction(builder, replayActionModel, unfinished, hasGesture);
                 } catch (Exception e) {
                     Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
                 }
@@ -351,7 +350,7 @@ public class SimpleReplay {
             this.callback.forEach(completedListener -> completedListener.before(status.get(), repeatCount.get()));
             try {
                 //小于等于0则退出
-                if (repeatCount.get() <= 0) {
+                if (repeatCount.get() == 0) {
                     //进入停止状态,并终止后续任务
                     stop();
                     return;
@@ -379,8 +378,9 @@ public class SimpleReplay {
 
     /**
      * 处理键类型
-     * @param model action
-     * @param keyEvents 事件集合容器
+     *
+     * @param model      action
+     * @param keyEvents  事件集合容器
      * @param unfinished 是否完成
      */
     private void processCodeAction(ReplayModel.ReplayActionModel model, List<KeyEvent> keyEvents, AtomicBoolean unfinished) {
@@ -404,8 +404,9 @@ public class SimpleReplay {
 
     /**
      * 处理手势action
-     * @param builder 手势构造器
-     * @param action action
+     *
+     * @param builder    手势构造器
+     * @param action     action
      * @param unfinished 未完成
      * @param hasGesture 是否存在手势
      */

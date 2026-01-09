@@ -31,7 +31,7 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
     private Integer actionCount;
     @ColumnInfo(name = "total_duration")
     private Long totalDuration;
-    private String description;
+    private String description = "";
 
     public ScriptEntity() {
     }

@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -58,8 +59,6 @@ import pub.carzy.auto_script.utils.ThreadUtil;
  * @author admin
  */
 public class MacroListActivity extends BaseActivity {
-    private Boolean ok = false;
-
     private ViewMacroListBinding binding;
     private MacroListModel model;
     private AppDatabase db;
@@ -266,7 +265,7 @@ public class MacroListActivity extends BaseActivity {
     }
 
     private void openService() {
-        Runnable runnable = () -> {
+        ActivityUtils.checkAccessibilityServicePermission(this,(ok) -> {
             MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
             if (service == null) {
                 return;
@@ -274,16 +273,7 @@ public class MacroListActivity extends BaseActivity {
             if (!service.open(RecordScriptAction.ACTION_KEY, null)) {
                 Toast.makeText(this, "打开失败!", Toast.LENGTH_SHORT).show();
             }
-        };
-        if (ok) {
-            runnable.run();
-        } else {
-            checkPermission(ok -> {
-                if (ok) {
-                    runnable.run();
-                }
-            });
-        }
+        });
     }
 
     @Override
@@ -294,51 +284,6 @@ public class MacroListActivity extends BaseActivity {
             return;
         }
         service.close(null);
-    }
-
-    private void checkPermission(Consumer<Boolean> callback) {
-        MyAccessibilityService.checkOpenAccessibility((enabled) -> {
-            if (!enabled) {
-                //打开提示
-                promptAccessibility();
-                return;
-            }
-            //检查悬浮窗权限
-            MyAccessibilityService.checkOpenFloatWindow((e) -> {
-                if (!e) {
-                    promptOverlay();
-                    return;
-                }
-                ok = true;
-                if (callback != null) {
-                    callback.accept(ok);
-                }
-            });
-        });
-    }
-
-    private void promptOverlay() {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.permission_prompt)
-                .setMessage(R.string.float_button_permission)
-                .setPositiveButton(R.string.go_to_open, (dialog, which) -> {
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                    startActivity(intent);
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
-    }
-
-    private void promptAccessibility() {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.permission_prompt)
-                .setMessage(R.string.permission_content)
-                .setPositiveButton(R.string.go_to_open, (dialog, which) -> {
-                    Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                    startActivity(intent);
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
     }
 
     private void jumpInfo(ScriptEntity entity) {
@@ -369,6 +314,7 @@ public class MacroListActivity extends BaseActivity {
             this.data = model.getData();
             setHasStableIds(true);
             ObservableList.OnListChangedCallback<ObservableList<ScriptEntity>> callback = new ObservableList.OnListChangedCallback<>() {
+                @SuppressLint("NotifyDataSetChanged")
                 @Override
                 public void onChanged(ObservableList<ScriptEntity> sender) {
                     notifyDataSetChanged();

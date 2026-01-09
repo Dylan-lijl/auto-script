@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FormField">
+        <attr name="edit" format="boolean"/>
+    </declare-styleable>
+    <declare-styleable name="FormField_Child">
+        <attr name="slot" format="string">
+            <enum name="viewer" value="0"/>
+            <enum name="editor" value="1"/>
+        </attr>
+    </declare-styleable>
+</resources>
