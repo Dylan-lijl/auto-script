@@ -25,6 +25,8 @@ public class FormField extends LinearLayout {
 
     private final ViewGroup viewerContainer;
     private final ViewGroup editorContainer;
+    public static final String VIEWER = "0";
+    public static final String EDITOR = "1";
     private boolean edit;
 
     public FormField(Context context, AttributeSet attrs) {
@@ -60,9 +62,9 @@ public class FormField extends LinearLayout {
 
             if (child.getLayoutParams() instanceof SlotLayoutParams) {
                 String slotName = ((SlotLayoutParams) child.getLayoutParams()).slot;
-                if ("viewer".equals(slotName)) {
+                if (VIEWER.equals(slotName)) {
                     viewers.add(child);
-                } else if ("editor".equals(slotName)) {
+                } else if (EDITOR.equals(slotName)) {
                     editors.add(child);
                 }
             }
@@ -101,17 +103,17 @@ public class FormField extends LinearLayout {
     public void setEdit(boolean editMode) {
         this.edit = editMode;
         // 开启自动动画切换
-        TransitionManager.beginDelayedTransition(this);
+//        TransitionManager.beginDelayedTransition(this);
         applyMode();
     }
+
     public boolean isEdit() {
         return this.edit;
     }
+
     @BindingAdapter("edit")
     public static void setFormFieldEdit(FormField view, boolean isEdit) {
-        if (view.isEdit() != isEdit) {
-            view.setEdit(isEdit);
-        }
+        view.setEdit(isEdit);
     }
 
     public static class SlotLayoutParams extends LayoutParams {

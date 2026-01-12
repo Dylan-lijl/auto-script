@@ -32,6 +32,8 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
     @ColumnInfo(name = "total_duration")
     private Long totalDuration;
     private String description = "";
+    @ColumnInfo(name = "delay_end")
+    private Long delayEnd;
 
     public ScriptEntity() {
     }
@@ -62,6 +64,11 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
             updateTime = null;
         } else {
             updateTime = new Date(in.readLong());
+        }
+        if (in.readByte()==0){
+            delayEnd=null;
+        }else {
+            delayEnd=in.readLong();
         }
         description = in.readString();
     }
@@ -115,6 +122,11 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
         } else {
             dest.writeByte((byte) 1);
             dest.writeLong(updateTime.getTime());
+        }
+        if (delayEnd==null){
+            dest.writeByte((byte)0);
+        }else {
+            dest.writeByte((byte)1);
         }
         dest.writeString(description);
     }
@@ -187,5 +199,15 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
     public void setDescription(String description) {
         this.description = description;
         notifyPropertyChanged(BR.description);
+    }
+
+    @Bindable
+    public Long getDelayEnd() {
+        return delayEnd;
+    }
+
+    public void setDelayEnd(Long delayEnd) {
+        this.delayEnd = delayEnd;
+        notifyPropertyChanged(BR.delayEnd);
     }
 }

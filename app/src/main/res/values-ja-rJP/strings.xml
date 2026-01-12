@@ -106,4 +106,6 @@
     <string name="ptr_hours_ago">時間前</string>
     <string name="search_keyword">検索キーワード</string>
     <string name="currently_selected">現在選択中</string>
+    <string name="label_description">説明</string>
+    <string name="label_point_wranning">入力された%sは画面範囲(%d)を超えています</string>
 </resources>

@@ -100,11 +100,16 @@ public class MyAccessibilityService extends AccessibilityService {
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_USER_PRESENT);
         registerReceiver(screenReceiver, filter);
+        setContextToActions();
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        setContextToActions();
+    }
+
+    private void setContextToActions() {
         //由于service.getSystemService()需要在create之后,所以放在这里设置
         groupActions.values().forEach(v -> v.forEach(item -> {
             try {

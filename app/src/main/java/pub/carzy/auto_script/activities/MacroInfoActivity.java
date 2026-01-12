@@ -8,19 +8,29 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Filter;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
-import androidx.databinding.ObservableMap;
+import androidx.databinding.Observable;
+import androidx.databinding.ObservableBoolean;
 
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -34,22 +44,32 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.gson.Gson;
 import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
+import com.qmuiteam.qmui.skin.QMUISkinManager;
+import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.popup.QMUIPopup;
+import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import lombok.Getter;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
@@ -87,6 +107,7 @@ public class MacroInfoActivity extends BaseActivity {
     private ActivityResultLauncher<Intent> addLauncher;
     private ActivityResultLauncher<Intent> addInfoLauncher;
     private AppDatabase db;
+    private ObservableBoolean edit;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -202,6 +223,13 @@ public class MacroInfoActivity extends BaseActivity {
         refresh.setInfo(true);
         binding.setModel(model);
         binding.setRefresh(refresh);
+        edit = new ObservableBoolean(false);
+        edit.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
+            @Override
+            public void onPropertyChanged(Observable sender, int propertyId) {
+                model.setSaved(true);
+            }
+        });
     }
 
     private ActivityResultCallback<ActivityResult> createProcessAddInfoResult() {
@@ -498,26 +526,84 @@ public class MacroInfoActivity extends BaseActivity {
         if (model.getCheckedPoint().isEmpty()) {
             return;
         }
+        edit.set(false);
         DialogPointInfoBinding binding = DialogPointInfoBinding.inflate(LayoutInflater.from(this));
         binding.setEntity(model.getLastCheckShowPoint().getData());
+        binding.setEdit(edit);
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        binding.setWidth(metrics.widthPixels * 1F);
+        binding.setHeight(metrics.heightPixels * 1F);
+        ImageButton imageButton = createModifyButton();
+        imageButton.setOnClickListener(e -> {
+            edit.set(!edit.get());
+            imageButton.setImageResource(edit.get() ? R.drawable.exit : R.drawable.edit);
+        });
+        binding.warnX.setOnClickListener(e -> {
+            TextView textView = new TextView(this);
+            textView.setText(getString(R.string.label_point_wranning, "x", metrics.widthPixels));
+            textView.setPadding(50, 50, 50, 50);
+            QMUIPopup popups = createPopups(this, textView);
+            popups.show(e);
+        });
+        binding.warnY.setOnClickListener(e -> {
+            TextView textView = new TextView(this);
+            textView.setText(getString(R.string.label_point_wranning, "y", metrics.widthPixels));
+            textView.setPadding(50, 50, 50, 50);
+            QMUIPopup popups = createPopups(this, textView);
+            popups.show(e);
+        });
         BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
         builder.addView(binding.getRoot())
                 .setContentPaddingDp(20, 20)
-                .setTitle(getString(R.string.dialog_action_info_title, (int) model.getLastCheckShowPoint().getBarEntry().getX()));
+                .setTitle(getString(R.string.dialog_action_info_title, (int) model.getLastCheckShowPoint().getBarEntry().getX()))
+                .addRightButton(imageButton);
         builder.build().show();
+    }
+
+    private QMUIPopup createPopups(Context context, View view) {
+        return QMUIPopups.popup(context, QMUIDisplayHelper.dp2px(context, 250))
+                .preferredDirection(QMUIPopup.DIRECTION_BOTTOM)
+                .view(view)
+                .skinManager(QMUISkinManager.defaultInstance(context))
+                .shadow(true)
+                .arrow(true)
+                .animStyle(QMUIPopup.ANIM_GROW_FROM_CENTER);
     }
 
     private void showInfo() {
         if (model.getCheckedAction().isEmpty()) {
             return;
         }
+        edit.set(false);
         DialogActionInfoBinding binding = DialogActionInfoBinding.inflate(LayoutInflater.from(this));
         binding.setEntity(model.getLastCheckAction().getData());
+        binding.setEdit(edit);
+        ImageButton imageButton = createModifyButton();
+        imageButton.setOnClickListener(e -> {
+            edit.set(!edit.get());
+            imageButton.setImageResource(edit.get() ? R.drawable.exit : R.drawable.edit);
+        });
+        List<CodeOption> options = CodeOption.allKeyEvent();
+        binding.dropdown.setAdapter(CodeOption.createAdapter(this, options));
+        binding.dropdown.setOnItemClickListener((parent, view, position, id) -> {
+            CodeOption selected = options.get(position);
+            model.getLastCheckAction().getData().setCode(selected.getCode());
+        });
         BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
         builder.addView(binding.getRoot())
                 .setContentPaddingDp(20, 20)
-                .setTitle(getString(R.string.dialog_action_info_title, (int) model.getLastCheckAction().getBarEntry().getX()));
+                .setTitle(getString(R.string.dialog_action_info_title, (int) model.getLastCheckAction().getBarEntry().getX()))
+                .addRightButton(imageButton);
         builder.build().show();
+    }
+
+    @NonNull
+    private ImageButton createModifyButton() {
+        ImageButton imageButton = new ImageButton(this);
+        imageButton.setImageResource(R.drawable.edit);
+        imageButton.setImageTintList(ContextCompat.getColorStateList(this, R.color.link));
+        imageButton.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        return imageButton;
     }
 
     private void deletePointItem() {
@@ -819,5 +905,85 @@ public class MacroInfoActivity extends BaseActivity {
                 ThreadUtil.runOnUi(() -> refresh.setInfo(false));
             }
         });
+    }
+
+    @Getter
+    public static class CodeOption {
+        private final int code;
+        private final String label;
+
+        public CodeOption(int code, String label) {
+            this.code = code;
+            this.label = label;
+        }
+
+        public static List<String> toLabels(List<CodeOption> options) {
+            return options == null ? new ArrayList<>() : options.stream().map(CodeOption::getLabel).collect(Collectors.toList());
+        }
+
+        public static ArrayAdapter<String> createAdapter(Context context, List<CodeOption> options) {
+
+            return new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, toLabels(options)) {
+                @NonNull
+                @Override
+                public Filter getFilter() {
+                    return new Filter() {
+                        @Override
+                        protected FilterResults performFiltering(CharSequence constraint) {
+                            List<CodeOption> result = new ArrayList<>();
+                            String value = constraint == null ? null : constraint.toString().trim().toUpperCase();
+                            for (CodeOption opt : options) {
+                                if (value == null || value.isEmpty() || opt.label.contains(value)) {
+                                    result.add(opt);
+                                }
+                            }
+
+                            FilterResults fr = new FilterResults();
+                            fr.values = result;
+                            fr.count = result.size();
+                            return fr;
+                        }
+
+                        @SuppressWarnings("unchecked")
+                        @Override
+                        protected void publishResults(CharSequence constraint, FilterResults results) {
+                            clear();
+                            addAll(((List<CodeOption>) results.values).stream().map(CodeOption::getLabel).collect(Collectors.toList()));
+                            notifyDataSetChanged();
+                        }
+                    };
+                }
+            };
+        }
+
+        public static Map<String, Integer> codeMap;
+
+        public static List<CodeOption> allKeyEvent() {
+            List<CodeOption> list = new ArrayList<>();
+            if (codeMap == null) {
+                synchronized (KeyEvent.class) {
+                    if (codeMap == null) {
+                        codeMap = new LinkedHashMap<>();
+                        Field[] fields = KeyEvent.class.getDeclaredFields();
+                        for (Field field : fields) {
+                            if (Modifier.isStatic(field.getModifiers())
+                                    && field.getName().startsWith("KEYCODE_")
+                                    && field.getType() == int.class) {
+
+                                try {
+                                    int code = field.getInt(null);
+                                    codeMap.put(KeyEvent.keyCodeToString(code), code);
+                                } catch (Exception ignored) {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for (Map.Entry<String, Integer> entry : codeMap.entrySet()) {
+                list.add(new CodeOption(entry.getValue(), entry.getKey()));
+            }
+            return list;
+        }
     }
 }

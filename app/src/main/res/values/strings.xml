@@ -106,4 +106,6 @@
     <string name="search_keyword">Search keywords</string>
     <string name="currently_selected">Currently selected</string>
     <string name="action_label_duration">Duration</string>
+    <string name="label_description">Description</string>
+    <string name="label_point_wranning">The entered %s exceeds the screen range (%d)</string>
 </resources>

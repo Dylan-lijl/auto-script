@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -13,9 +15,23 @@
 
         <import type="android.view.KeyEvent" />
 
+        <import type="pub.carzy.auto_script.adapter.Converter" />
+
         <variable
             name="entity"
             type="pub.carzy.auto_script.db.entity.ScriptPointEntity" />
+
+        <variable
+            name="width"
+            type="java.lang.Float" />
+
+        <variable
+            name="height"
+            type="java.lang.Float" />
+
+        <variable
+            name="edit"
+            type="androidx.databinding.ObservableBoolean" />
     </data>
 
     <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
@@ -38,10 +54,26 @@
                     android:layout_height="wrap_content"
                     android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_time))}" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <pub.carzy.auto_script.ui_components.components.FormField
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@{StringUtils.format(entity.deltaTime)+context.getString(R.string.unit_ms)}" />
+                    app:edit="@{edit}">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@{StringUtils.format(entity.deltaTime)+context.getString(R.string.unit_ms)}"
+                        app:slot="viewer" />
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints=""
+                        android:inputType="number"
+                        android:text="@={Converter.longToString(entity.deltaTime)}"
+                        app:slot="editor"
+                        tools:ignore="LabelFor" />
+                </pub.carzy.auto_script.ui_components.components.FormField>
             </LinearLayout>
 
             <LinearLayout style="@style/FormVerticalItemStyle">
@@ -51,10 +83,40 @@
                     android:layout_height="wrap_content"
                     android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_x))}" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <pub.carzy.auto_script.ui_components.components.FormField
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@{StringUtils.format(entity.x)}" />
+                    app:edit="@{edit}">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@{StringUtils.format(entity.x)}"
+                        app:slot="viewer" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:slot="editor">
+
+                        <EditText
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:autofillHints=""
+                            android:inputType="numberDecimal"
+                            android:text="@={Converter.floatToString(entity.x)}"
+                            tools:ignore="LabelFor" />
+
+                        <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+                            android:id="@+id/warn_x"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:drawableStart="@drawable/warnning"
+                            android:visibility="@{entity.x.compareTo(height)>0?View.VISIBLE:View.INVISIBLE}" />
+                    </LinearLayout>
+                </pub.carzy.auto_script.ui_components.components.FormField>
             </LinearLayout>
 
             <LinearLayout style="@style/FormVerticalItemStyle">
@@ -64,10 +126,71 @@
                     android:layout_height="wrap_content"
                     android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_y))}" />
 
+                <pub.carzy.auto_script.ui_components.components.FormField
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:edit="@{edit}">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@{StringUtils.format(entity.y)}"
+                        app:slot="viewer" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:slot="editor">
+
+                        <EditText
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:autofillHints=""
+                            android:inputType="numberDecimal"
+                            android:text="@={Converter.floatToString(entity.y)}"
+                            tools:ignore="LabelFor" />
+
+                        <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+                            android:id="@+id/warn_y"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:drawableStart="@drawable/warnning"
+                            android:visibility="@{entity.y.compareTo(height)>0?View.VISIBLE:View.INVISIBLE}" />
+                    </LinearLayout>
+                </pub.carzy.auto_script.ui_components.components.FormField>
+            </LinearLayout>
+
+            <LinearLayout style="@style/FormVerticalItemStyle">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{StringUtils.format(entity.y)}" />
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_description))}" />
+
+                <pub.carzy.auto_script.ui_components.components.FormField
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:edit="@{edit}">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{entity.description}"
+                        app:slot="viewer" />
+
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:autofillHints=""
+                        android:gravity="top"
+                        android:inputType="textMultiLine"
+                        android:minLines="3"
+                        android:text="@={entity.description}"
+                        app:slot="editor"
+                        tools:ignore="LabelFor" />
+                </pub.carzy.auto_script.ui_components.components.FormField>
             </LinearLayout>
         </LinearLayout>
     </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>

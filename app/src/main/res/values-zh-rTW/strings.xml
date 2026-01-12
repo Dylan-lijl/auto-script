@@ -106,4 +106,6 @@
     <string name="ptr_hours_ago">小時前</string>
     <string name="search_keyword">搜尋關鍵字</string>
     <string name="currently_selected">當前選中</string>
+    <string name="label_description">描述</string>
+    <string name="label_point_wranning">輸入的%s超出螢幕範圍（%d）</string>
 </resources>
