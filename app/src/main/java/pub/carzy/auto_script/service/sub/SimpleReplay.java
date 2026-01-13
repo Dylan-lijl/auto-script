@@ -147,8 +147,8 @@ public class SimpleReplay {
             }
             //调用时间片任务
             scheduler.schedule(this::tickProcess, 0, TimeUnit.MILLISECONDS);
-            //记录开始时间
-            startTime.set(System.currentTimeMillis());
+            //记录开始时间 加上延迟时间
+            startTime.set(System.currentTimeMillis() + model.getDelayStart());
             //调用成功回调
             callback.forEach(c -> c.start(ResultListener.SUCCESS, null, null));
         } catch (Exception e) {
@@ -267,102 +267,109 @@ public class SimpleReplay {
         if (status.get() != RUNNING) {
             return;
         }
-        //手势构造器
-        GestureDescription.Builder builder = new GestureDescription.Builder();
-        //由于builder没有方法可以判断是否有手势操作,所以需要一个状态位来标识
-        AtomicBoolean hasGesture = new AtomicBoolean(false);
-        //按键时间
-        List<KeyEvent> keyEvents = new ArrayList<>();
-        //是否完成,递归判断,只有存在一个未完成就不能从wait中移除
-        AtomicBoolean unfinished = new AtomicBoolean(false);
-        //由于要递归处理,所以使用回调方式
-        Consumer<ReplayModel.ReplayActionModel> consumer = replayActionModel -> {
-            if (replayActionModel.getType() == ScriptActionEntity.GESTURE) {
-                try {
-                    //处理手势
-                    processGestureAction(builder, replayActionModel, unfinished, hasGesture);
-                } catch (Exception e) {
-                    Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
-                }
-            } else if (replayActionModel.getType() == ScriptActionEntity.KEY_EVENT) {
-                try {
-                    //处理键类型
-                    processCodeAction(replayActionModel, keyEvents, unfinished);
-                } catch (Exception e) {
-                    Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
-                }
-            }
-        };
-        //删除的id
-        Set<Long> ids = new HashSet<>();
-        for (Map.Entry<Long, ReplayModel.ReplayActionModel> line : headWaitMap.entrySet()) {
-            ReplayModel.ReplayActionModel actionModel = line.getValue();
-            Long id = line.getKey();
-            //回调执行当前action
-            try {
-                consumer.accept(actionModel);
-            } catch (Exception e) {
-                Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
-            }
-            //遍历action next链表,递归处理
-            ReplayModel.ReplayActionModel loop = actionModel.getLast();
-            while (loop != null) {
-                try {
-                    consumer.accept(loop);
-                } catch (Exception e) {
-                    Log.e(this.getClass().getCanonicalName(), "while tickProcess exception", e);
-                }
-                loop = loop.getLast();
-            }
-            //已完成则添加到移除列表
-            if (!unfinished.get()) {
-                ids.add(id);
-            }
-        }
-        //将指定的id移到删除map
-        model.removeToDeleteMap(ids);
-        //发送手势
-        if (hasGesture.get()) {
-            ThreadUtil.runOnUi(() -> {
-                if (service.dispatchGesture(builder.build(), gestureCallback, null)) {
-                    Log.d(this.getClass().getCanonicalName(), "dispatchGesture success");
-                } else {
-                    Log.d(this.getClass().getCanonicalName(), "dispatchGesture fail");
-                }
-            });
-        }
-        //发送键事件
-        if (!keyEvents.isEmpty()) {
-            ThreadUtil.runOnUi(() -> {
-                for (KeyEvent item : keyEvents) {
-                    if (!service.performGlobalAction(item.getKeyCode())) {
-                        Log.w(this.getClass().getCanonicalName(), "performGlobalAction failure");
+        if (!headWaitMap.isEmpty()) {
+            //手势构造器
+            GestureDescription.Builder builder = new GestureDescription.Builder();
+            //由于builder没有方法可以判断是否有手势操作,所以需要一个状态位来标识
+            AtomicBoolean hasGesture = new AtomicBoolean(false);
+            //按键时间
+            List<KeyEvent> keyEvents = new ArrayList<>();
+            //是否完成,递归判断,只有存在一个未完成就不能从wait中移除
+            AtomicBoolean unfinished = new AtomicBoolean(false);
+            //由于要递归处理,所以使用回调方式
+            Consumer<ReplayModel.ReplayActionModel> consumer = replayActionModel -> {
+                if (replayActionModel.getType() == ScriptActionEntity.GESTURE) {
+                    try {
+                        //处理手势
+                        processGestureAction(builder, replayActionModel, unfinished, hasGesture);
+                    } catch (Exception e) {
+                        Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
+                    }
+                } else if (replayActionModel.getType() == ScriptActionEntity.KEY_EVENT) {
+                    try {
+                        //处理键类型
+                        processCodeAction(replayActionModel, keyEvents, unfinished);
+                    } catch (Exception e) {
+                        Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
                     }
                 }
-            });
+            };
+            //删除的id
+            Set<Long> ids = new HashSet<>();
+            for (Map.Entry<Long, ReplayModel.ReplayActionModel> line : headWaitMap.entrySet()) {
+                ReplayModel.ReplayActionModel actionModel = line.getValue();
+                Long id = line.getKey();
+                //回调执行当前action
+                try {
+                    consumer.accept(actionModel);
+                } catch (Exception e) {
+                    Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
+                }
+                //遍历action next链表,递归处理
+                ReplayModel.ReplayActionModel loop = actionModel.getLast();
+                while (loop != null) {
+                    try {
+                        consumer.accept(loop);
+                    } catch (Exception e) {
+                        Log.e(this.getClass().getCanonicalName(), "while tickProcess exception", e);
+                    }
+                    loop = loop.getLast();
+                }
+                //已完成则添加到移除列表
+                if (!unfinished.get()) {
+                    ids.add(id);
+                }
+            }
+            //将指定的id移到删除map
+            model.removeToDeleteMap(ids);
+            //发送手势
+            if (hasGesture.get()) {
+                ThreadUtil.runOnUi(() -> {
+                    if (service.dispatchGesture(builder.build(), gestureCallback, null)) {
+                        Log.d(this.getClass().getCanonicalName(), "dispatchGesture success");
+                    } else {
+                        Log.d(this.getClass().getCanonicalName(), "dispatchGesture fail");
+                    }
+                });
+            }
+            //发送键事件
+            if (!keyEvents.isEmpty()) {
+                ThreadUtil.runOnUi(() -> {
+                    for (KeyEvent item : keyEvents) {
+                        if (!service.performGlobalAction(item.getKeyCode())) {
+                            Log.w(this.getClass().getCanonicalName(), "performGlobalAction failure");
+                        }
+                    }
+                });
+            }
         }
         if (status.get() != RUNNING) {
             return;
         }
         //action全部处理完成,进行后续处理
         if (model.getActionWaitMap().isEmpty()) {
-            //完成回调
-            this.callback.forEach(completedListener -> completedListener.before(status.get(), repeatCount.get()));
-            try {
-                //小于等于0则退出
-                if (repeatCount.get() == 0) {
-                    //进入停止状态,并终止后续任务
-                    stop();
-                    return;
-                } else if (repeatCount.get() > 0) {
-                    //重复次数-1
-                    repeatCount.set(repeatCount.get() - 1);
+            //延迟结束
+            if (model.getDelayEndCount().get() > 0) {
+                model.getDelayEndCount().set(model.getDelayEndCount().get() - tick.get());
+            } else {
+                //完成回调
+                this.callback.forEach(completedListener -> completedListener.before(status.get(), repeatCount.get()));
+                try {
+                    //小于等于0则退出
+                    if (repeatCount.get() == 0) {
+                        //进入停止状态,并终止后续任务
+                        stop();
+                        return;
+                    } else if (repeatCount.get() > 0) {
+                        //重复次数-1
+                        repeatCount.set(repeatCount.get() - 1);
+                    }
+                    //重置
+                    recover();
+                } finally {
+                    //回调
+                    this.callback.forEach(completedListener -> completedListener.after(status.get(), repeatCount.get()));
                 }
-                //重置
-                recover();
-            } finally {
-                //回调
-                this.callback.forEach(completedListener -> completedListener.after(status.get(), repeatCount.get()));
             }
         }
         //提交下一个时间片任务

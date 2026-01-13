@@ -42,7 +42,7 @@
     <string name="untitled">Untitled</string>
     <string name="duration">Duration</string>
     <string name="label_format">%s:</string>
-    <string name="steps">Steps</string>
+    <string name="label_script_steps">Steps</string>
     <string name="more">More</string>
     <string name="unit_ms">ms</string>
     <string name="details">Details</string>
@@ -108,4 +108,11 @@
     <string name="action_label_duration">Duration</string>
     <string name="label_description">Description</string>
     <string name="label_point_wranning">The entered %s exceeds the screen range (%d)</string>
+    <string name="label_script_name">Name</string>
+    <string name="label_script_delay_end">Delay end</string>
+    <string name="label_script_delay_start">Delay start</string>
+    <string name="label_script_duration">Duration</string>
+    <string name="label_create_time">Creation time</string>
+    <string name="label_update_time">Update time</string>
+    <string name="dialog_script_title">Script</string>
 </resources>

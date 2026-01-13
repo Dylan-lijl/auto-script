@@ -24,6 +24,8 @@ public interface ScriptPointMapper extends BaseMapper<ScriptPointEntity> {
 
     @Query("select * from script_point where action_id IN (:parentIds)")
     List<ScriptPointEntity> findByActionIds(Collection<Long> parentIds);
+    @Query("select * from script_point where script_id IN (:scriptId)")
+    List<ScriptPointEntity> findByScriptId(Long scriptId);
     @Query("DELETE FROM script_point WHERE script_id = :id")
     int deleteByScriptId(Long id);
 }

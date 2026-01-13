@@ -42,7 +42,7 @@
     <string name="untitled">無題</string>
     <string name="duration">長さ</string>
     <string name="label_format">%s：</string>
-    <string name="steps">手順</string>
+    <string name="label_script_steps">手順</string>
     <string name="more">もっと</string>
     <string name="unit_ms">ミリ秒</string>
     <string name="details">詳細</string>
@@ -108,4 +108,11 @@
     <string name="currently_selected">現在選択中</string>
     <string name="label_description">説明</string>
     <string name="label_point_wranning">入力された%sは画面範囲(%d)を超えています</string>
+    <string name="label_script_name">名前</string>
+    <string name="label_script_delay_end">遅延終了</string>
+    <string name="label_script_delay_start">遅延開始</string>
+    <string name="label_script_duration">時間長</string>
+    <string name="label_create_time">作成時間</string>
+    <string name="label_update_time">更新時間</string>
+    <string name="dialog_script_title">スクリプト</string>
 </resources>

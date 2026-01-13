@@ -23,17 +23,22 @@ import pub.carzy.auto_script.BR;
 public class ScriptEntity extends BaseObservable implements Parcelable {
     @PrimaryKey
     private Long id;
+    @ColumnInfo(name = "name")
     private String name;
     @ColumnInfo(name = "create_time")
     private Date createTime;
     @ColumnInfo(name = "update_time")
     private Date updateTime;
+    @ColumnInfo(name = "action_count")
     private Integer actionCount;
     @ColumnInfo(name = "total_duration")
     private Long totalDuration;
+    @ColumnInfo(name = "description")
     private String description = "";
     @ColumnInfo(name = "delay_end")
     private Long delayEnd;
+    @ColumnInfo(name = "delay_start")
+    private Long delayStart;
 
     public ScriptEntity() {
     }
@@ -69,6 +74,11 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
             delayEnd=null;
         }else {
             delayEnd=in.readLong();
+        }
+        if (in.readByte()==0){
+            delayStart=null;
+        }else {
+            delayStart=in.readLong();
         }
         description = in.readString();
     }
@@ -127,6 +137,13 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
             dest.writeByte((byte)0);
         }else {
             dest.writeByte((byte)1);
+            dest.writeLong(delayEnd);
+        }
+        if (delayStart==null){
+            dest.writeByte((byte)0);
+        }else {
+            dest.writeByte((byte)1);
+            dest.writeLong(delayStart);
         }
         dest.writeString(description);
     }
@@ -139,6 +156,16 @@ public class ScriptEntity extends BaseObservable implements Parcelable {
     public void setId(Long id) {
         this.id = id;
         notifyPropertyChanged(BR.id);
+    }
+
+    @Bindable
+    public Long getDelayStart() {
+        return delayStart;
+    }
+
+    public void setDelayStart(Long delayStart) {
+        this.delayStart = delayStart;
+        notifyPropertyChanged(BR.delayStart);
     }
 
     @Bindable

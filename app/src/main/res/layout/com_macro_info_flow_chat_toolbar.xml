@@ -48,7 +48,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="@{context.getString(R.string.label_format,context.getString(R.string.steps))}" />
+                android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_steps))}" />
 
             <TextView
                 android:id="@+id/step_element"

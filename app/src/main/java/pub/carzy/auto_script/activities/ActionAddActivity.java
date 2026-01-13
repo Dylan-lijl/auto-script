@@ -10,7 +10,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
-import androidx.databinding.ObservableBoolean;
 
 import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
@@ -161,6 +160,6 @@ public class ActionAddActivity extends BaseActivity {
 
     @Override
     protected String getActionBarTitle() {
-        return getString(R.string.add) + getString(R.string.steps) + (index == null ? "" : "-" + index);
+        return getString(R.string.add) + getString(R.string.label_script_steps) + (index == null ? "" : "-" + index);
     }
 }

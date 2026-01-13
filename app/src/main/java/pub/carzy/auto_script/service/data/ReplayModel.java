@@ -1,5 +1,7 @@
 package pub.carzy.auto_script.service.data;
 
+import androidx.room.ColumnInfo;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -31,7 +33,10 @@ public class ReplayModel {
     private Long count;
     private Long actionCount;
     private Long totalDuration;
+    private Long delayEnd;
+    private Long delayStart;
     private Boolean inited = false;
+    private AtomicLong delayEndCount = new AtomicLong(0);
     private List<ReplayActionModel> actions = new ArrayList<>();
 
     //----------action属性------------------
@@ -136,6 +141,7 @@ public class ReplayModel {
                 //根据oder字段进行排序,如果order相同则根据id排序
                 line.getPoints().sort(Comparator.comparingDouble(ReplayPointModel::getOrder).thenComparingLong(ReplayPointModel::getId));
             }
+            delayEndCount.set(delayEnd);
             inited = true;
         } finally {
             lock.unlock();
@@ -163,13 +169,15 @@ public class ReplayModel {
         actionDeleteMap.clear();
         //再将数据放入wait中
         actionWaitMap.putAll(map);
+        delayEndCount.set(delayEnd);
     }
 
     /**
      * 将数据库实体转换成数据模型
-     * @param root 根节点
+     *
+     * @param root           根节点
      * @param actionEntities action
-     * @param points point
+     * @param points         point
      * @return 数据模型
      */
     public static ReplayModel create(ScriptEntity root, List<ScriptActionEntity> actionEntities, List<ScriptPointEntity> points) {

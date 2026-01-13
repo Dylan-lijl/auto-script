@@ -13,5 +13,6 @@ public class StaticValues {
     public static final int RUN = 4;
     public static final int UP = 1;
     public static final int DOWN = -1;
-
+    public static final int DATA_VERSION_1 = 1;
+    public static final int DATA_VERSION = DATA_VERSION_1;
 }

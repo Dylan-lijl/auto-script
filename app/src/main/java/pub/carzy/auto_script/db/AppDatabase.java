@@ -18,6 +18,7 @@ import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.mapper.ScriptActionMapper;
 import pub.carzy.auto_script.db.mapper.ScriptMapper;
 import pub.carzy.auto_script.db.mapper.ScriptPointMapper;
+import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
  * @author admin
@@ -28,7 +29,7 @@ import pub.carzy.auto_script.db.mapper.ScriptPointMapper;
                 ScriptActionEntity.class,
                 ScriptPointEntity.class
         },
-        version = 2,
+        version = StaticValues.DATA_VERSION_1,
         exportSchema = false
 )
 @TypeConverters({

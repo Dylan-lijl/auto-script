@@ -25,12 +25,15 @@ public class ScriptPointEntity extends BaseObservable implements Parcelable {
     private Long scriptId;
     @ColumnInfo(name = "action_id")
     private Long actionId;
+    @ColumnInfo(name = "x")
     private Float x;
+    @ColumnInfo(name = "y")
     private Float y;
     @ColumnInfo(name = "delta_time")
     private Long deltaTime;
-    @ColumnInfo(name = "point_order")
+    @ColumnInfo(name = "order")
     public Float order;
+    @ColumnInfo(name = "description")
     public String description = "";
 
     public ScriptPointEntity() {

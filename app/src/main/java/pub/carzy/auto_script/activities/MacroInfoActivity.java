@@ -59,6 +59,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -66,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -74,6 +76,7 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.databinding.DialogActionInfoBinding;
+import pub.carzy.auto_script.databinding.DialogScriptInfoBinding;
 import pub.carzy.auto_script.databinding.ViewMacroInfoBinding;
 import pub.carzy.auto_script.databinding.DialogPointInfoBinding;
 import pub.carzy.auto_script.db.AppDatabase;
@@ -81,6 +84,7 @@ import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
+import pub.carzy.auto_script.entity.ExportScriptEntity;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
@@ -91,9 +95,11 @@ import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
+import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.StoreUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.TypeToken;
+import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
  * @author admin
@@ -150,48 +156,33 @@ public class MacroInfoActivity extends BaseActivity {
                         return;
                     }
                     int id = ActionInflater.ActionItem.stringToId(tag);
+                    if (id == R.id.action_remove) {
+                        showDeleteDialog(dialog);
+                        return;
+                    }
                     if (id == R.id.action_run) {
-                        dialog.dismiss();
                         changeRunService();
-                    } else if (id == R.id.action_rename) {
-                        dialog.dismiss();
+                    } else if (id == R.id.action_info) {
                         //这里需要弹窗来修改名字
                         if (model.getRoot() != null) {
-                            showRenameDialog();
-                        }
-                    } else if (id == R.id.action_remark) {
-                        dialog.dismiss();
-                        //这里需要弹窗来修改名字
-                        if (model.getRoot() != null) {
-                            showRemarkDialog();
+                            showRoot();
                         }
                     } else if (id == R.id.action_save) {
-                        dialog.dismiss();
                         saveData();
-                    } else if (id == R.id.action_remove) {
-                        showDeleteDialog(dialog);
                     } else if (id == R.id.action_export) {
                         Toast.makeText(this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
                         ThreadUtil.runOnCpu(() -> {
                             //将脚本保存为json文件
-                            Gson gson = new Gson();
-                            ScriptVoEntity entity = new ScriptVoEntity();
-                            entity.setRoot(model.getRoot());
-                            entity.setActions(model.getActionData());
-                            entity.setPoints(model.getPointData());
-                            //调用报错文件api
-                            StoreUtil.promptAndSaveFile(gson.toJson(entity),
-                                    "file_" + new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss", getSyncLanguage()).format(new Date()) + ".json",
-                                    result -> ThreadUtil.runOnUi(() -> {
-                                        Toast.makeText(MacroInfoActivity.this, getString(R.string.message_saved_successfully_ph, result)
-                                                , Toast.LENGTH_SHORT).show();
-                                        //打开对应文件夹位置
-                                        showFileInFolder(this, new File(result));
-                                    }));
+                            MixedUtil.exportScript(model.getRoot(), model.getActionData(), model.getPointData(), this,
+                                    (result) -> ThreadUtil.runOnUi(() -> {
+                                Toast.makeText(MacroInfoActivity.this, getString(R.string.message_saved_successfully_ph, result)
+                                        , Toast.LENGTH_LONG).show();
+                                //打开对应文件夹位置
+                                //showFileInFolder(this, new File(result));
+                            }));
                         });
-                    } else {
-                        dialog.dismiss();
                     }
+                    dialog.dismiss();
                 });
         addActionByXml(builder, this, R.xml.actions_macro_info);
         QMUIBottomSheet build = builder.build();
@@ -831,49 +822,22 @@ public class MacroInfoActivity extends BaseActivity {
         }
     }
 
-    private void showRenameDialog() {
-        AtomicReference<String> text = new AtomicReference<>();
-        QMUIDialog qmuiDialog = new QMUIDialog.EditTextDialogBuilder(this)
-                .setTitle(R.string.rename)
-                .setInputType(InputType.TYPE_CLASS_TEXT)
-                .setPlaceholder(getString(R.string.message_input_prompt, getString(R.string.name)))
-                .setDefaultText(model.getRoot().getName())
-                .setTextWatcher(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        text.set(s.toString());
-                    }
-                })
-                .addAction(R.string.cancel, (dialog, index) -> {
-                    dialog.dismiss();
-                })
-                .addAction(R.string.confirm, (dialog, index) -> {
-                    dialog.dismiss();
-                    String t = text.get();
-                    if (t == null) {
-                        return;
-                    }
-                    String newName = t.trim();
-                    if (!newName.isEmpty()) {
-                        if (model.getRoot() != null) {
-                            model.getRoot().setName(newName);
-                        }
-                    } else {
-                        Toast.makeText(this, getString(R.string.message_error_empty_ph, getString(R.string.name)), Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .create();
-        qmuiDialog.show();
+    private void showRoot() {
+        edit.set(false);
+        DialogScriptInfoBinding binding = DialogScriptInfoBinding.inflate(LayoutInflater.from(this));
+        binding.setEntity(model.getRoot());
+        binding.setEdit(edit);
+        ImageButton imageButton = createModifyButton();
+        imageButton.setOnClickListener(e -> {
+            edit.set(!edit.get());
+            imageButton.setImageResource(edit.get() ? R.drawable.exit : R.drawable.edit);
+        });
+        BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
+        builder.addView(binding.getRoot())
+                .setContentPaddingDp(20, 20)
+                .setTitle(getString(R.string.dialog_script_title))
+                .addRightButton(imageButton);
+        builder.build().show();
     }
 
     private void initIntent() {

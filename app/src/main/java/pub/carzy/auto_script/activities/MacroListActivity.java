@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -15,7 +14,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.Observable;
 import androidx.databinding.ObservableList;
@@ -32,9 +30,7 @@ import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import pub.carzy.auto_script.R;
@@ -48,11 +44,13 @@ import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.MacroListModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
+import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.RecordScriptAction;
 import pub.carzy.auto_script.service.impl.ReplayScriptAction;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
+import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -99,14 +97,25 @@ public class MacroListActivity extends BaseActivity {
 
             @Override
             public void onClickAction(QMUIRVItemSwipeAction swipeAction, RecyclerView.ViewHolder selected, QMUISwipeAction action) {
-                ScriptEntity tag = adapter.data.get(selected.getAdapterPosition());
-                if (tag == null) {
+                ScriptEntity script = adapter.data.get(selected.getAdapterPosition());
+                if (script == null) {
                     return;
                 }
                 if (action == adapter.deleteAction) {
-                    processDeleteItem(tag);
+                    processDeleteItem(script);
                 } else if (action == adapter.runAction) {
-                    runScript(tag);
+                    runScript(script);
+                } else if (action == adapter.exportAction) {
+                    Toast.makeText(MacroListActivity.this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
+                    ThreadUtil.runOnCpu(() -> {
+                        List<ScriptActionEntity> actions = db.scriptActionMapper().findByScriptId(script.getId());
+                        List<ScriptPointEntity> points = db.scriptPointMapper().findByScriptId(script.getId());
+                        //将脚本保存为json文件
+                        MixedUtil.exportScript(script, actions, points, MacroListActivity.this,
+                                (result) -> ThreadUtil.runOnUi(() ->
+                                        Toast.makeText(MacroListActivity.this, getString(R.string.message_saved_successfully_ph, result)
+                                        , Toast.LENGTH_LONG).show()));
+                    });
                 }
             }
         });
@@ -215,19 +224,15 @@ public class MacroListActivity extends BaseActivity {
             if (actions.isEmpty()) {
                 return;
             }
-            Set<Long> actionIds = actions.stream().map(ScriptActionEntity::getId).collect(Collectors.toSet());
-            List<ScriptPointEntity> points = db.scriptPointMapper().findByActionIds(actionIds);
-            ScriptVoEntity entity = new ScriptVoEntity();
-            entity.setRoot(script);
-            entity.getActions().addAll(actions);
-            entity.getPoints().addAll(points);
+            List<ScriptPointEntity> points = db.scriptPointMapper().findByScriptId(script.getId());
+            ReplayModel replayModel = ReplayModel.create(script, actions, points);
             //打开服务
-            ThreadUtil.runOnUi(() -> {
+            ThreadUtil.runOnUi(() -> ActivityUtils.checkAccessibilityServicePermission(this, ok -> {
                 MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
                 if (service != null) {
-                    service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(entity));
+                    service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(replayModel));
                 }
-            });
+            }));
         });
     }
 
@@ -265,7 +270,7 @@ public class MacroListActivity extends BaseActivity {
     }
 
     private void openService() {
-        ActivityUtils.checkAccessibilityServicePermission(this,(ok) -> {
+        ActivityUtils.checkAccessibilityServicePermission(this, (ok) -> {
             MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
             if (service == null) {
                 return;
@@ -309,6 +314,7 @@ public class MacroListActivity extends BaseActivity {
         private final ObservableList<ScriptEntity> data;
         private final QMUISwipeAction deleteAction;
         private final QMUISwipeAction runAction;
+        private final QMUISwipeAction exportAction;
 
         public Adapter() {
             this.data = model.getData();
@@ -364,8 +370,9 @@ public class MacroListActivity extends BaseActivity {
                     .textSize(QMUIDisplayHelper.sp2px(getApplicationContext(), 14))
                     .textColor(Color.WHITE)
                     .paddingStartEnd(QMUIDisplayHelper.dp2px(getApplicationContext(), 14));
-            deleteAction = builder.text("删除").backgroundColor(Color.RED).build();
-            runAction = builder.text("详情").backgroundColor(Color.BLUE).build();
+            runAction = builder.text(getString(R.string.start)).backgroundColor(Color.BLUE).build();
+            deleteAction = builder.text(getString(R.string.delete)).backgroundColor(Color.RED).build();
+            exportAction = builder.text(getString(R.string.export)).backgroundColor(Color.GRAY).build();
         }
 
         @NonNull
@@ -376,6 +383,7 @@ public class MacroListActivity extends BaseActivity {
                     ComListItemMacroListBinding.inflate(inflater, parent, false);
             final VH vh = new VH(binding);
             vh.addSwipeAction(deleteAction);
+            vh.addSwipeAction(exportAction);
             vh.addSwipeAction(runAction);
             //点击跳转到详情
             binding.getRoot().setOnClickListener(e -> jumpInfo(data.get(vh.getAdapterPosition())));

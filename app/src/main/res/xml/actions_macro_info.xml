@@ -6,16 +6,10 @@
         android:tint="@color/safe"
         />
     <action
-        android:id="@+id/action_rename"
-        android:title="@string/rename"
+        android:id="@+id/action_info"
+        android:title="@string/details"
         android:icon="@drawable/edit"
         android:tint="@color/link"
-        />
-    <action
-        android:id="@+id/action_remark"
-        android:title="@string/remark"
-        android:icon="@drawable/edit"
-        android:tint="@color/black"
         />
     <action
         android:id="@+id/action_save"

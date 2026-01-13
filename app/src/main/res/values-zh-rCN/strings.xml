@@ -42,7 +42,7 @@
     <string name="untitled">未命名</string>
     <string name="duration">时长</string>
     <string name="label_format">%s：</string>
-    <string name="steps">步骤</string>
+    <string name="label_script_steps">步骤</string>
     <string name="more">更多</string>
     <string name="unit_ms">毫秒</string>
     <string name="details">详细</string>
@@ -108,4 +108,11 @@
     <string name="currently_selected">当前选中</string>
     <string name="label_description">描述</string>
     <string name="label_point_wranning">输入的%s超出屏幕范围（%d）</string>
+    <string name="label_script_name">名称</string>
+    <string name="label_script_delay_end">延迟结束</string>
+    <string name="label_script_delay_start">延迟开始</string>
+    <string name="label_script_duration">时长</string>
+    <string name="label_create_time">创建时间</string>
+    <string name="label_update_time">更新时间</string>
+    <string name="dialog_script_title">脚本</string>
 </resources>

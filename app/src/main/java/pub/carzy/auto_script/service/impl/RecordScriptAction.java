@@ -192,6 +192,7 @@ public class RecordScriptAction extends BasicAction {
         root.setName(service.getString(R.string.untitled));
         root.setActionCount(motionList.size() + keyList.size());
         root.setDelayEnd(0L);
+        root.setDelayStart(0L);
         long maxTime = 0L;
         //手势
         for (MotionEntity motionEntity : motionList) {

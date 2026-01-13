@@ -36,6 +36,7 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     /**
      * 手势索引
      */
+    @ColumnInfo(name = "index")
     private Integer index = 0;
     /**
      * 按下时间
@@ -50,15 +51,19 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
     /**
      * 移动点数量
      */
+    @ColumnInfo(name = "point_count")
     private Integer pointCount = 0;
     /**
      * 类型,1是手势,2是按键
      */
+    @ColumnInfo(name = "type")
     private Integer type = 1;
     /**
      * 键
      */
+    @ColumnInfo(name = "code")
     private Integer code = KeyEvent.KEYCODE_HOME;
+    @ColumnInfo(name = "description")
     private String description = "";
 
     public ScriptActionEntity() {

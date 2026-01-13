@@ -49,7 +49,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.name))}" />
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_name))}" />
 
                     <pub.carzy.auto_script.ui_components.components.FormField
                         android:layout_width="match_parent"
@@ -72,13 +72,42 @@
                             tools:ignore="LabelFor" />
                     </pub.carzy.auto_script.ui_components.components.FormField>
                 </LinearLayout>
+                <!--延迟开始-->
+                <LinearLayout style="@style/FormVerticalItemStyle">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_delay_start))}" />
+
+                    <pub.carzy.auto_script.ui_components.components.FormField
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:edit="@{edit}">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@{Converter.longToString(entity.delayStart)}"
+                            app:slot="viewer" />
+
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:autofillHints=""
+                            android:inputType="number"
+                            android:text="@={Converter.longToString(entity.delayStart)}"
+                            app:slot="editor"
+                            tools:ignore="LabelFor" />
+                    </pub.carzy.auto_script.ui_components.components.FormField>
+                </LinearLayout>
                 <!--延迟结束-->
                 <LinearLayout style="@style/FormVerticalItemStyle">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.name))}" />
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_delay_end))}" />
 
                     <pub.carzy.auto_script.ui_components.components.FormField
                         android:layout_width="match_parent"
@@ -107,7 +136,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.duration))}" />
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_duration))}" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -120,7 +149,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.duration))}" />
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_steps))}" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -164,7 +193,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.duration))}" />
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_create_time))}" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -177,7 +206,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.duration))}" />
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_update_time))}" />
 
                     <TextView
                         android:layout_width="match_parent"
