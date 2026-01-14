@@ -5,6 +5,7 @@ import androidx.room.Query;
 import androidx.room.RawQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
 
+import java.util.Collection;
 import java.util.List;
 
 import pub.carzy.auto_script.db.entity.ScriptEntity;
@@ -22,4 +23,7 @@ public interface ScriptMapper extends BaseMapper<ScriptEntity> {
 
     @RawQuery
     List<ScriptEntity> queryList(SupportSQLiteQuery query);
+
+    @Query("DELETE FROM script WHERE id IN (:ids)")
+    void deleteByIds(Collection<Long> ids);
 }

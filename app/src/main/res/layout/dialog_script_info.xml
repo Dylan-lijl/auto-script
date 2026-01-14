@@ -29,7 +29,6 @@
     <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <!--todo 显示逻辑还没有写-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -66,7 +65,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:autofillHints=""
-                            android:inputType="number"
+                            android:inputType="text"
                             android:text="@={entity.name}"
                             app:slot="editor"
                             tools:ignore="LabelFor" />

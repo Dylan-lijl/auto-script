@@ -17,15 +17,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
+import kotlin.Triple;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.entity.SupportLocaleResult;
+import pub.carzy.auto_script.ui.QMUIBottomSheetListItemModelExt;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
+import pub.carzy.auto_script.utils.TriConsumer;
 
 
 /**
@@ -48,16 +52,24 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     public QMUIBottomSheet.BottomListSheetBuilder addActionByXml(QMUIBottomSheet.BottomListSheetBuilder builder, Context context, int xmlId) {
+        return addActionByXml(builder, context, xmlId, (builder1, model, actionItem) -> {
+            builder.addItem(model);
+        });
+    }
+
+    public QMUIBottomSheet.BottomListSheetBuilder addActionByXml(QMUIBottomSheet.BottomListSheetBuilder builder, Context context, int xmlId, TriConsumer<QMUIBottomSheet.BottomListSheetBuilder, QMUIBottomSheetListItemModelExt, ActionInflater.ActionItem> callback) {
         List<ActionInflater.ActionItem> list = ActionInflater.inflate(context, xmlId);
         for (ActionInflater.ActionItem item : list) {
             if (!item.isEnabled()) {
                 continue;
             }
-            QMUIBottomSheetListItemModel model = new QMUIBottomSheetListItemModel(item.getTitle(), item.idToString());
+            QMUIBottomSheetListItemModelExt model = new QMUIBottomSheetListItemModelExt(item.getTitle(), item.idToString());
             if (item.getIcon() != null) {
                 model.image(item.getIcon());
             }
-            builder.addItem(model);
+            if (callback != null) {
+                callback.accept(builder, model, item);
+            }
         }
         return builder;
     }

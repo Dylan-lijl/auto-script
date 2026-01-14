@@ -5,4 +5,22 @@
         android:icon="@drawable/record"
         android:tint="@color/danger"
         />
+    <action
+        android:id="@+id/delete_script"
+        android:title="@string/delete"
+        android:icon="@drawable/delete"
+        android:tint="@color/danger"
+        />
+    <action
+        android:id="@+id/export_script"
+        android:title="@string/export"
+        android:icon="@drawable/export"
+        android:tint="@color/link"
+        />
+    <action
+        android:id="@+id/import_script"
+        android:title="@string/import_message"
+        android:icon="@drawable/import_icon"
+        android:tint="@color/black"
+        />
 </actions>

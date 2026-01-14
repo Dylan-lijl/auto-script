@@ -115,4 +115,9 @@
     <string name="label_create_time">Creation time</string>
     <string name="label_update_time">Update time</string>
     <string name="dialog_script_title">Script</string>
+    <string name="import_message">Import</string>
+    <string name="no_data_to_import">No data parsed</string>
+    <string name="success">Success</string>
+    <string name="failure">Failure</string>
+    <string name="warning">Warning</string>
 </resources>

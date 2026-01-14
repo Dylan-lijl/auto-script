@@ -115,4 +115,9 @@
     <string name="label_create_time">作成時間</string>
     <string name="label_update_time">更新時間</string>
     <string name="dialog_script_title">スクリプト</string>
+    <string name="import_message">インポート</string>
+    <string name="no_data_to_import">データを解析できませんでした</string>
+    <string name="success">成功</string>
+    <string name="failure">失敗</string>
+    <string name="warning">警告</string>
 </resources>

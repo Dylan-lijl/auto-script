@@ -1,6 +1,10 @@
 package pub.carzy.auto_script.entity;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import lombok.Data;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
@@ -41,5 +45,5 @@ public class ExportScriptEntity {
     /**
      * 数据
      */
-    private ScriptVoEntity data;
+    private Collection<ScriptVoEntity> data = new ArrayList<>();
 }

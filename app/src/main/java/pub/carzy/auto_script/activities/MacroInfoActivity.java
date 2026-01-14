@@ -60,6 +60,7 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -173,13 +174,13 @@ public class MacroInfoActivity extends BaseActivity {
                         Toast.makeText(this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
                         ThreadUtil.runOnCpu(() -> {
                             //将脚本保存为json文件
-                            MixedUtil.exportScript(model.getRoot(), model.getActionData(), model.getPointData(), this,
+                            MixedUtil.exportScript(Collections.singleton(new ScriptVoEntity(model.getRoot(), model.getActionData(), model.getPointData())), this,
                                     (result) -> ThreadUtil.runOnUi(() -> {
-                                Toast.makeText(MacroInfoActivity.this, getString(R.string.message_saved_successfully_ph, result)
-                                        , Toast.LENGTH_LONG).show();
-                                //打开对应文件夹位置
-                                //showFileInFolder(this, new File(result));
-                            }));
+                                        Toast.makeText(MacroInfoActivity.this, getString(R.string.message_saved_successfully_ph, result)
+                                                , Toast.LENGTH_LONG).show();
+                                        //打开对应文件夹位置
+                                        //showFileInFolder(this, new File(result));
+                                    }));
                         });
                     }
                     dialog.dismiss();
@@ -327,15 +328,8 @@ public class MacroInfoActivity extends BaseActivity {
                 //存数据
                 db.runInTransaction(() -> {
                     //删除旧数据
-                    List<Long> actionIds = db.scriptActionMapper().findIdByScriptId(model.getRoot().getId());
-                    if (!actionIds.isEmpty()) {
-                        List<Long> pointIds = db.scriptPointMapper().findIdByActionIds(actionIds);
-                        if (!pointIds.isEmpty()) {
-                            db.scriptPointMapper().deleteByIds(pointIds);
-                        }
-                        db.scriptActionMapper().deleteByIds(actionIds);
-                    }
-
+                    db.scriptActionMapper().deleteByScriptId(model.getRoot().getId());
+                    db.scriptPointMapper().deleteByScriptId(model.getRoot().getId());
                     ScriptEntity entity = model.getRoot();
                     if (entity == null) {
                         return;

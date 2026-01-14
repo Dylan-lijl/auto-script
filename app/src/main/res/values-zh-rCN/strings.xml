@@ -115,4 +115,9 @@
     <string name="label_create_time">创建时间</string>
     <string name="label_update_time">更新时间</string>
     <string name="dialog_script_title">脚本</string>
+    <string name="import_message">导入</string>
+    <string name="no_data_to_import">未解析出数据</string>
+    <string name="success">成功</string>
+    <string name="failure">失败</string>
+    <string name="warning">警告</string>
 </resources>

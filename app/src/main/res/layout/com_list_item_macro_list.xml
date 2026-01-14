@@ -7,27 +7,42 @@
 
         <import type="pub.carzy.auto_script.utils.StringUtils" />
 
+        <import type="android.view.View" />
+
         <variable
             name="item"
             type="pub.carzy.auto_script.db.entity.ScriptEntity" />
+
         <variable
             name="multiple"
             type="androidx.databinding.ObservableBoolean" />
+
+        <variable
+            name="ids"
+            type="androidx.databinding.ObservableList&lt;Long>" />
     </data>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@{ids.contains(item.id)?@color/selected_blue : @color/transparent}"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="12dp">
-        <!--todo 添加多选-->
+
         <CheckBox
+            android:id="@+id/checkbox"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:checked="@{ids.contains(item.id)}"
+            android:onCheckedChanged="@{(v,checked) -> checked ? ids.add(item.id) : ids.remove(item.id)}"
+            android:onClick="@{(e) -> true}"
+            android:visibility="@{multiple?View.VISIBLE:View.GONE}" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
             android:orientation="vertical">
 
             <LinearLayout

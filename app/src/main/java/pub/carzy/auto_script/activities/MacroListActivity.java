@@ -1,24 +1,33 @@
 package pub.carzy.auto_script.activities;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.Observable;
+import androidx.databinding.ObservableArrayList;
+import androidx.databinding.ObservableBoolean;
 import androidx.databinding.ObservableList;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
 import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.recyclerView.QMUIRVItemSwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeAction;
@@ -29,7 +38,17 @@ import com.qmuiteam.qmui.util.QMUIViewHelper;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -42,6 +61,7 @@ import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
+import pub.carzy.auto_script.entity.ExportScriptEntity;
 import pub.carzy.auto_script.model.MacroListModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.data.ReplayModel;
@@ -62,6 +82,85 @@ public class MacroListActivity extends BaseActivity {
     private AppDatabase db;
 
     private Adapter adapter;
+    private final ActivityResultLauncher<Intent> pickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+                    List<Uri> uris = new ArrayList<>();
+                    if (data.getClipData() != null) {
+                        ClipData clipData = data.getClipData();
+                        for (int i = 0; i < clipData.getItemCount(); i++) {
+                            uris.add(clipData.getItemAt(i).getUri());
+                        }
+                    } else if (data.getData() != null) {
+                        uris.add(data.getData());
+                    }
+                    handleImportFiles(uris);
+                }
+            });
+
+    private void handleImportFiles(List<Uri> uris) {
+        if (uris.isEmpty()) {
+            return;
+        }
+        List<ScriptVoEntity> voEntities = new ArrayList<>();
+        List<String> failed = new ArrayList<>();
+        List<String> success = new ArrayList<>();
+        Map<String, List<ScriptVoEntity>> warning = new HashMap<>();
+        Gson gson = new Gson();
+        //获取当前宽高
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        for (Uri uri : uris) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(getContentResolver().openInputStream(uri)))) {
+                String content = reader.lines().collect(Collectors.joining("\n")).trim();
+                if (content.isEmpty()) {
+                    continue;
+                }
+                //这里需要先读取version字段 后期遇到变更时再说
+                //根据version字段在决定使用
+                ExportScriptEntity exportScript = gson.fromJson(content, ExportScriptEntity.class);
+                if (exportScript.getData().isEmpty()) {
+                    continue;
+                }
+                //宽高不一致则警告
+                if (exportScript.getScreenWidth().compareTo(metrics.widthPixels) != 0 || exportScript.getScreenHeight().compareTo(metrics.heightPixels) != 0) {
+                    warning.put(uri.getLastPathSegment(), voEntities);
+                } else {
+                    voEntities.addAll(exportScript.getData());
+                    success.add(uri.getLastPathSegment());
+                }
+            } catch (IOException e) {
+                failed.add(uri.getLastPathSegment());
+            }
+        }
+        //没解析到数据直接提示
+        if (failed.isEmpty() && warning.isEmpty() && voEntities.isEmpty()) {
+            Toast.makeText(this, getString(R.string.no_data_to_import), Toast.LENGTH_SHORT).show();
+            return;
+        } else if (failed.isEmpty() && warning.isEmpty()) {
+            saveExportScript(voEntities);
+        } else {
+
+        }
+
+    }
+
+    private void saveExportScript(List<ScriptVoEntity> voEntities) {
+        Set<Long> ids = voEntities.stream().map(item -> item.getRoot().getId()).collect(Collectors.toSet());
+        //暂时不做id冲突检查
+        db.runInTransaction(() -> {
+            //删除数据
+            db.scriptMapper().deleteByIds(ids);
+            db.scriptActionMapper().deleteByScriptIds(ids);
+            db.scriptPointMapper().deleteByScriptIds(ids);
+            //添加数据
+            db.scriptMapper().save(voEntities.stream().map(ScriptVoEntity::getRoot).collect(Collectors.toList()));
+            db.scriptActionMapper().save(voEntities.stream().map(ScriptVoEntity::getActions).flatMap(Collection::stream).collect(Collectors.toList()));
+            db.scriptPointMapper().save(voEntities.stream().map(ScriptVoEntity::getPoints).flatMap(Collection::stream).collect(Collectors.toList()));
+        });
+        //刷新数据
+        model.reloadData();
+    }
 
     @Override
     protected String getActionBarTitle() {
@@ -102,7 +201,7 @@ public class MacroListActivity extends BaseActivity {
                     return;
                 }
                 if (action == adapter.deleteAction) {
-                    processDeleteItem(script);
+                    processDeleteItem(Collections.singleton(script.getId()), null);
                 } else if (action == adapter.runAction) {
                     runScript(script);
                 } else if (action == adapter.exportAction) {
@@ -111,10 +210,10 @@ public class MacroListActivity extends BaseActivity {
                         List<ScriptActionEntity> actions = db.scriptActionMapper().findByScriptId(script.getId());
                         List<ScriptPointEntity> points = db.scriptPointMapper().findByScriptId(script.getId());
                         //将脚本保存为json文件
-                        MixedUtil.exportScript(script, actions, points, MacroListActivity.this,
+                        MixedUtil.exportScript(Collections.singletonList(new ScriptVoEntity(script, actions, points)), MacroListActivity.this,
                                 (result) -> ThreadUtil.runOnUi(() ->
                                         Toast.makeText(MacroListActivity.this, getString(R.string.message_saved_successfully_ph, result)
-                                        , Toast.LENGTH_LONG).show()));
+                                                , Toast.LENGTH_LONG).show()));
                     });
                 }
             }
@@ -199,22 +298,98 @@ public class MacroListActivity extends BaseActivity {
                 .setGravityCenter(false)
                 .setAddCancelBtn(false)
                 .setOnSheetItemClickListener((dialog, itemView, position, tag) -> {
-                    dialog.dismiss();
-                    if (tag == null) {
-                        return;
-                    }
                     int id = ActionInflater.ActionItem.stringToId(tag);
                     if (defaultProcessMenu(id)) {
+                        dialog.dismiss();
                         return;
+                    }
+                    if (id == R.id.delete_script) {
+                        processDeleteItem(adapter.checkedIds, () -> {
+                            adapter.checkedIds.clear();
+                            List<Integer> indexes = new ArrayList<>();
+                            for (int i = 0; i < model.getData().size(); i++) {
+                                ScriptEntity e = model.getData().get(i);
+                                if (!adapter.checkedIds.contains(e.getId())) {
+                                    continue;
+                                }
+                                indexes.add(i);
+                            }
+                            indexes.forEach(i -> model.getData().remove(i.intValue()));
+                            dialog.dismiss();
+                        });
+                        return;
+                    }
+                    if (id == R.id.export_script) {
+                        exportSelectScript();
                     }
                     if (id == R.id.record_script) {
                         openService();
                     }
+                    if (id == R.id.import_script) {
+                        openImportDialog();
+                    }
+                    dialog.dismiss();
                 });
-        addActionByXml(builder, this, R.xml.actions_macro_list);
+        addActionByXml(builder, this, R.xml.actions_macro_list,
+                (b, m, item) -> {
+                    if (item.getId() == R.id.delete_script || item.getId() == R.id.export_script) {
+                        if (!adapter.hasMultipleData()) {
+                            return;
+                        }
+                        m.setText(item.getTitle() + "(" + adapter.checkedSize() + ")");
+                    }
+                    builder.addItem(m);
+                });
         addDefaultMenu(builder);
         QMUIBottomSheet build = builder.build();
         build.show();
+    }
+
+    private void openImportDialog() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        //打开
+        pickerLauncher.launch(intent);
+    }
+
+    private void exportSelectScript() {
+        if (!adapter.hasMultipleData()) {
+            return;
+        }
+        Toast.makeText(this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
+        ThreadUtil.runOnCpu(() -> {
+            List<ScriptVoEntity> entities = new ArrayList<>(adapter.checkedSize());
+            //查询对应数据
+            List<ScriptActionEntity> actions = db.scriptActionMapper().findByScriptIds(adapter.checkedIds);
+            List<ScriptPointEntity> points = db.scriptPointMapper().findByScriptIds(adapter.checkedIds);
+            //组装起来
+            for (ScriptEntity root : model.getData()) {
+                if (!adapter.checkedIds.contains(root.getId())) {
+                    continue;
+                }
+                List<ScriptActionEntity> actionEntities = new ArrayList<>();
+                for (ScriptActionEntity action : actions) {
+                    if (action.getScriptId().compareTo(root.getId()) == 0) {
+                        actionEntities.add(action);
+                    }
+                }
+                List<ScriptPointEntity> pointEntities = new ArrayList<>();
+                for (ScriptPointEntity point : points) {
+                    if (point.getScriptId().compareTo(root.getId()) == 0) {
+                        pointEntities.add(point);
+                    }
+                }
+                entities.add(new ScriptVoEntity(root, actionEntities, pointEntities));
+            }
+            MixedUtil.exportScript(entities, MacroListActivity.this,
+                    (result) -> ThreadUtil.runOnUi(() -> {
+                        adapter.checkedIds.clear();
+                        Toast.makeText(MacroListActivity.this, getString(R.string.message_saved_successfully_ph, result)
+                                , Toast.LENGTH_LONG).show();
+                    }));
+        });
     }
 
     private void runScript(ScriptEntity script) {
@@ -236,37 +411,38 @@ public class MacroListActivity extends BaseActivity {
         });
     }
 
-    private void processDeleteItem(ScriptEntity script) {
-        if (!model.getDeleteIds().contains(script.getId())) {
-            model.getDeleteIds().add(script.getId());
-            ActivityUtils.createDeleteMessageDialog(this,
-                    (dialog, which) -> ThreadUtil.runOnCpu(() -> {
-                        try {
-                            //删除数据
-                            db.runInTransaction(() -> {
-                                db.scriptMapper().delete(script);
-                                List<Long> actionIds = db.scriptActionMapper().findIdByScriptId(script.getId());
-                                if (!actionIds.isEmpty()) {
-                                    db.scriptActionMapper().deleteByIds(actionIds);
-                                    List<Long> pointIds = db.scriptPointMapper().findIdByActionIds(actionIds);
-                                    if (!pointIds.isEmpty()) {
-                                        db.scriptPointMapper().deleteByIds(pointIds);
-                                    }
-                                }
-                            });
-                            //在移除对应的数据
-                            ThreadUtil.runOnUi(() -> {
-                                model.getData().remove(script);
-                                dialog.dismiss();
-                            });
-                        } finally {
-                            ThreadUtil.runOnUi(() -> model.getDeleteIds().remove(script.getId()));
-                        }
-                    }), (dialog, i) -> {
-                        model.getDeleteIds().remove(script.getId());
-                        dialog.dismiss();
-                    }).show();
+    private void processDeleteItem(Collection<Long> ids, Runnable success) {
+        if (ids.isEmpty()) {
+            return;
         }
+        ActivityUtils.createDeleteMessageDialog(this,
+                (dialog, which) -> ThreadUtil.runOnCpu(() -> {
+                    model.getDeleteIds().addAll(ids);
+                    try {
+                        //删除数据
+                        db.runInTransaction(() -> {
+                            db.scriptMapper().deleteByIds(ids);
+                            db.scriptActionMapper().deleteByScriptIds(ids);
+                            db.scriptPointMapper().deleteByScriptIds(ids);
+                        });
+                        //在移除对应的数据
+                        ThreadUtil.runOnUi(() -> {
+                            //移除id对应的数据
+                            for (ScriptEntity script : model.getData().stream()
+                                    .filter(item -> ids.contains(item.getId())).collect(Collectors.toList())) {
+                                model.getData().remove(script);
+                            }
+                            dialog.dismiss();
+                        });
+                        if (success != null) {
+                            success.run();
+                        }
+                    } finally {
+                        ThreadUtil.runOnUi(() -> ids.forEach(model.getDeleteIds()::remove));
+                    }
+                }), (dialog, i) -> {
+                    dialog.dismiss();
+                }).show();
     }
 
     private void openService() {
@@ -315,6 +491,8 @@ public class MacroListActivity extends BaseActivity {
         private final QMUISwipeAction deleteAction;
         private final QMUISwipeAction runAction;
         private final QMUISwipeAction exportAction;
+        private final ObservableList<Long> checkedIds = new ObservableArrayList<>();
+        private final ObservableBoolean multiple = new ObservableBoolean(false);
 
         public Adapter() {
             this.data = model.getData();
@@ -375,12 +553,24 @@ public class MacroListActivity extends BaseActivity {
             exportAction = builder.text(getString(R.string.export)).backgroundColor(Color.GRAY).build();
         }
 
+        public void reset() {
+            data.clear();
+            checkedIds.clear();
+            multiple.set(false);
+        }
+
         @NonNull
         @Override
         public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             ComListItemMacroListBinding binding =
                     ComListItemMacroListBinding.inflate(inflater, parent, false);
+            binding.setMultiple(multiple);
+            binding.setIds(checkedIds);
+            binding.getRoot().setOnLongClickListener(e -> {
+                multiple.set(!multiple.get());
+                return true;
+            });
             final VH vh = new VH(binding);
             vh.addSwipeAction(deleteAction);
             vh.addSwipeAction(exportAction);
@@ -400,6 +590,14 @@ public class MacroListActivity extends BaseActivity {
         @Override
         public int getItemCount() {
             return data == null ? 0 : data.size();
+        }
+
+        public boolean hasMultipleData() {
+            return multiple.get() && !checkedIds.isEmpty();
+        }
+
+        public int checkedSize() {
+            return checkedIds.size();
         }
     }
 

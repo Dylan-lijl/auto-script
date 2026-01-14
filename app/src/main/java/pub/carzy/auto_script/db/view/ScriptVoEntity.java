@@ -31,6 +31,12 @@ public class ScriptVoEntity implements Parcelable {
     public ScriptVoEntity() {
     }
 
+    public ScriptVoEntity(ScriptEntity root, List<ScriptActionEntity> actions, List<ScriptPointEntity> points) {
+        this.root = root;
+        this.actions = actions;
+        this.points = points;
+    }
+
     protected ScriptVoEntity(Parcel in) {
         // root 依然可以直接 readParcelable
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.db.mapper;
 
+import androidx.databinding.ObservableList;
 import androidx.room.Dao;
 import androidx.room.Query;
 
@@ -28,4 +29,8 @@ public interface ScriptPointMapper extends BaseMapper<ScriptPointEntity> {
     List<ScriptPointEntity> findByScriptId(Long scriptId);
     @Query("DELETE FROM script_point WHERE script_id = :id")
     int deleteByScriptId(Long id);
+    @Query("DELETE FROM script_point WHERE script_id IN (:ids)")
+    void deleteByScriptIds(Collection<Long> ids);
+    @Query("SELECT * FROM script_point WHERE script_id IN (:checkedIds)")
+    List<ScriptPointEntity> findByScriptIds(Collection<Long> checkedIds);
 }

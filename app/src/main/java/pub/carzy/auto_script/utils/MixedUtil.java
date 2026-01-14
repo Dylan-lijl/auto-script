@@ -7,6 +7,7 @@ import android.util.DisplayMetrics;
 import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -23,7 +24,10 @@ import pub.carzy.auto_script.utils.statics.StaticValues;
  * @author admin
  */
 public class MixedUtil {
-    public static void exportScript(ScriptEntity root, List<ScriptActionEntity> actions, List<ScriptPointEntity> points, Context context, Consumer<String> callback) {
+    public static void exportScript(Collection<ScriptVoEntity> entities, Context context, Consumer<String> callback) {
+        if (entities.isEmpty()) {
+            return;
+        }
         Gson gson = new Gson();
         ExportScriptEntity exportScript = new ExportScriptEntity();
         //基础数据
@@ -36,11 +40,7 @@ public class MixedUtil {
         exportScript.setScreenWidth(metrics.widthPixels);
         exportScript.setScreenHeight(metrics.heightPixels);
         //脚本数据
-        ScriptVoEntity entity = new ScriptVoEntity();
-        exportScript.setData(entity);
-        entity.setRoot(root);
-        entity.setActions(actions);
-        entity.setPoints(points);
+        exportScript.getData().addAll(entities);
         //调用报错文件api
         StoreUtil.promptAndSaveFile(gson.toJson(exportScript),
                 "auto_script_" + new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss", Locale.getDefault())
