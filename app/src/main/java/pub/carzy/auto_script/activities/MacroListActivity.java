@@ -11,20 +11,25 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.Observable;
 import androidx.databinding.ObservableArrayList;
 import androidx.databinding.ObservableBoolean;
 import androidx.databinding.ObservableList;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
@@ -39,13 +44,16 @@ import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +62,8 @@ import java.util.stream.Collectors;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.IdGenerator;
+import pub.carzy.auto_script.databinding.DialogScriptImportBinding;
 import pub.carzy.auto_script.databinding.ViewMacroListBinding;
 import pub.carzy.auto_script.databinding.ComListItemMacroListBinding;
 import pub.carzy.auto_script.db.AppDatabase;
@@ -62,16 +72,20 @@ import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.entity.ExportScriptEntity;
+import pub.carzy.auto_script.model.DialogScriptImportModel;
 import pub.carzy.auto_script.model.MacroListModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.RecordScriptAction;
 import pub.carzy.auto_script.service.impl.ReplayScriptAction;
+import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
+import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
+import pub.carzy.auto_script.utils.TypeToken;
 
 /**
  * @author admin
@@ -82,6 +96,7 @@ public class MacroListActivity extends BaseActivity {
     private AppDatabase db;
 
     private Adapter adapter;
+    private IdGenerator<Long> idWorker;
     private final ActivityResultLauncher<Intent> pickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -95,7 +110,9 @@ public class MacroListActivity extends BaseActivity {
                     } else if (data.getData() != null) {
                         uris.add(data.getData());
                     }
-                    handleImportFiles(uris);
+                    ThreadUtil.runOnCpu(() -> {
+                        handleImportFiles(uris);
+                    });
                 }
             });
 
@@ -103,14 +120,16 @@ public class MacroListActivity extends BaseActivity {
         if (uris.isEmpty()) {
             return;
         }
-        List<ScriptVoEntity> voEntities = new ArrayList<>();
+        Map<String, ExportScriptEntity> data = new HashMap<>();
+        Map<Integer, Set<Object>> warning = new HashMap<>();
         List<String> failed = new ArrayList<>();
-        List<String> success = new ArrayList<>();
-        Map<String, List<ScriptVoEntity>> warning = new HashMap<>();
+        Set<ScriptVoEntity> success = new HashSet<>();
         Gson gson = new Gson();
+        Set<Long> ids = new HashSet<>();
         //获取当前宽高
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         for (Uri uri : uris) {
+            String path = uri.getLastPathSegment() == null ? "??" : uri.getLastPathSegment().substring(uri.getLastPathSegment().lastIndexOf("/") + 1);
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(getContentResolver().openInputStream(uri)))) {
                 String content = reader.lines().collect(Collectors.joining("\n")).trim();
                 if (content.isEmpty()) {
@@ -122,44 +141,198 @@ public class MacroListActivity extends BaseActivity {
                 if (exportScript.getData().isEmpty()) {
                     continue;
                 }
+                data.put(path, exportScript);
                 //宽高不一致则警告
                 if (exportScript.getScreenWidth().compareTo(metrics.widthPixels) != 0 || exportScript.getScreenHeight().compareTo(metrics.heightPixels) != 0) {
-                    warning.put(uri.getLastPathSegment(), voEntities);
-                } else {
-                    voEntities.addAll(exportScript.getData());
-                    success.add(uri.getLastPathSegment());
+                    warning.computeIfAbsent(ExportScriptEntity.SIZE_DISCREPANCY, k -> new HashSet<>()).add(path);
                 }
+                exportScript.getData().forEach(item -> {
+                    ids.add(item.getRoot().getId());
+                    success.add(item);
+                });
             } catch (IOException e) {
-                failed.add(uri.getLastPathSegment());
+                failed.add(path);
             }
         }
+        //查看数据是否已经存在
+        db.scriptMapper().findIdByIds(ids).forEach(id -> {
+            ScriptVoEntity find = null;
+            for (ScriptVoEntity entity : success) {
+                if (entity.getRoot().getId().compareTo(id) == 0) {
+                    find = entity;
+                    break;
+                }
+            }
+            if (find != null) {
+                success.remove(find);
+            }
+            data.forEach((k, v) -> v.getData().forEach(item -> {
+                if (item.getRoot().getId().compareTo(id) == 0) {
+                    warning.computeIfAbsent(ExportScriptEntity.DATA_ALREADY_EXISTS, key -> new HashSet<>()).add(item);
+                }
+            }));
+        });
         //没解析到数据直接提示
-        if (failed.isEmpty() && warning.isEmpty() && voEntities.isEmpty()) {
+        if (data.isEmpty()) {
             Toast.makeText(this, getString(R.string.no_data_to_import), Toast.LENGTH_SHORT).show();
-            return;
         } else if (failed.isEmpty() && warning.isEmpty()) {
-            saveExportScript(voEntities);
+            saveExportScript(data.values().stream().map(ExportScriptEntity::getData).flatMap(Collection::stream).collect(Collectors.toList()), null);
         } else {
-
+            ThreadUtil.runOnUi(() -> {
+                DialogScriptImportBinding inflate = DialogScriptImportBinding.inflate(LayoutInflater.from(this));
+                DialogScriptImportModel m = new DialogScriptImportModel();
+                m.setFailed(failed);
+                Set<Object> exist = warning.get(ExportScriptEntity.DATA_ALREADY_EXISTS);
+                if (exist != null) {
+                    //获取所有data
+                    m.setExistWarning(exist.stream().map(item -> ((ScriptVoEntity) item))
+                            //全部扁平化成一个集合
+                            //遍历root返回名字+id的组合
+                            .map(item -> item.getRoot().getName() + "(" + item.getRoot().getId() + ")")
+                            .collect(Collectors.toList()));
+                }
+                Set<Object> size = warning.get(ExportScriptEntity.SIZE_DISCREPANCY);
+                if (size != null) {
+                    m.setSizeWarning(size.stream().map(Object::toString).collect(Collectors.toList()));
+                }
+                m.setSuccess(success.stream().map(item -> item.getRoot().getName() + "(" + item.getRoot().getId() + ")").collect(Collectors.toList()));
+                inflate.setModel(m);
+                ImageButton imageButton = new ImageButton(this);
+                imageButton.setImageResource(R.drawable.save);
+                imageButton.setImageTintList(ContextCompat.getColorStateList(this, R.color.link));
+                imageButton.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                if (m.isHasSuccess()) {
+                    inflate.successList.setAdapter(new StringAdapter(m.getSuccess()));
+                    inflate.successList.setLayoutManager(new LinearLayoutManager(this));
+                }
+                if (m.isHasExistWarning()) {
+                    inflate.existWarning.setAdapter(new StringAdapter(m.getExistWarning()));
+                    inflate.existWarning.setLayoutManager(new LinearLayoutManager(this));
+                }
+                if (m.isHasSizeWarning()) {
+                    inflate.sizeWarning.setAdapter(new StringAdapter(m.getSizeWarning()));
+                    inflate.sizeWarning.setLayoutManager(new LinearLayoutManager(this));
+                }
+                if (m.isHasFailed()) {
+                    inflate.failureList.setAdapter(new StringAdapter(failed));
+                    inflate.failureList.setLayoutManager(new LinearLayoutManager(this));
+                }
+                //创建弹窗
+                BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
+                builder.addView(inflate.getRoot())
+                        .setContentPaddingDp(20, 20)
+                        .setTitle(getString(R.string.dialog_import_title))
+                        .addRightButton(imageButton);
+                QMUIBottomSheet build = builder.build();
+                imageButton.setOnClickListener((e) -> {
+                    List<ScriptVoEntity> dbData = new ArrayList<>(data.size());
+                    dbData.addAll(success);
+                    //判断是否需要屏幕适配
+                    if (m.getSizeAdapted() != R.id.size_skip) {
+                        if (size != null) {
+                            //等比例缩放
+                            size.stream().map(item -> (String) item).forEach((v) -> {
+                                ExportScriptEntity exportScript = data.get(v);
+                                if (exportScript == null) {
+                                    return;
+                                }
+                                if (m.getSizeAdapted() == R.id.size_auto_adapt) {
+                                    if (exportScript.getScreenWidth() != metrics.widthPixels) {
+                                        BigDecimal proportion = BigDecimal.valueOf(metrics.widthPixels).divide(BigDecimal.valueOf(exportScript.getScreenWidth()), 4, RoundingMode.HALF_UP);
+                                        exportScript.getData().forEach(line -> {
+                                            line.getPoints().forEach(point -> {
+                                                point.setX(Math.max(0, proportion.multiply(BigDecimal.valueOf(point.getX())).setScale(2, RoundingMode.HALF_UP).floatValue()));
+                                            });
+                                        });
+                                    }
+                                    if (exportScript.getScreenHeight() != metrics.heightPixels) {
+                                        BigDecimal proportion = BigDecimal.valueOf(metrics.heightPixels).divide(BigDecimal.valueOf(exportScript.getScreenHeight()), 4, RoundingMode.HALF_UP);
+                                        exportScript.getData().forEach(line -> {
+                                            line.getPoints().forEach(point -> {
+                                                point.setY(Math.max(0, proportion.multiply(BigDecimal.valueOf(point.getY())).setScale(2, RoundingMode.HALF_UP).floatValue()));
+                                            });
+                                        });
+                                    }
+                                }
+                                dbData.addAll(exportScript.getData());
+                            });
+                        }
+                    }
+                    //重复数据处理
+                    if (exist != null) {
+                        exist.stream().map(item -> (ScriptVoEntity) item).forEach(item -> {
+                            if (m.getExistAdapted() == R.id.exist_skip) {
+                                dbData.remove(item);
+                                return;
+                            }
+                            Date now = new Date();
+                            if (m.getExistAdapted() == R.id.exist_new) {
+                                ScriptVoEntity entity = new ScriptVoEntity();
+                                ScriptEntity root = BeanHandler.copy(item.getRoot(), ScriptEntity.class);
+                                root.setCreateTime(now);
+                                root.setUpdateTime(now);
+                                entity.setRoot(root);
+                                //重置id
+                                root.setId(idWorker.nextId());
+                                //映射id关系
+                                Map<Long, Long> idsMap = new HashMap<>();
+                                item.getActions().forEach(action -> {
+                                    ScriptActionEntity copy = BeanHandler.copy(action, ScriptActionEntity.class);
+                                    copy.setId(idWorker.nextId());
+                                    copy.setScriptId(root.getId());
+                                    idsMap.put(action.getId(), copy.getId());
+                                    entity.getActions().add(copy);
+                                });
+                                item.getPoints().forEach(point -> {
+                                    ScriptPointEntity copy = BeanHandler.copy(point, ScriptPointEntity.class);
+                                    copy.setId(idWorker.nextId());
+                                    copy.setScriptId(root.getId());
+                                    copy.setActionId(idsMap.get(point.getActionId()));
+                                    entity.getPoints().add(copy);
+                                });
+                                //添加新建的
+                                dbData.add(entity);
+                            }
+                            //添加进去
+                            exist.stream().map(o -> (ScriptVoEntity) o).forEach(o -> {
+                                if (!dbData.contains(o)) {
+                                    dbData.add(o);
+                                }
+                            });
+                        });
+                    }
+                    //入库
+                    saveExportScript(dbData, () -> ThreadUtil.runOnUi(build::dismiss));
+                });
+                build.show();
+            });
         }
 
     }
 
-    private void saveExportScript(List<ScriptVoEntity> voEntities) {
-        Set<Long> ids = voEntities.stream().map(item -> item.getRoot().getId()).collect(Collectors.toSet());
-        //暂时不做id冲突检查
-        db.runInTransaction(() -> {
-            //删除数据
-            db.scriptMapper().deleteByIds(ids);
-            db.scriptActionMapper().deleteByScriptIds(ids);
-            db.scriptPointMapper().deleteByScriptIds(ids);
-            //添加数据
-            db.scriptMapper().save(voEntities.stream().map(ScriptVoEntity::getRoot).collect(Collectors.toList()));
-            db.scriptActionMapper().save(voEntities.stream().map(ScriptVoEntity::getActions).flatMap(Collection::stream).collect(Collectors.toList()));
-            db.scriptPointMapper().save(voEntities.stream().map(ScriptVoEntity::getPoints).flatMap(Collection::stream).collect(Collectors.toList()));
+    private void saveExportScript(List<ScriptVoEntity> voEntities, Runnable runnable) {
+        ThreadUtil.runOnCpu(() -> {
+            Set<Long> ids = voEntities.stream().map(item -> item.getRoot().getId()).collect(Collectors.toSet());
+            //暂时不做id冲突检查
+            db.runInTransaction(() -> {
+                //删除数据
+                db.scriptMapper().deleteByIds(ids);
+                db.scriptActionMapper().deleteByScriptIds(ids);
+                db.scriptPointMapper().deleteByScriptIds(ids);
+                //添加数据
+                db.scriptMapper().save(voEntities.stream().map(ScriptVoEntity::getRoot).collect(Collectors.toList()));
+                db.scriptActionMapper().save(voEntities.stream().map(ScriptVoEntity::getActions).flatMap(Collection::stream).collect(Collectors.toList()));
+                db.scriptPointMapper().save(voEntities.stream().map(ScriptVoEntity::getPoints).flatMap(Collection::stream).collect(Collectors.toList()));
+            });
+            //刷新数据
+            model.reloadData();
+            if (runnable != null) {
+                runnable.run();
+            }
         });
-        //刷新数据
-        model.reloadData();
+        ThreadUtil.runOnUi(() -> {
+            Toast.makeText(this, getString(R.string.import_successful) + ":" + voEntities.size(), Toast.LENGTH_SHORT).show();
+        });
     }
 
     @Override
@@ -180,6 +353,8 @@ public class MacroListActivity extends BaseActivity {
 
     private void initBase() {
         db = BeanFactory.getInstance().get(AppDatabase.class);
+        idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
+        });
         model = new MacroListModel();
         binding = DataBindingUtil.setContentView(this, R.layout.view_macro_list);
         binding.setModel(model);
@@ -609,4 +784,41 @@ public class MacroListActivity extends BaseActivity {
             this.binding = binding;
         }
     }
+
+    class StringAdapter extends RecyclerView.Adapter<StringAdapter.VH> {
+
+        private List<String> data;
+
+        public StringAdapter(List<String> data) {
+            this.data = data;
+        }
+
+        @NonNull
+        @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            TextView view = (TextView) LayoutInflater.from(parent.getContext())
+                    .inflate(android.R.layout.simple_list_item_1, parent, false);
+            return new VH(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull VH holder, int position) {
+            holder.textView.setText(data.get(position));
+        }
+
+        @Override
+        public int getItemCount() {
+            return data.size();
+        }
+
+        public class VH extends RecyclerView.ViewHolder {
+            TextView textView;
+
+            VH(@NonNull View itemView) {
+                super(itemView);
+                textView = (TextView) itemView;
+            }
+        }
+    }
+
 }

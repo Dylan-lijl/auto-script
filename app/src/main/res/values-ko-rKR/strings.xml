@@ -120,4 +120,17 @@
     <string name="success">가져오기 실패</string>
     <string name="failure">실패</string>
     <string name="warning">경고</string>
+    <string name="dialog_import_title">가져오기 알림</string>
+    <string name="ignore">무시</string>
+    <string name="skip">건너뛰기</string>
+    <string name="keep_unchanged">원래대로 유지</string>
+    <string name="auto_adapt">자동 맞춤</string>
+    <string name="import_successful">가져오기 성공</string>
+    <string name="inconsistent_screen_parameters">녹화된 화면 크기가 현재 기기 크기와 일치하지 않는 파일 %d개가 감지되었습니다.</string>
+    <string name="exist_script_by_db">데이터베이스의 기존 기록과 중복되는 스크립트 %d개가 감지되었습니다.</string>
+    <string name="replace">대체</string>
+    <string name="_new">추가</string>
+    <string name="label_id">기본 키</string>
+    <string name="label_action_id">Action ID</string>
+    <string name="label_script_id">Script Id</string>
 </resources>

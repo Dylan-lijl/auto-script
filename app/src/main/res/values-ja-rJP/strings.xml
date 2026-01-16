@@ -120,4 +120,17 @@
     <string name="success">成功</string>
     <string name="failure">失敗</string>
     <string name="warning">警告</string>
+    <string name="dialog_import_title">インポート提示</string>
+    <string name="ignore">無視</string>
+    <string name="skip">スキップ</string>
+    <string name="keep_unchanged">そのままにする</string>
+    <string name="auto_adapt">自動適応</string>
+    <string name="import_successful">インポートに成功しました</string>
+    <string name="inconsistent_screen_parameters">録画された画面サイズが現在のデバイスサイズと一致しないファイルが %d 件検出されました。</string>
+    <string name="exist_script_by_db">データベース内の既存記録と重複するスクリプトが %d 件検出されました。</string>
+    <string name="replace">置換</string>
+    <string name="_new">新規</string>
+    <string name="label_id">主キー</string>
+    <string name="label_action_id">Action ID</string>
+    <string name="label_script_id">Script Id</string>
 </resources>

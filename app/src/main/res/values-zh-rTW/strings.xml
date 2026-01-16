@@ -120,4 +120,17 @@
     <string name="success">成功</string>
     <string name="failure">失敗</string>
     <string name="warning">警告</string>
+    <string name="dialog_import_title">匯入提示</string>
+    <string name="ignore">忽略</string>
+    <string name="skip">跳過</string>
+    <string name="keep_unchanged">保持原樣</string>
+    <string name="auto_adapt">自動適配</string>
+    <string name="import_successful">匯入成功</string>
+    <string name="inconsistent_screen_parameters">檢測到 %d 個文件的錄製螢幕尺寸與當前設備尺寸不匹配。</string>
+    <string name="exist_script_by_db">檢測到 %d 個腳本與資料庫已有記錄重複。</string>
+    <string name="replace">替換</string>
+    <string name="_new">新增</string>
+    <string name="label_id">主鍵</string>
+    <string name="label_action_id">Action ID</string>
+    <string name="label_script_id">Script Id</string>
 </resources>

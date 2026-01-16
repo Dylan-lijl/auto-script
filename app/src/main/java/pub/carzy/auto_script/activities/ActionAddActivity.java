@@ -42,24 +42,12 @@ public class ActionAddActivity extends BaseActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.view_action_add);
         initIntent();
         initTopBar();
-        List<Option<Integer>> options = Arrays.asList(
-                new Option<>(KeyEvent.keyCodeToString(KeyEvent.KEYCODE_HOME), KeyEvent.KEYCODE_HOME),
-                new Option<>(KeyEvent.keyCodeToString(KeyEvent.KEYCODE_BACK), KeyEvent.KEYCODE_BACK),
-                new Option<>(KeyEvent.keyCodeToString(KeyEvent.KEYCODE_MENU), KeyEvent.KEYCODE_MENU),
-                new Option<>(KeyEvent.keyCodeToString(KeyEvent.KEYCODE_VOLUME_UP), KeyEvent.KEYCODE_VOLUME_UP),
-                new Option<>(KeyEvent.keyCodeToString(KeyEvent.KEYCODE_VOLUME_DOWN), KeyEvent.KEYCODE_VOLUME_DOWN),
-                new Option<>(KeyEvent.keyCodeToString(KeyEvent.KEYCODE_POWER), KeyEvent.KEYCODE_POWER)
-        );
-        ArrayAdapter<Option<Integer>> adapter =
-                new ArrayAdapter<>(
-                        this,
-                        android.R.layout.simple_spinner_item,
-                        options
-                );
-        adapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item
-        );
-        binding.codeInput.setAdapter(adapter);
+        List<MacroInfoActivity.CodeOption> options = MacroInfoActivity.CodeOption.allKeyEvent();
+        binding.dropdown.setAdapter(MacroInfoActivity.CodeOption.createAdapter(this, options));
+        binding.dropdown.setOnItemClickListener((parent, view, position, id) -> {
+            MacroInfoActivity.CodeOption selected = options.get(position);
+            data.setCode(selected.getCode());
+        });
         initListener();
     }
 
@@ -142,8 +130,8 @@ public class ActionAddActivity extends BaseActivity {
                 return;
             }
             //如果是按键事件就要添加持续时长
-            if (data.getType() == ScriptActionEntity.KEY_EVENT) {
-                data.setDuration(Long.parseLong(binding.durationInput.getText().toString()));
+            if (data.getType() == ScriptActionEntity.GESTURE) {
+                data.setDuration(0L);
             }
             Intent intent = new Intent();
             intent.putExtra("data", data);

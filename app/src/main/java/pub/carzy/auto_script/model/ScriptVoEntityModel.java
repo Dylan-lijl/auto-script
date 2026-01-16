@@ -347,7 +347,7 @@ public class ScriptVoEntityModel extends BaseObservable {
         //添加
         actions.put(model.getKey(), model);
         //排序
-        orderAction();
+        ScriptActionModel lastAction = orderAction();
         //如果需要关联,则更新当前action的后续action的开始时间(等于大于时添加对应持续时长)
         if (correlation) {
             for (Map.Entry<Long, ScriptActionModel> line : actions.entrySet()) {
@@ -362,9 +362,61 @@ public class ScriptVoEntityModel extends BaseObservable {
                 v.getBarEntry().setVals(new float[]{v.getData().getStartTime(), v.getData().getDuration()});
             }
         }
+        //更新root的时长
+        if (lastAction != null) {
+            root.setTotalDuration(lastAction.getData().getStartTime() + lastAction.getData().getDuration());
+        }
         //关联对应信息也变更了
         notifyPropertyChanged(BR.checkedAction);
         notifyPropertyChanged(BR.actions);
+    }
+
+    public void updateActionDurationByActionId(Long actionId, Long old) {
+        updateActionDurationByActionId(actionId, old, true);
+    }
+
+    public void updateActionDurationByActionId(Long actionId, Long old, boolean correlation) {
+        ScriptActionModel model = actions.get(actionId);
+        if (model == null || old == null) {
+            return;
+        }
+        //时间一样不做操作
+        if (old.compareTo(model.getData().getDuration()) == 0) {
+            return;
+        }
+        //获取间隔
+        long d = model.getData().getDuration() - old;
+        //更新对应model的barEntry
+        model.getBarEntry().setVals(new float[]{model.getData().getStartTime(), model.getData().getDuration()});
+        //关联更新后续节点的开始时间
+        if (correlation) {
+            boolean update = false;
+            for (Map.Entry<Long, ScriptActionModel> line : actions.entrySet()) {
+                if (actionId.compareTo(line.getKey()) == 0) {
+                    update = true;
+                    continue;
+                }
+                if (!update) {
+                    continue;
+                }
+                ScriptActionModel dist = line.getValue();
+                if (dist.getData().getStartTime() + d < 0) {
+                    Log.e("updateActionStartTimeByActionId", "加上间隔开始时间小于0");
+                    continue;
+                }
+                dist.getData().setStartTime(dist.getData().getStartTime() + d);
+                //更新对应model的barEntry
+                dist.getBarEntry().setVals(new float[]{dist.getData().getStartTime(), dist.getData().getDuration()});
+            }
+        }
+        //排序
+        ScriptActionModel action = orderAction();
+        if (action != null) {
+            //更新root时间
+            root.setTotalDuration(action.getData().getStartTime() + action.getData().getDuration());
+        }
+        notifyPropertyChanged(BR.actions);
+        notifyPropertyChanged(BR.checkedAction);
     }
 
     public void updateActionStartTimeByActionId(Long actionId, Long oldStartTime) {
@@ -411,22 +463,26 @@ public class ScriptVoEntityModel extends BaseObservable {
                 //更新对应model的barEntry
                 dist.getBarEntry().setVals(new float[]{dist.getData().getStartTime(), dist.getData().getDuration()});
             }
-            //排序
-            orderAction();
         }
+        //排序
+        ScriptActionModel action = orderAction();
+        root.setTotalDuration(action.getData().getStartTime() + action.getData().getDuration());
         notifyPropertyChanged(BR.actions);
         notifyPropertyChanged(BR.checkedAction);
     }
 
-    private void orderAction() {
+    public ScriptActionModel orderAction() {
         Collection<ScriptActionModel> values = actions.values();
         values = values.stream().sorted(Comparator.comparing(o -> o.getData().getStartTime())).collect(Collectors.toList());
         actions.clear();
         int i = 0;
+        ScriptActionModel pre = null;
         for (ScriptActionModel item : values) {
             item.getBarEntry().setX(i++);
             actions.put(item.getKey(), item);
+            pre = item;
         }
+        return pre;
     }
 
     public void deleteAction(Long id) {

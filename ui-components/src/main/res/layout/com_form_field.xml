@@ -5,13 +5,15 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
     <!--占位-->
-    <FrameLayout
+    <LinearLayout
+        android:orientation="horizontal"
         android:id="@+id/slot_viewer_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="visible" />
 
-    <FrameLayout
+    <LinearLayout
+        android:orientation="horizontal"
         android:id="@+id/slot_editor_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

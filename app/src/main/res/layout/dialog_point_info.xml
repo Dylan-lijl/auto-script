@@ -46,7 +46,36 @@
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
             android:visibility="@{entity==null?View.GONE:View.VISIBLE}">
-
+            <LinearLayout style="@style/FormVerticalItemStyle">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_id))}" />
+                <TextView
+                    android:text="@{StringUtils.format(entity.id)}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+            <LinearLayout style="@style/FormVerticalItemStyle">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_action_id))}" />
+                <TextView
+                    android:text="@{StringUtils.format(entity.actionId)}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+            <LinearLayout style="@style/FormVerticalItemStyle">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_id))}" />
+                <TextView
+                    android:text="@{StringUtils.format(entity.scriptId)}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
             <LinearLayout style="@style/FormVerticalItemStyle">
 
                 <TextView
@@ -64,15 +93,25 @@
                         android:layout_height="wrap_content"
                         android:text="@{StringUtils.format(entity.deltaTime)+context.getString(R.string.unit_ms)}"
                         app:slot="viewer" />
-
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/unit_ms"
+                        app:slot="viewer" />
                     <EditText
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
                         android:layout_height="wrap_content"
                         android:autofillHints=""
                         android:inputType="number"
                         android:text="@={Converter.longToString(entity.deltaTime)}"
                         app:slot="editor"
                         tools:ignore="LabelFor" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/unit_ms"
+                        app:slot="editor" />
                 </pub.carzy.auto_script.ui_components.components.FormField>
             </LinearLayout>
 

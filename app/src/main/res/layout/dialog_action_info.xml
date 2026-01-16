@@ -45,6 +45,32 @@
                 android:visibility="@{entity==null?View.GONE:View.VISIBLE}">
 
                 <LinearLayout style="@style/FormVerticalItemStyle">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_id))}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{StringUtils.format(entity.id)}" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/FormVerticalItemStyle">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_id))}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{StringUtils.format(entity.scriptId)}" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/FormVerticalItemStyle">
                     <!--按下时间-->
                     <TextView
                         android:layout_width="wrap_content"
@@ -57,19 +83,32 @@
                         app:edit="@{edit}">
 
                         <TextView
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@{StringUtils.format(entity.startTime)+context.getString(R.string.unit_ms)}"
+                            android:text="@{StringUtils.format(entity.startTime)}"
+                            app:slot="viewer" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/unit_ms"
                             app:slot="viewer" />
 
                         <EditText
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             android:autofillHints=""
                             android:inputType="number"
                             android:text="@={Converter.longToString(entity.startTime)}"
                             app:slot="editor"
                             tools:ignore="LabelFor" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/unit_ms"
+                            app:slot="editor" />
                     </pub.carzy.auto_script.ui_components.components.FormField>
                 </LinearLayout>
 
@@ -80,10 +119,39 @@
                         android:layout_height="wrap_content"
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_duration))}" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <pub.carzy.auto_script.ui_components.components.FormField
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@{StringUtils.format(entity.duration)+context.getString(R.string.unit_ms)}" />
+                        app:edit="@{edit &amp;&amp; entity.type==ScriptActionEntity.KEY_EVENT}">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{StringUtils.format(entity.duration)}"
+                            app:slot="viewer" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/unit_ms"
+                            app:slot="viewer" />
+
+                        <EditText
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:autofillHints=""
+                            android:inputType="number"
+                            android:text="@={Converter.longToString(entity.duration)}"
+                            app:slot="editor"
+                            tools:ignore="LabelFor" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/unit_ms"
+                            app:slot="editor" />
+                    </pub.carzy.auto_script.ui_components.components.FormField>
                 </LinearLayout>
 
                 <LinearLayout

@@ -14,6 +14,8 @@ import pub.carzy.auto_script.db.view.ScriptVoEntity;
  */
 @Data
 public class ExportScriptEntity {
+    public static final int SIZE_DISCREPANCY = 1;
+    public static final int DATA_ALREADY_EXISTS = 2;
     /**
      * 版本
      */

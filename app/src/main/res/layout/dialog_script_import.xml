@@ -2,55 +2,185 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
-        <import type="android.view.View"/>
-        <import type="pub.carzy.auto_script.utils.StringUtils"/>
-        <variable
-            name="failed"
-            type="java.util.List&lt;String>" />
-        <variable
-            name="warning"
-            type="java.util.List&lt;String>" />
-        <variable
-            name="success"
-            type="java.util.List&lt;String>" />
+
+        <import type="android.view.View" />
+
+        <import type="pub.carzy.auto_script.utils.StringUtils" />
+
+        <import type="pub.carzy.auto_script.model.DialogScriptImportModel" />
+
         <variable
             name="model"
-            type="pub.carzy.auto_script.model.DialogScriptImportModel" />
+            type="DialogScriptImportModel" />
     </data>
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-         <LinearLayout
-             android:orientation="vertical"
-             android:visibility="@{success.isEmpty() ? View.GONE : View.VISIBLE}"
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content">
-             <LinearLayout
-                 android:layout_width="match_parent"
-                 android:orientation="horizontal"
-                 android:layout_height="wrap_content">
-                 <TextView
-                     android:text="@string/success"
-                     android:layout_width="wrap_content"
-                     android:layout_height="wrap_content" />
-                 <TextView
-                     android:text="@{`:`+StringUtils.format(success.size())}"
-                     android:layout_width="wrap_content"
-                     android:layout_height="wrap_content" />
-                 <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
-                     android:drawableStart="@{model.showSuccess?@drawable/arrow_down:@drawable/arrow_left}"
-                     android:onClick="@{e -> model.setShowSuccess(!model.isShowSuccess())}"
-                     android:layout_width="wrap_content"
-                     android:layout_height="wrap_content" />
-             </LinearLayout>
-             <ListView
-                 android:visibility="@{model.showSuccess ? View.VISIBLE : View.GONE}"
-                 android:layout_width="match_parent"
-                 android:layout_height="wrap_content">
-                 <!--todo-->
-             </ListView>
-         </LinearLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="@{model.hasSuccess ? View.VISIBLE : View.GONE}">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/success" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@{model.showSuccess?@drawable/arrow_down:@drawable/arrow_left}"
+                android:onClick="@{e -> model.setShowSuccess(!model.showSuccess)}" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/success_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="@{model.successVisible ? View.VISIBLE : View.GONE}" />
+
+        <LinearLayout
+            android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="@{model.hasWarning ? View.VISIBLE : View.GONE}">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/warning" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@{model.showWarning?@drawable/arrow_down:@drawable/arrow_left}"
+                    android:onClick="@{e -> model.setShowWarning(!model.showWarning)}" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="@{model.hasSizeWarning ? View.VISIBLE : View.GONE}"
+                android:text="@{@string/inconsistent_screen_parameters(model.sizeWarning.size())}" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/size_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{model.sizeWarningVisible? View.VISIBLE : View.GONE}" />
+            <RadioGroup
+                android:layout_marginTop="20dp"
+                android:id="@+id/size_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checkedButton="@={model.sizeAdapted}"
+                android:orientation="horizontal"
+                android:visibility="@{model.hasSizeWarning ? View.VISIBLE:View.GONE}">
+
+                <RadioButton
+                    android:id="@+id/size_skip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/skip" />
+
+                <RadioButton
+                    android:id="@+id/size_keep_unchanged"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/keep_unchanged" />
+
+                <RadioButton
+                    android:id="@+id/size_auto_adapt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/auto_adapt" />
+            </RadioGroup>
+
+            <TextView
+                android:layout_marginTop="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="@{model.hasExistWarning ? View.VISIBLE : View.GONE}"
+                android:text="@{@string/exist_script_by_db(model.existWarning.size())}" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/exist_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{model.existWarningVisible? View.VISIBLE : View.GONE}" />
+            <RadioGroup
+                android:id="@+id/exist_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checkedButton="@={model.existAdapted}"
+                android:orientation="horizontal"
+                android:visibility="@{model.hasExistWarning ? View.VISIBLE:View.GONE}">
+
+                <RadioButton
+                    android:id="@+id/exist_skip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/skip" />
+
+                <RadioButton
+                    android:id="@+id/exist_replace"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/replace" />
+
+                <RadioButton
+                    android:id="@+id/exist_new"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/_new" />
+            </RadioGroup>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="@{model.hasFailed ? View.VISIBLE : View.GONE}">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/failure" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@{model.showFailure?@drawable/arrow_down:@drawable/arrow_left}"
+                android:onClick="@{e -> model.setShowFailure(!model.showFailure)}" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/failure_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="@{model.failedVisible ? View.VISIBLE : View.GONE}" />
     </LinearLayout>
 </layout>

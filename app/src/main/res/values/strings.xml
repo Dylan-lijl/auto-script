@@ -120,4 +120,17 @@
     <string name="success">Success</string>
     <string name="failure">Failure</string>
     <string name="warning">Warning</string>
+    <string name="dialog_import_title">Import prompt</string>
+    <string name="ignore">Ignore</string>
+    <string name="skip">Skip</string>
+    <string name="keep_unchanged">Keep unchanged</string>
+    <string name="auto_adapt">Auto adapt</string>
+    <string name="import_successful">Import successful</string>
+    <string name="inconsistent_screen_parameters">Detected %d file(s) whose recorded screen size does not match the current device size.</string>
+    <string name="exist_script_by_db">Detected %d script(s) that duplicate existing records in the database.</string>
+    <string name="replace">Replace</string>
+    <string name="_new">New</string>
+    <string name="label_id">Id</string>
+    <string name="label_action_id">Action ID</string>
+    <string name="label_script_id">Script Id</string>
 </resources>

@@ -137,6 +137,7 @@ public class RecordScriptAction extends BasicAction {
             watch.resume();
         });
         binding.btnFloatingStop.setOnClickListener(v -> {
+            long millis = watch.getElapsedMillis();
             watch.stop();
             recordStateModel.setState(RecordStateModel.STATE_IDLE);
             //这里需要打开MacroListActivity将motionList传递过去,然后清空数据
@@ -144,7 +145,7 @@ public class RecordScriptAction extends BasicAction {
             // **重要:** 从非 Activity 上下文 (Service) 启动 Activity 必须添加此 Flag
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             // 3. 传递 motionList
-            intent.putExtra("data", transformData());
+            intent.putExtra("data", transformData(millis));
             intent.putExtra("add", true);
             // 4. 启动 Activity
             service.startActivity(intent);
@@ -184,14 +185,13 @@ public class RecordScriptAction extends BasicAction {
         return super.onKeyEvent(event);
     }
 
-    private ScriptVoEntity transformData() {
+    private ScriptVoEntity transformData(long millis) {
         ScriptVoEntity entity = new ScriptVoEntity();
         ScriptEntity root = new ScriptEntity();
         entity.setRoot(root);
         root.setId(idWorker.nextId());
         root.setName(service.getString(R.string.untitled));
         root.setActionCount(motionList.size() + keyList.size());
-        root.setDelayEnd(0L);
         root.setDelayStart(0L);
         long maxTime = 0L;
         //手势
@@ -244,6 +244,7 @@ public class RecordScriptAction extends BasicAction {
             entity.getActions().add(actionEntity);
             maxTime = Math.max(maxTime, actionEntity.getStartTime() + actionEntity.getDuration());
         }
+        root.setDelayEnd(millis - maxTime);
         entity.getRoot().setTotalDuration(maxTime);
         return entity;
     }

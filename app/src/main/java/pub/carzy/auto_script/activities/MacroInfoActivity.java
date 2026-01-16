@@ -307,6 +307,7 @@ public class MacroInfoActivity extends BaseActivity {
                                     });
                                     ThreadUtil.runOnUi(() -> {
                                         model.setSaved(false);
+                                        d.dismiss();
                                         sheet.dismiss();
                                     });
                                 } finally {
@@ -462,75 +463,32 @@ public class MacroInfoActivity extends BaseActivity {
         addLauncher.launch(intent);
     }
 
-    private void showRemarkDialog() {
-        AtomicReference<String> text = new AtomicReference<>();
-        QMUIDialog qmuiDialog = new QMUIDialog.EditTextDialogBuilder(this)
-                .setTitle(R.string.remark)
-                .setInputType(InputType.TYPE_CLASS_TEXT)
-                .setPlaceholder(getString(R.string.message_input_prompt, getString(R.string.remark)))
-                .setDefaultText(model.getRoot().getName())
-                .setTextWatcher(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        text.set(s.toString());
-                    }
-                })
-                .addAction(R.string.cancel, (dialog, index) -> {
-                    dialog.dismiss();
-                })
-                .addAction(R.string.confirm, (dialog, index) -> {
-                    dialog.dismiss();
-                    String t = text.get();
-                    if (t == null) {
-                        return;
-                    }
-                    String v = t.trim();
-                    if (!v.isEmpty()) {
-                        if (model.getRoot() != null) {
-                            model.getRoot().setDescription(v);
-                        }
-                    } else {
-                        Toast.makeText(this, getString(R.string.message_error_empty_ph, getString(R.string.remark)), Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .create();
-        qmuiDialog.show();
-    }
-
     private void showDetailInfo() {
         if (model.getCheckedPoint().isEmpty()) {
             return;
         }
         edit.set(false);
-        DialogPointInfoBinding binding = DialogPointInfoBinding.inflate(LayoutInflater.from(this));
-        binding.setEntity(model.getLastCheckShowPoint().getData());
-        binding.setEdit(edit);
+        DialogPointInfoBinding inflate = DialogPointInfoBinding.inflate(LayoutInflater.from(this));
+        ScriptPointEntity data = model.getLastCheckShowPoint().getData();
+        Long oldDeltaTime = data.getDeltaTime();
+        inflate.setEntity(data);
+        inflate.setEdit(edit);
         DisplayMetrics metrics = getResources().getDisplayMetrics();
-        binding.setWidth(metrics.widthPixels * 1F);
-        binding.setHeight(metrics.heightPixels * 1F);
+        inflate.setWidth(metrics.widthPixels * 1F);
+        inflate.setHeight(metrics.heightPixels * 1F);
         ImageButton imageButton = createModifyButton();
         imageButton.setOnClickListener(e -> {
             edit.set(!edit.get());
             imageButton.setImageResource(edit.get() ? R.drawable.exit : R.drawable.edit);
         });
-        binding.warnX.setOnClickListener(e -> {
+        inflate.warnX.setOnClickListener(e -> {
             TextView textView = new TextView(this);
             textView.setText(getString(R.string.label_point_wranning, "x", metrics.widthPixels));
             textView.setPadding(50, 50, 50, 50);
             QMUIPopup popups = createPopups(this, textView);
             popups.show(e);
         });
-        binding.warnY.setOnClickListener(e -> {
+        inflate.warnY.setOnClickListener(e -> {
             TextView textView = new TextView(this);
             textView.setText(getString(R.string.label_point_wranning, "y", metrics.widthPixels));
             textView.setPadding(50, 50, 50, 50);
@@ -538,11 +496,28 @@ public class MacroInfoActivity extends BaseActivity {
             popups.show(e);
         });
         BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
-        builder.addView(binding.getRoot())
+        builder.addView(inflate.getRoot())
                 .setContentPaddingDp(20, 20)
                 .setTitle(getString(R.string.dialog_action_info_title, (int) model.getLastCheckShowPoint().getBarEntry().getX()))
                 .addRightButton(imageButton);
-        builder.build().show();
+        QMUIBottomSheet build = builder.build();
+        build.setOnDismissListener(e -> {
+            //是否更改了持续时间
+            boolean editDuration = oldDeltaTime.compareTo(data.getDeltaTime()) != 0;
+            //是否更改了开始时间
+            if (!editDuration) {
+                return;
+            }
+            //添加更新root间隔
+            model.getRoot().setTotalDuration(model.getRoot().getTotalDuration() + data.getDeltaTime() - oldDeltaTime);
+            //这里还要更新action
+            ScriptVoEntityModel.ScriptActionModel action = model.getLastCheckAction();
+            action.getData().setDuration(action.getData().getDuration() + data.getDeltaTime() - oldDeltaTime);
+            //更新布局
+            updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
+            updateChartData(binding.flowChatLayout.pointBarChart, model.getActionBarEntries(), model.getActionColors());
+        });
+        build.show();
     }
 
     private QMUIPopup createPopups(Context context, View view) {
@@ -560,26 +535,48 @@ public class MacroInfoActivity extends BaseActivity {
             return;
         }
         edit.set(false);
-        DialogActionInfoBinding binding = DialogActionInfoBinding.inflate(LayoutInflater.from(this));
-        binding.setEntity(model.getLastCheckAction().getData());
-        binding.setEdit(edit);
+        DialogActionInfoBinding inflate = DialogActionInfoBinding.inflate(LayoutInflater.from(this));
+        ScriptActionEntity data = model.getLastCheckAction().getData();
+        Long oldDuration = data.getDuration();
+        Long oldStartTime = data.getStartTime();
+        inflate.setEntity(data);
+        inflate.setEdit(edit);
         ImageButton imageButton = createModifyButton();
         imageButton.setOnClickListener(e -> {
             edit.set(!edit.get());
             imageButton.setImageResource(edit.get() ? R.drawable.exit : R.drawable.edit);
         });
         List<CodeOption> options = CodeOption.allKeyEvent();
-        binding.dropdown.setAdapter(CodeOption.createAdapter(this, options));
-        binding.dropdown.setOnItemClickListener((parent, view, position, id) -> {
+        inflate.dropdown.setAdapter(CodeOption.createAdapter(this, options));
+        inflate.dropdown.setOnItemClickListener((parent, view, position, id) -> {
             CodeOption selected = options.get(position);
             model.getLastCheckAction().getData().setCode(selected.getCode());
         });
         BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
-        builder.addView(binding.getRoot())
+        builder.addView(inflate.getRoot())
                 .setContentPaddingDp(20, 20)
                 .setTitle(getString(R.string.dialog_action_info_title, (int) model.getLastCheckAction().getBarEntry().getX()))
                 .addRightButton(imageButton);
-        builder.build().show();
+        QMUIBottomSheet build = builder.build();
+        build.setOnDismissListener(e -> {
+            //是否更改了持续时间
+            boolean editDuration = oldDuration.compareTo(data.getDuration()) != 0;
+            //是否更改了开始时间
+            boolean editStartTime = oldStartTime.compareTo(data.getStartTime()) != 0;
+            if (!editDuration && !editStartTime) {
+                return;
+            }
+            //添加更新root间隔
+            if (editDuration && data.getType() == ScriptActionEntity.KEY_EVENT) {
+                model.updateActionDurationByActionId(data.getId(), oldDuration);
+            }
+            if (editStartTime) {
+                model.updateActionStartTimeByActionId(data.getId(), oldStartTime);
+            }
+            //更新布局
+            updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
+        });
+        build.show();
     }
 
     @NonNull
@@ -822,16 +819,17 @@ public class MacroInfoActivity extends BaseActivity {
         binding.setEntity(model.getRoot());
         binding.setEdit(edit);
         ImageButton imageButton = createModifyButton();
-        imageButton.setOnClickListener(e -> {
-            edit.set(!edit.get());
-            imageButton.setImageResource(edit.get() ? R.drawable.exit : R.drawable.edit);
-        });
         BottomCustomSheetBuilder builder = new BottomCustomSheetBuilder(this);
         builder.addView(binding.getRoot())
                 .setContentPaddingDp(20, 20)
                 .setTitle(getString(R.string.dialog_script_title))
                 .addRightButton(imageButton);
-        builder.build().show();
+        QMUIBottomSheet build = builder.build();
+        build.show();
+        imageButton.setOnClickListener(e -> {
+            edit.set(!edit.get());
+            imageButton.setImageResource(edit.get() ? R.drawable.exit : R.drawable.edit);
+        });
     }
 
     private void initIntent() {

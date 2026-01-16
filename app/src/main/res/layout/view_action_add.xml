@@ -13,6 +13,10 @@
 
         <import type="pub.carzy.auto_script.adapter.Converter" />
 
+        <import type="pub.carzy.auto_script.utils.StringUtils" />
+
+        <import type="android.view.KeyEvent" />
+
         <variable
             name="data"
             type="pub.carzy.auto_script.db.entity.ScriptActionEntity" />
@@ -148,7 +152,8 @@
                     android:hint="@{context.getString(R.string.form_input_hint,context.getString(R.string.action_duration))}"
                     android:importantForAutofill="no"
                     android:inputType="number"
-                    android:labelFor="@id/duration_input_label" />
+                    android:labelFor="@id/duration_input_label"
+                    android:text="@={Converter.longToString(data.duration)}" />
             </LinearLayout>
 
             <LinearLayout
@@ -197,12 +202,14 @@
                     android:layout_height="wrap_content"
                     android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_code))}" />
 
-                <Spinner
-                    android:id="@+id/code_input"
-                    android:layout_width="0dp"
+                <AutoCompleteTextView
+                    android:id="@+id/dropdown"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    app:selectedValue="@={data.code}" />
+                    android:completionThreshold="1"
+                    android:inputType="none"
+                    android:text="@{StringUtils.format(data.code==null?null:KeyEvent.keyCodeToString(data.code))}"
+                    tools:ignore="LabelFor" />
             </LinearLayout>
 
             <LinearLayout

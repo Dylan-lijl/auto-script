@@ -29,6 +29,7 @@
     <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -42,6 +43,19 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:visibility="@{entity==null?View.GONE:View.VISIBLE}">
+
+                <LinearLayout style="@style/FormVerticalItemStyle">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_id))}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{StringUtils.format(entity.id)}" />
+                </LinearLayout>
                 <!--名称-->
                 <LinearLayout style="@style/FormVerticalItemStyle">
 
@@ -80,24 +94,38 @@
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_delay_start))}" />
 
                     <pub.carzy.auto_script.ui_components.components.FormField
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         app:edit="@{edit}">
 
                         <TextView
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@{Converter.longToString(entity.delayStart)}"
                             app:slot="viewer" />
 
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/unit_ms"
+                            app:slot="viewer" />
+
                         <EditText
-                            android:layout_width="match_parent"
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:autofillHints=""
                             android:inputType="number"
                             android:text="@={Converter.longToString(entity.delayStart)}"
                             app:slot="editor"
                             tools:ignore="LabelFor" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/unit_ms"
+                            app:slot="editor" />
                     </pub.carzy.auto_script.ui_components.components.FormField>
                 </LinearLayout>
                 <!--延迟结束-->
@@ -109,25 +137,37 @@
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_delay_end))}" />
 
                     <pub.carzy.auto_script.ui_components.components.FormField
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         app:edit="@{edit}">
 
                         <TextView
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@{Converter.longToString(entity.delayEnd)}"
                             app:slot="viewer" />
-
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/unit_ms"
+                            app:slot="viewer" />
                         <EditText
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
                             android:layout_height="wrap_content"
                             android:autofillHints=""
                             android:inputType="number"
                             android:text="@={Converter.longToString(entity.delayEnd)}"
                             app:slot="editor"
                             tools:ignore="LabelFor" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/unit_ms"
+                            app:slot="editor" />
                     </pub.carzy.auto_script.ui_components.components.FormField>
+
                 </LinearLayout>
                 <!--时长-->
                 <LinearLayout style="@style/FormVerticalItemStyle">
@@ -138,9 +178,14 @@
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_duration))}" />
 
                     <TextView
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{StringUtils.format(entity.totalDuration)+context.getString(R.string.unit_ms)}" />
+                        android:text="@{StringUtils.format(entity.totalDuration)}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/unit_ms" />
                 </LinearLayout>
                 <!--步骤-->
                 <LinearLayout style="@style/FormVerticalItemStyle">
@@ -151,7 +196,7 @@
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_steps))}" />
 
                     <TextView
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{StringUtils.format(entity.actionCount)}" />
                 </LinearLayout>
