@@ -8,4 +8,8 @@
         <attr name="tips" format="reference|string"/>
         <attr name="tint" format="color" />
     </declare-styleable>
+    <declare-styleable name="AboutPageItem">
+        <attr name="order" format="integer"/>
+        <attr name="activity" format="string"/>
+    </declare-styleable>
 </resources>

@@ -22,13 +22,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activities.MacroListActivity" />
+        <activity android:name=".activities.MacroListActivity" />
         <activity android:name=".activities.DisclaimerActivity" />
         <activity android:name=".activities.ActionAddActivity" />
         <activity android:name=".activities.PointAddActivity" />
-        <activity
-            android:name=".activities.MacroInfoActivity" />
+        <activity android:name=".activities.MacroInfoActivity" />
+        <!--关于界面-->
+        <activity android:name=".activities.AboutActivity" />
+        <activity android:name=".activities.about.DefaultEmptyAboutActivity" />
+        <activity android:name=".activities.about.ErrorAboutActivity" />
+        <!--关于子界面-->
+        <activity android:name=".activities.about.child.AboutBasicInfoActivity" />
 
         <service
             android:name=".service.MyAccessibilityService"

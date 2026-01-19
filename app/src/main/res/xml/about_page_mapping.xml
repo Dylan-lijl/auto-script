@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page-mapping xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/basic_info"
+        android:enabled="true"
+        android:title="@string/about_basic_info_title"
+        app:activity="pub.carzy.auto_script.activities.about.child.AboutBasicInfoActivity"
+        app:order="0" />
+    <item
+        android:id="@+id/update_log"
+        android:enabled="true"
+        android:title="@string/update_log"
+        app:activity="pub.carzy.auto_script.activities.about.child.AboutUpdateLogActivity"
+        app:order="1" />
+    <item
+        android:id="@+id/acknowledgments"
+        android:enabled="true"
+        android:title="@string/acknowledgments"
+        app:activity="pub.carzy.auto_script.activities.about.child.AboutAcknowledgmentsActivity"
+        app:order="2" />
+    <!--排最后-->
+    <item
+        android:id="@+id/ads"
+        android:enabled="false"
+        android:title="@string/ads"
+        app:activity="pub.carzy.auto_script.activities.about.child.AboutAdsActivity"
+        app:order="100000" />
+</page-mapping>

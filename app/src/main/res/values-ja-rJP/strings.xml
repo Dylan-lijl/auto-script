@@ -133,4 +133,19 @@
     <string name="label_id">主キー</string>
     <string name="label_action_id">Action ID</string>
     <string name="label_script_id">Script Id</string>
+    <string name="about_basic_info_title">詳細</string>
+    <string name="version">バージョン</string>
+    <string name="error_page">エラーページ</string>
+    <string name="min_support_android_version">最低対応</string>
+    <string name="target_android_version">ターゲット対応</string>
+    <string name="current_android_version">現在のバージョン</string>
+    <string name="source_repository">ソースリポジトリ</string>
+    <string name="copied">コピーしました</string>
+    <string name="copy">コピー</string>
+    <string name="open">開ける</string>
+    <string name="software_version">ソフトウェアバージョン</string>
+    <string name="update_time">更新時間</string>
+    <string name="update_log">更新ログ</string>
+    <string name="acknowledgments">謝辞</string>
+    <string name="ads">広告</string>
 </resources>

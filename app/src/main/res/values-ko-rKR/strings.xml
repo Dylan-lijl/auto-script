@@ -133,4 +133,19 @@
     <string name="label_id">기본 키</string>
     <string name="label_action_id">Action ID</string>
     <string name="label_script_id">Script Id</string>
+    <string name="about_basic_info_title">상세</string>
+    <string name="version">버전</string>
+    <string name="error_page">오류 페이지</string>
+    <string name="min_support_android_version">"최소 지원 "</string>
+    <string name="target_android_version">대상 지원</string>
+    <string name="current_android_version">현재 버전</string>
+    <string name="source_repository">저장소</string>
+    <string name="copied">복사됨</string>
+    <string name="copy">복사</string>
+    <string name="open">열기</string>
+    <string name="software_version">소프트웨어 버전</string>
+    <string name="update_time">업데이트 시간</string>
+    <string name="update_log">업데이트 로그</string>
+    <string name="acknowledgments">감사의 말</string>
+    <string name="ads">광고</string>
 </resources>

@@ -3,8 +3,11 @@ package pub.carzy.auto_script.utils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -15,9 +18,16 @@ import android.view.ViewParent;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
 
+import com.qmuiteam.qmui.skin.QMUISkinManager;
+import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.popup.QMUIPopups;
+import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -179,6 +189,7 @@ public class ActivityUtils {
         // 5. map 为空时最终 fallback → 英文
         return Locale.ENGLISH;
     }
+
     private static boolean isSameLocale(Locale a, Locale b) {
         if (a == null || b == null) return false;
 
@@ -296,5 +307,82 @@ public class ActivityUtils {
                 ThreadUtil.runOnUi(callback::finallyMethod);
             }
         });
+    }
+
+    public static String getVersionName(Context context) {
+        try {
+            return context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0)
+                    .versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            return "null";
+        }
+    }
+
+    public static Integer currentApiVersion() {
+        return android.os.Build.VERSION.SDK_INT;
+    }
+
+    public static final Map<Integer, String> VERSION_API_MAP = new LinkedHashMap<>();
+    public static final String API_PREFIX = "Android";
+
+    static {
+        VERSION_API_MAP.put(36, API_PREFIX + " 16");
+        VERSION_API_MAP.put(35, API_PREFIX + " 15");
+        VERSION_API_MAP.put(34, API_PREFIX + " 14");
+        VERSION_API_MAP.put(33, API_PREFIX + " 13");
+        VERSION_API_MAP.put(32, API_PREFIX + " 12L");
+        VERSION_API_MAP.put(31, API_PREFIX + " 12");
+        VERSION_API_MAP.put(30, API_PREFIX + " 11");
+        VERSION_API_MAP.put(29, API_PREFIX + " 10");
+        VERSION_API_MAP.put(28, API_PREFIX + " 9");
+        VERSION_API_MAP.put(27, API_PREFIX + " 8.1");
+        VERSION_API_MAP.put(26, API_PREFIX + " 8.0");
+        VERSION_API_MAP.put(25, API_PREFIX + " 7.1");
+        VERSION_API_MAP.put(24, API_PREFIX + " 7.0");
+        VERSION_API_MAP.put(23, API_PREFIX + " 6.0");
+        VERSION_API_MAP.put(22, API_PREFIX + " 5.1");
+        VERSION_API_MAP.put(21, API_PREFIX + " 5.0");
+        VERSION_API_MAP.put(19, API_PREFIX + " 4.4");
+        VERSION_API_MAP.put(18, API_PREFIX + " 4.3");
+        VERSION_API_MAP.put(17, API_PREFIX + " 4.2");
+        VERSION_API_MAP.put(16, API_PREFIX + " 4.1");
+        VERSION_API_MAP.put(15, API_PREFIX + " 4.0.3");
+        VERSION_API_MAP.put(14, API_PREFIX + " 4.0");
+    }
+
+    public static Map<Integer, String> getApiMap() {
+        return VERSION_API_MAP;
+    }
+
+    public static String getApiName(Integer version) {
+        return getApiMap().get(version);
+    }
+
+    public static Integer minSdk(Context context) {
+        return context.getApplicationInfo().minSdkVersion;
+    }
+
+    public static Integer targetSdk(Context context) {
+        return context.getApplicationInfo().targetSdkVersion;
+    }
+
+    public static QMUIQuickAction createQuickAction(Context context) {
+        return QMUIPopups.quickAction(context,
+                        QMUIDisplayHelper.dp2px(context, 56),
+                        QMUIDisplayHelper.dp2px(context, 56))
+                .shadow(true)
+                .skinManager(QMUISkinManager.defaultInstance(context))
+                .edgeProtection(QMUIDisplayHelper.dp2px(context, 20));
+    }
+
+    public static Drawable getDrawable(Context context, int drawableId, int colorId) {
+        Drawable drawable = AppCompatResources.getDrawable(context, drawableId);
+        if (drawable == null) {
+            return null;
+        }
+        int color = ContextCompat.getColor(context, colorId);
+        DrawableCompat.setTint(drawable, color);
+        return drawable;
     }
 }

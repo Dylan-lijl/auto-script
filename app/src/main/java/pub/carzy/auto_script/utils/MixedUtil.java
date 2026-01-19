@@ -1,11 +1,13 @@
 package pub.carzy.auto_script.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.util.DisplayMetrics;
 
 import com.google.gson.Gson;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -50,5 +52,18 @@ public class MixedUtil {
                         callback.accept(result);
                     }
                 });
+    }
+
+    public static String githubSourceRepositoryUrl() {
+        return "https://github.com/Dylan-lijl/auto-script";
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    public static Date getReleaseTime() {
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd").parse("2026-01-19");
+        } catch (ParseException e) {
+            return null;
+        }
     }
 }

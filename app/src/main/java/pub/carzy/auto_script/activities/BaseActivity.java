@@ -1,6 +1,7 @@
 package pub.carzy.auto_script.activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.Log;
@@ -78,8 +79,10 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (id == R.id.menu_setting) {
             //先不做处理
             return true;
-        } else if (id == R.id.menu_about) {
+        } else if (id == R.id.menu_about && !(this instanceof AboutActivity)) {
             //先不做处理
+            Intent intent = new Intent(this, AboutActivity.class);
+            startActivity(intent);
             return true;
         } else if (id == R.id.menu_help) {
             //先不做处理

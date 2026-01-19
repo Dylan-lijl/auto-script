@@ -133,4 +133,19 @@
     <string name="label_id">Id</string>
     <string name="label_action_id">Action ID</string>
     <string name="label_script_id">Script Id</string>
+    <string name="about_basic_info_title">Details</string>
+    <string name="version">Version</string>
+    <string name="error_page">Error page</string>
+    <string name="min_support_android_version">Min support</string>
+    <string name="target_android_version">Target support</string>
+    <string name="current_android_version">Current version</string>
+    <string name="source_repository">Source repository</string>
+    <string name="copied">Copied</string>
+    <string name="copy">Copy</string>
+    <string name="open">Open</string>
+    <string name="software_version">Software version</string>
+    <string name="update_time">Update time</string>
+    <string name="update_log">Changelog</string>
+    <string name="acknowledgments">Acknowledgments</string>
+    <string name="ads">Ads</string>
 </resources>
