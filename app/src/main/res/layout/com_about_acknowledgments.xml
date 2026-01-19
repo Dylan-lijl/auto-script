@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.model.AboutAcknowledgmentModel" />
+    </data>
+
+    <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView
+            android:id="@+id/acknowledgment_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
+</layout>
