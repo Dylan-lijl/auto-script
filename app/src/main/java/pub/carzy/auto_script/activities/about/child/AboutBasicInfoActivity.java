@@ -65,7 +65,7 @@ public class AboutBasicInfoActivity extends BaseActivity {
 
             @Override
             public void onWebUrlLinkClick(String url) {
-                openToBrowser(binding.btnSourceRepository.getText().toString());
+                ActivityUtils.openToBrowser(getBaseContext(), binding.btnSourceRepository.getText().toString());
             }
         });
         binding.btnSourceRepository.setOnLinkLongClickListener(v -> {
@@ -77,8 +77,7 @@ public class AboutBasicInfoActivity extends BaseActivity {
                             .onClick(
                                     (quickAction, action1, position) -> {
                                         quickAction.dismiss();
-                                        ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                                        cm.setPrimaryClip(ClipData.newPlainText("link", binding.btnSourceRepository.getText().toString()));
+                                        ActivityUtils.copyToClipboard(this, "link", binding.btnSourceRepository.getText().toString());
                                         Toast.makeText(this, getString(R.string.copied), Toast.LENGTH_SHORT).show();
                                     }
                             ))
@@ -86,7 +85,7 @@ public class AboutBasicInfoActivity extends BaseActivity {
                             .icon(ActivityUtils.getDrawable(this, R.drawable.browser, R.color.rainbow_orange))
                             .text(getString(R.string.open))
                             .onClick((quickAction, action1, position) -> {
-                                        openToBrowser(binding.btnSourceRepository.getText().toString());
+                                        ActivityUtils.openToBrowser(getBaseContext(), binding.btnSourceRepository.getText().toString());
                                         quickAction.dismiss();
                                     }
                             ));

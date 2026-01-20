@@ -4,79 +4,95 @@
 
     <data>
 
-        <import type="pub.carzy.auto_script.model.DisclaimerStatus" />
-        <import type="pub.carzy.auto_script.model.DisclaimerCount" />
+        <import type="android.view.View" />
+
         <variable
-            name="counter"
-            type="DisclaimerCount" />
-        <variable
-            name="status"
-            type="DisclaimerStatus" />
+            name="model"
+            type="pub.carzy.auto_script.model.DisclaimerModel" />
+
     </data>
 
-    <LinearLayout
-        android:id="@+id/disclaimerRoot"
+    <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="24dp">
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:padding="8dp">
-
-            <TextView
-                android:id="@+id/tvDisclaimer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="@string/disclaimer_content"
-                android:textColor="@color/cardview_dark_background"
-                android:textSize="20sp" />
-        </ScrollView>
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <pub.carzy.auto_script.ui.SpinLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:spinning="@={status.declining}"
-                app:tint="@color/danger">
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/com_common_top_bar" />
 
-                <Button
-                    android:id="@+id/btnDecline"
-                    style="?android:attr/buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:id="@+id/tvDisclaimer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="@string/disclaimer_content"
+                        android:textColor="@color/cardview_dark_background"
+                        android:textSize="20sp" />
+                </ScrollView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:enabled="@{!status.accepting}"
-                    android:text="@{ @string/btn_decline + (counter.tick > 0 ? `(` + counter.tick + `)` : ``) }"
-                    android:textColor="@color/danger" />
-            </pub.carzy.auto_script.ui.SpinLayout>
+                    android:layout_marginTop="24dp"
+                    android:baselineAligned="false"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="@{model.view?View.GONE:View.VISIBLE}">
 
-            <pub.carzy.auto_script.ui.SpinLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:spinning="@={status.accepting}"
-                app:tint="@color/link">
+                    <pub.carzy.auto_script.ui.SpinLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:spinning="@={model.declining}"
+                        app:tint="@color/danger">
 
-                <Button
-                    android:id="@+id/btnAccept"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
-                    android:enabled="@{!status.declining}"
-                    android:text="@string/btn_accept"
-                    android:textColor="@color/link" />
-            </pub.carzy.auto_script.ui.SpinLayout>
+                        <Button
+                            android:id="@+id/btnDecline"
+                            style="@style/TransparentButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:enabled="@{!model.accepting}"
+                            android:text="@{ @string/btn_decline }"
+                            android:textColor="@color/danger" />
+                    </pub.carzy.auto_script.ui.SpinLayout>
+
+                    <pub.carzy.auto_script.ui.SpinLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:spinning="@={model.accepting}"
+                        app:tint="@color/link">
+
+                        <Button
+                            android:id="@+id/btnAccept"
+                            style="@style/TransparentButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@{@string/btn_accept + (model.tick > 0 ? `(` + model.tick + `)` : ``)}"
+                            android:textColor="@{model.acceptable? @color/link:@color/disabled}" />
+                    </pub.carzy.auto_script.ui.SpinLayout>
+
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
 </layout>

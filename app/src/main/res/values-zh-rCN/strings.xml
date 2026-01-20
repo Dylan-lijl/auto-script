@@ -3,7 +3,7 @@
     <string name="btn_accept">同意</string>
     <string name="btn_decline">拒绝</string>
     <string name="disclaimers_title">免责声明</string>
-    <string name="disclaimer_content">"    本应用及其开发者/运营方致力于提供正常功能和稳定服务，但不对因使用本应用所产生的任何直接或间接损失承担责任。\n    用户在使用本应用的过程中，应自行承担风险，包括但不限于数据丢失、财产损失、设备损坏或其他相关风险。\n    开发者不对因第三方服务、系统兼容性、网络环境或用户操作不当造成的任何损害负责。\n    使用本应用即表示用户已充分理解并同意本免责声明的内容。"</string>
+    <string name="disclaimer_content"><![CDATA[请在使用本应用程序前仔细阅读本免责声明。使用本应用程序即表示您已阅读、理解并同意受以下条款的约束。\n\n1.免责声明（“按现状”）\n本应用程序及其所有内容、功能和代码均按“现状”和“可用”基础提供，不附带任何明示或暗示的保证。在适用法律允许的最大范围内，开发者不承担任何形式的保证责任，包括但不限于对适销性、特定用途适用性和不侵权的默示保证。\n\n2.责任限制\n在任何情况下，开发者或其关联方均不对因使用或无法使用本应用程序而引起的任何直接、间接、附带、特殊、惩罚性或后果性损害（包括但不限于利润损失、业务中断、信息丢失或数据损坏）承担责任，即使开发者已被告知可能发生此类损害。\n\n3.第三方组件与 AI 协助\n第三方库： 本应用程序集成了多个第三方库（包括但不限于 QMUI、MPAndroidChart、Hutool 等）。因这些第三方组件的缺陷、漏洞或故障所引起的任何责任，均由其各自的所有者承担。\n\nAI 生成内容： 本应用程序在开发过程中使用了 AI 工具（如 ChatGPT、Gemini、GitHub Copilot）。因使用这些工具而产生的代码错误、逻辑不一致或“AI 幻觉”，开发者不承担任何责任。\n\n4.数据安全与用户责任\n数据丢失： 用户应自行备份其数据。因系统故障、未经授权的访问或外部攻击导致的数据丢失，开发者不承担任何责任。\n\n法律合规： 用户同意在遵守所有适用的本地、国家及国际法律的前提下使用本应用程序。因非法使用所引发的任何法律后果，均由用户自行承担。\n\n5.外部链接\n本应用程序可能包含指向第三方网站的链接。开发者不对任何第三方通过本应用程序宣传或提供的产品或服务作出保证、背书、担保或承担责任。\n\n6.条款修改\n开发者保留随时修改本免责声明的权利。若您在条款变更后继续使用本应用程序，即表示您接受新的条款。]]></string>
     <string name="btn_decline_count">%1$s (%2$d  秒)</string>
     <string name="decline_exit_message">您已拒绝该协议，应用程序现在将退出。</string>
     <string name="menu_setting">设置</string>
@@ -148,4 +148,8 @@
     <string name="update_log">更新日志</string>
     <string name="acknowledgments">致谢</string>
     <string name="ads">广告</string>
+    <string name="open_source_license">开源许可</string>
+    <string name="development_process">开发过程</string>
+    <string name="checking_update">检查更新中...</string>
+    <string name="checking_update_failed">获取最新版本失败</string>
 </resources>

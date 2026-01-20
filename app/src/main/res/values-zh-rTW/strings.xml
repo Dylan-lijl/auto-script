@@ -3,7 +3,7 @@
     <string name="btn_accept">同意</string>
     <string name="btn_decline">拒絕</string>
     <string name="disclaimers_title">免責聲明</string>
-    <string name="disclaimer_content">"    本應用及其開發者/營運方致力於提供正常功能和穩定服務，但不對因使用本應用所產生的任何直接或間接損失承擔責任。\n    使用者在使用本應用的過程中，應自行承擔風險，包括但不限於資料遺失、財產損失、設備損壞或其他相關風險。\n    開發者不對因第三方服務、系統相容性、網路環境或使用者操作不當造成的任何損害負責。\n    使用本應用即表示使用者已充分理解並同意本免責聲明的內容。"</string>
+    <string name="disclaimer_content"><![CDATA[請在使用本應用程式前仔細閱讀本免責聲明。使用本應用程式即表示您已閱讀、理解並同意受以下條款的約束。\n\n1.保證免責聲明（「現況提供」）\n本應用程式及其所有內容、功能與程式碼均以「現況」及「可用」的方式提供，不附帶任何明示或暗示的保證。在適用法律允許的最大範圍內，開發者不承擔任何保證責任，包括但不限於對適售性、特定用途適用性及不侵權的默示保證。\n\n2.責任限制\n任何情況下，開發者或其關聯方均不對因使用或無法使用本應用程式所引起的任何直接、間接、附帶、特殊、懲罰性或衍生性損害（包括但不限於利潤損失、業務中斷、資訊遺失或資料損毀）承擔責任，即使開發者已被告知可能發生此類損害。\n\n3.第三方元件與 AI 協助\n第三方函式庫： 本應用程式整合了多種第三方函式庫（包括但不限於 QMUI、MPAndroidChart、Hutool 等）。任何因這些第三方元件的缺陷、漏洞或故障所引起的責任，均由其各自的擁有者單獨承擔。\n\nAI 生成內容： 本應用程式在開發過程中使用了 AI 工具（如 ChatGPT、Gemini、GitHub Copilot）。開發者不對因這些工具所產生的程式錯誤、邏輯不一致或「AI 幻覺」承擔任何責任。\n\n4.資料安全與使用者責任\n資料遺失： 使用者應自行備份其資料。因系統故障、未經授權的存取或外部攻擊導致的資料遺失，開發者不承擔任何責任。\n\n法律遵循： 使用者同意依據所有適用的地方法律、州法律及國際法律使用本應用程式。任何因非法使用所引起的法律後果，均由使用者自行承擔。\n\n5.外部連結\n本應用程式可能包含指向第三方網站的連結。開發者不對任何第三方透過本應用程式所廣告或提供的產品或服務作出保證、背書、擔保或承擔責任。\n\n6.條款修改\n開發者保留隨時修改本免責聲明的權利。若您在條款變更後仍繼續使用本應用程式，即表示您接受新的條款。]]></string>
     <string name="btn_decline_count">%1$s (%2$d 秒)</string>
     <string name="decline_exit_message">您已拒絕該協定，應用程序現在將退出。</string>
     <string name="menu_setting">設定</string>
@@ -148,4 +148,8 @@
     <string name="update_log">更新日誌</string>
     <string name="acknowledgments">致謝</string>
     <string name="ads">廣告</string>
+    <string name="open_source_license">開源許可</string>
+    <string name="development_process">開發過程</string>
+    <string name="checking_update">檢查更新中...</string>
+    <string name="checking_update_failed">取得最新版本失敗</string>
 </resources>

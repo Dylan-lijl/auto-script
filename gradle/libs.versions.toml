@@ -20,6 +20,7 @@ material = "1.10.0"
 databindingRuntime = "8.13.1"
 library = "3.2.0-alpha11"
 mpandroidchart = "v3.1.0"
+okhttp = "4.12.0"
 qmui = "2.0.1"
 roomRuntime = "2.8.4"
 swiperefreshlayout = "1.2.0"
@@ -47,6 +48,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 databinding-runtime = { group = "androidx.databinding", name = "databinding-runtime", version.ref = "databindingRuntime" }
 library = { group = "androidx.databinding", name = "library", version.ref = "library" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 pullrefreshlayout-library = { module = "com.baoyz.pullrefreshlayout:library", version.ref = "libraryVersion" }
 qmui = { module = "com.qmuiteam:qmui", version.ref = "qmui" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }

@@ -8,17 +8,35 @@
         app:activity="pub.carzy.auto_script.activities.about.child.AboutBasicInfoActivity"
         app:order="0" />
     <item
+        android:id="@+id/disclaimers"
+        android:enabled="true"
+        android:title="@string/disclaimers_title"
+        app:activity="pub.carzy.auto_script.activities.DisclaimerActivity"
+        app:order="5" />
+    <item
         android:id="@+id/update_log"
         android:enabled="true"
         android:title="@string/update_log"
         app:activity="pub.carzy.auto_script.activities.about.child.AboutUpdateLogActivity"
-        app:order="1" />
+        app:order="10" />
     <item
         android:id="@+id/acknowledgments"
         android:enabled="true"
         android:title="@string/acknowledgments"
         app:activity="pub.carzy.auto_script.activities.about.child.AboutAcknowledgmentsActivity"
-        app:order="2" />
+        app:order="20" />
+    <item
+        android:id="@+id/licenses"
+        android:enabled="true"
+        android:title="@string/open_source_license"
+        app:activity="pub.carzy.auto_script.activities.about.child.AboutLicensesActivity"
+        app:order="30" />
+    <item
+        android:id="@+id/development_process"
+        android:enabled="true"
+        android:title="@string/development_process"
+        app:activity="pub.carzy.auto_script.activities.about.child.AboutDevelopmentProcessActivity"
+        app:order="40" />
     <!--排最后-->
     <item
         android:id="@+id/ads"

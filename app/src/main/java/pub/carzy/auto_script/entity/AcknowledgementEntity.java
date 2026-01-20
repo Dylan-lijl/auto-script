@@ -1,5 +1,7 @@
 package pub.carzy.auto_script.entity;
 
+import java.util.List;
+
 import lombok.Data;
 
 /**
@@ -15,4 +17,6 @@ public class AcknowledgementEntity {
     private Integer type;
     private String content;
     private Integer order;
+    private List<String> href;
+    private Boolean deleteLine;
 }

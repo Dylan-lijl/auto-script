@@ -13,6 +13,7 @@
     <action
         android:icon="@drawable/book"
         android:id="@+id/menu_help"
+        android:enabled="false"
         android:tint="@color/rainbow_yellow"
         android:title="@string/menu_help" />
     <action

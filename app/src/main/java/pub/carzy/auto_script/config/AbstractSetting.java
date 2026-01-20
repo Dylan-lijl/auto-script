@@ -34,7 +34,7 @@ public abstract class AbstractSetting implements Setting {
 
     @Override
     public Integer getTick() {
-        return read(KEY_TICK, 60, Integer.class);
+        return read(KEY_TICK, 10, Integer.class);
     }
 
     @Override

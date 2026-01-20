@@ -33,6 +33,11 @@
         <activity android:name=".activities.about.ErrorAboutActivity" />
         <!--关于子界面-->
         <activity android:name=".activities.about.child.AboutBasicInfoActivity" />
+        <activity android:name=".activities.about.child.AboutAcknowledgmentsActivity" />
+        <activity android:name=".activities.about.child.AboutAdsActivity" />
+        <activity android:name=".activities.about.child.AboutLicensesActivity" />
+        <activity android:name=".activities.about.child.AboutUpdateLogActivity" />
+        <activity android:name=".activities.about.child.AboutDevelopmentProcessActivity" />
 
         <service
             android:name=".service.MyAccessibilityService"

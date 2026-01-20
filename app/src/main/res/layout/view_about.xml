@@ -3,8 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-
         <import type="pub.carzy.auto_script.utils.ActivityUtils" />
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.model.AboutModel" />
     </data>
 
     <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
@@ -21,10 +23,10 @@
                 layout="@layout/com_common_top_bar" />
 
             <LinearLayout
-                android:layout_marginTop="50dp"
-                android:gravity="center_horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:gravity="center_horizontal"
                 android:orientation="vertical">
 
                 <ImageView
@@ -42,6 +44,7 @@
                     android:textStyle="bold" />
 
                 <LinearLayout
+                    android:id="@+id/version_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
@@ -52,16 +55,22 @@
                         android:text="@string/version" />
 
                     <TextView
-                        android:layout_marginStart="20dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
                         android:text="@{ActivityUtils.getVersionName(context)}" />
                 </LinearLayout>
             </LinearLayout>
-            <com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView
-                android:id="@+id/group_list_view"
+
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="match_parent">
+
+                <com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView
+                    android:id="@+id/group_list_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </ScrollView>
         </LinearLayout>
     </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
 </layout>

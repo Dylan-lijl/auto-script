@@ -1,6 +1,10 @@
 package pub.carzy.auto_script.utils;
 
+import static android.content.Context.CLIPBOARD_SERVICE;
+
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -8,6 +12,7 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -37,6 +42,7 @@ import java.util.function.Consumer;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
+import pub.carzy.auto_script.activities.about.child.AboutAcknowledgmentsActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.Setting;
@@ -384,5 +390,16 @@ public class ActivityUtils {
         int color = ContextCompat.getColor(context, colorId);
         DrawableCompat.setTint(drawable, color);
         return drawable;
+    }
+
+    public static void openToBrowser(Context context, String url) {
+        if (url==null||url.isEmpty()){
+            return;
+        }
+        context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+    }
+    public static void copyToClipboard(Context context, String label,String text) {
+        ClipboardManager cm = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
+        cm.setPrimaryClip(ClipData.newPlainText(label, text));
     }
 }
