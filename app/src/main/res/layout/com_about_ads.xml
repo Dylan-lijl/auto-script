@@ -9,5 +9,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/com_common_top_bar" />
+        </LinearLayout>
     </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
 </layout>

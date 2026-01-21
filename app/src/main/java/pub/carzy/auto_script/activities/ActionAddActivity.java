@@ -41,7 +41,7 @@ public class ActionAddActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.view_action_add);
         initIntent();
-        initTopBar();
+        initTopBar(binding.topBarLayout.actionBar);
         List<MacroInfoActivity.CodeOption> options = MacroInfoActivity.CodeOption.allKeyEvent();
         binding.dropdown.setAdapter(MacroInfoActivity.CodeOption.createAdapter(this, options));
         binding.dropdown.setOnItemClickListener((parent, view, position, id) -> {
@@ -56,26 +56,6 @@ public class ActionAddActivity extends BaseActivity {
         QMUIAlphaImageButton manyBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
         manyBtn.setOnClickListener(e -> openBottomSheet());
     }
-
-    private void openBottomSheet() {
-        QMUIBottomSheet.BottomListSheetBuilder builder = new QMUIBottomSheet.BottomListSheetBuilder(this)
-                .setGravityCenter(false)
-                .setAddCancelBtn(false)
-                .setOnSheetItemClickListener((dialog, itemView, position, tag) -> {
-                    dialog.dismiss();
-                    if (tag == null) {
-                        return;
-                    }
-                    int id = ActionInflater.ActionItem.stringToId(tag);
-                    if (defaultProcessMenu(id)) {
-                        return;
-                    }
-                });
-        addDefaultMenu(builder);
-        QMUIBottomSheet build = builder.build();
-        build.show();
-    }
-
 
     private void initIntent() {
         Intent intent = getIntent();

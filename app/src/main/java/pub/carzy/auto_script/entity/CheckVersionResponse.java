@@ -17,12 +17,12 @@ public class CheckVersionResponse {
     @SerializedName("documentation_url")
     private String documentationUrl;
     private String status;
+    @SerializedName("tag_name")
     private String tagName;
     @SerializedName("published_at")
     private Date publishedAt;
     private List<Asset> assets;
     private String body;
-    private Uploader uploader;
 
     @Data
     public static class Asset {
@@ -34,7 +34,7 @@ public class CheckVersionResponse {
         private String label;
         @SerializedName("content_type")
         private String contentType;
-        private Long size;
+        private Integer size;
         private String digest;
         @SerializedName("created_at")
         private Date createdAt;
@@ -42,6 +42,9 @@ public class CheckVersionResponse {
         private Date updatedAt;
         @SerializedName("browser_download_url")
         private String browserDownloadUrl;
+        private Uploader uploader;
+        @SerializedName("download_count")
+        private Integer downloadCount;
     }
 
     @Data

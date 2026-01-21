@@ -3,9 +3,6 @@
 
     <data>
 
-        <variable
-            name="model"
-            type="pub.carzy.auto_script.model.AboutAcknowledgmentModel" />
     </data>
 
     <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
@@ -20,12 +17,7 @@
             <include
                 android:id="@+id/top_bar_layout"
                 layout="@layout/com_common_top_bar" />
-
-            <com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView
-                android:id="@+id/acknowledgment_list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="10dp" />
+            <!--todo-->
         </LinearLayout>
     </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
 </layout>

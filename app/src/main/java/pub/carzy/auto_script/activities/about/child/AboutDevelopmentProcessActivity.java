@@ -38,7 +38,13 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.com_about_development_process);
+        initTopBar(binding.topBarLayout.actionBar);
         loadData();
+    }
+
+    @Override
+    protected String getActionBarTitle() {
+        return getString(R.string.development_process);
     }
 
     private void loadData() {

@@ -141,13 +141,12 @@ public class MacroInfoActivity extends BaseActivity {
     }
 
     private void initTopBar() {
-        binding.topBarLayout.actionBar.setTitle(getActionBarTitle());
-        QMUIAlphaImageButton manyBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
-        manyBtn.setOnClickListener(e -> openBottomSheet());
+        initTopBar(binding.topBarLayout.actionBar);
         binding.flowChatToolbar.actionStartBtn.setOnClickListener(e -> changeRunService());
     }
 
-    private void openBottomSheet() {
+    @Override
+    protected void openBottomSheet() {
         QMUIBottomSheet.BottomListSheetBuilder builder = new QMUIBottomSheet.BottomListSheetBuilder(this)
                 .setGravityCenter(false)
                 .setAddCancelBtn(false)

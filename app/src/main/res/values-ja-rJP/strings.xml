@@ -152,4 +152,17 @@
     <string name="development_process">開発プロセス</string>
     <string name="checking_update">更新を確認しています…</string>
     <string name="checking_update_failed">最新バージョンの取得に失敗しました</string>
+    <string name="no_new_version">利用可能な新バージョンはありません</string>
+    <string name="update_now">今すぐ更新</string>
+    <string name="app_file_name">アプリのファイル名</string>
+    <string name="publisher">発行者</string>
+    <string name="app_size">アプリサイズ</string>
+    <string name="digest">検証値</string>
+    <string name="label">ラベル</string>
+    <string name="release_page">リリースページ</string>
+    <string name="download_count">ダウンロード数</string>
+    <string name="new_version">新しいバージョン</string>
+    <string name="download_progress">ダウンロード進行度</string>
+    <string name="faq">よくある質問</string>
+    <string name="troubleshooting">トラブルシューティング</string>
 </resources>

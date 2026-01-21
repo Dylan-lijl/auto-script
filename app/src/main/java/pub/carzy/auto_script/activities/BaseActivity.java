@@ -9,6 +9,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
+import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheetListItemModel;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -92,6 +95,18 @@ public abstract class BaseActivity extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+    protected void initTopBar(QMUITopBarLayout actionBar) {
+        if (actionBar == null) {
+            return;
+        }
+        String title = getActionBarTitle();
+        if (title != null) {
+            actionBar.setTitle(title);
+        }
+        QMUIAlphaImageButton manyBtn = actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
+        manyBtn.setOnClickListener(e -> openBottomSheet());
     }
 
     protected void showLanguageDialog() {
@@ -197,6 +212,25 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     public Locale getSyncLanguage() {
         return locale;
+    }
+
+    protected void openBottomSheet() {
+        QMUIBottomSheet.BottomListSheetBuilder builder = new QMUIBottomSheet.BottomListSheetBuilder(this)
+                .setGravityCenter(false)
+                .setAddCancelBtn(false)
+                .setOnSheetItemClickListener((dialog, itemView, position, tag) -> {
+                    dialog.dismiss();
+                    if (tag == null) {
+                        return;
+                    }
+                    int id = ActionInflater.ActionItem.stringToId(tag);
+                    if (defaultProcessMenu(id)) {
+                        return;
+                    }
+                });
+        addDefaultMenu(builder);
+        QMUIBottomSheet build = builder.build();
+        build.show();
     }
 
     public void changeLanguage(ControllerCallback<Void> callback, String language) {

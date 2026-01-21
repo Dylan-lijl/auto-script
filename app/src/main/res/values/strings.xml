@@ -152,4 +152,17 @@
     <string name="development_process">Development process</string>
     <string name="checking_update">Checking for updates</string>
     <string name="checking_update_failed">Failed to fetch the latest version</string>
+    <string name="no_new_version">No new version available</string>
+    <string name="update_now">Update now</string>
+    <string name="app_file_name">App file name</string>
+    <string name="publisher">Publisher</string>
+    <string name="app_size">App Size</string>
+    <string name="digest">Digest</string>
+    <string name="label">Label</string>
+    <string name="release_page">Release Page</string>
+    <string name="download_count">Download Count</string>
+    <string name="new_version">New Version</string>
+    <string name="download_progress">Download Progress</string>
+    <string name="faq">FAQ</string>
+    <string name="troubleshooting">Troubleshooting</string>
 </resources>

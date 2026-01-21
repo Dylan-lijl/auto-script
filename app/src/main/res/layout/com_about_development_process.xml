@@ -8,13 +8,25 @@
     <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <ScrollView
+
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView
-                android:id="@+id/list_view"
+            android:layout_height="wrap_content">
+
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/com_common_top_bar" />
+
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </ScrollView>
+                android:layout_height="match_parent">
+
+                <com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView
+                    android:id="@+id/list_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </ScrollView>
+        </LinearLayout>
     </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
 </layout>

@@ -53,7 +53,13 @@ public class AboutAcknowledgmentsActivity extends BaseActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.com_about_acknowledgments);
         model = new AboutAcknowledgmentModel();
         binding.setModel(model);
+        initTopBar(binding.topBarLayout.actionBar);
         loadData();
+    }
+
+    @Override
+    protected String getActionBarTitle() {
+        return getString(R.string.acknowledgments);
     }
 
     private void loadData() {

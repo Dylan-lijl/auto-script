@@ -19,5 +19,6 @@ public class AboutAdsActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.com_about_ads);
+        initTopBar(binding.topBarLayout.actionBar);
     }
 }

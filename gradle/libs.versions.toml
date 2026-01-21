@@ -23,6 +23,7 @@ mpandroidchart = "v3.1.0"
 okhttp = "4.12.0"
 qmui = "2.0.1"
 roomRuntime = "2.8.4"
+semver4j = "3.1.0"
 swiperefreshlayout = "1.2.0"
 uidGenerator = "1.0.5"
 ultraPtr = "1.0.11"
@@ -53,6 +54,7 @@ pullrefreshlayout-library = { module = "com.baoyz.pullrefreshlayout:library", ve
 qmui = { module = "com.qmuiteam:qmui", version.ref = "qmui" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+semver4j = { module = "com.vdurmont:semver4j", version.ref = "semver4j" }
 swipemenulistview-library = { module = "com.baoyz.swipemenulistview:library", version.ref = "baoyzLibrary" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 uid-generator = { module = "com.baidu.fsg:uid-generator", version.ref = "uidGenerator" }

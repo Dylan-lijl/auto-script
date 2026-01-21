@@ -152,4 +152,17 @@
     <string name="development_process">개발 과정</string>
     <string name="checking_update">업데이트를 확인하는 중…</string>
     <string name="checking_update_failed">최신 버전 가져오기에 실패했습니다</string>
+    <string name="no_new_version">사용 가능한 새 버전이 없습니다</string>
+    <string name="update_now">지금 업데이트</string>
+    <string name="app_file_name">앱 파일 이름</string>
+    <string name="publisher">게시자</string>
+    <string name="app_size">앱 크기</string>
+    <string name="digest">체크섬</string>
+    <string name="label">라벨</string>
+    <string name="release_page">릴리스 페이지</string>
+    <string name="download_count">다운로드 수</string>
+    <string name="new_version">새 버전</string>
+    <string name="download_progress">다운로드 진행률</string>
+    <string name="faq">자주 묻는 질문</string>
+    <string name="troubleshooting">문제 해결</string>
 </resources>

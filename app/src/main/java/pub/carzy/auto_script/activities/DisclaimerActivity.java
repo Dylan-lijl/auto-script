@@ -43,7 +43,7 @@ public class DisclaimerActivity extends BaseActivity {
         model = new DisclaimerModel();
         binding.setModel(model);
         setting = BeanFactory.getInstance().get(Setting.class);
-        initTopBar();
+        initTopBar(binding.topBarLayout.actionBar);
         init();
     }
 
@@ -53,7 +53,8 @@ public class DisclaimerActivity extends BaseActivity {
         manyBtn.setOnClickListener(e -> openBottomSheet());
     }
 
-    private void openBottomSheet() {
+    @Override
+    protected void openBottomSheet() {
         QMUIBottomSheet.BottomListSheetBuilder builder = new QMUIBottomSheet.BottomListSheetBuilder(this)
                 .setGravityCenter(false)
                 .setAddCancelBtn(false)

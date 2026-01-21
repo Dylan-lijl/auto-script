@@ -152,4 +152,17 @@
     <string name="development_process">開發過程</string>
     <string name="checking_update">檢查更新中...</string>
     <string name="checking_update_failed">取得最新版本失敗</string>
+    <string name="no_new_version">沒有可用的新版本</string>
+    <string name="update_now">立即更新</string>
+    <string name="app_file_name">檔案名稱</string>
+    <string name="publisher">發布者</string>
+    <string name="app_size">應用大小</string>
+    <string name="digest">校驗值</string>
+    <string name="label">標籤</string>
+    <string name="release_page">發布頁</string>
+    <string name="download_count">下載次數</string>
+    <string name="new_version">新版本</string>
+    <string name="download_progress">下載進度</string>
+    <string name="faq">常見問題</string>
+    <string name="troubleshooting">疑難雜症</string>
 </resources>

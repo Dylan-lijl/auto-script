@@ -40,6 +40,7 @@ public class AboutBasicInfoActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.com_about_basic_info);
+        initTopBar(binding.topBarLayout.actionBar);
         init();
     }
 
@@ -93,9 +94,4 @@ public class AboutBasicInfoActivity extends BaseActivity {
         });
     }
 
-    private void openToBrowser(String url) {
-        Uri uri = Uri.parse(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        startActivity(intent);
-    }
 }

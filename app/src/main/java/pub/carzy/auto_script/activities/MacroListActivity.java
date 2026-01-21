@@ -418,9 +418,7 @@ public class MacroListActivity extends BaseActivity {
     }
 
     private void initToolbar() {
-        binding.topBarLayout.actionBar.setTitle(getActionBarTitle());
-        QMUIAlphaImageButton manyBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
-        manyBtn.setOnClickListener(e -> openBottomSheet());
+        initTopBar(binding.topBarLayout.actionBar);
         QMUIAlphaImageButton searchBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.search, QMUIViewHelper.generateViewId());
         EditText searchEdit = createSearchEditText();
         searchBtn.setOnClickListener(v -> {
@@ -468,7 +466,8 @@ public class MacroListActivity extends BaseActivity {
     }
 
 
-    private void openBottomSheet() {
+    @Override
+    protected void openBottomSheet() {
         QMUIBottomSheet.BottomListSheetBuilder builder = new QMUIBottomSheet.BottomListSheetBuilder(this)
                 .setGravityCenter(false)
                 .setAddCancelBtn(false)

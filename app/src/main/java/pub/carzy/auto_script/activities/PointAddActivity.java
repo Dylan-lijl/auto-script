@@ -59,6 +59,7 @@ public class PointAddActivity extends BaseActivity {
         afterOrder = (afterOrder = intent.getFloatExtra("afterOrder", -1)) == -1 ? null : afterOrder;
         binding.setIndex(index);
         binding.setData(data);
+        initTopBar(binding.topBarLayout.actionBar);
         initListener();
     }
 
