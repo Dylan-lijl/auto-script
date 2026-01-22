@@ -41,6 +41,7 @@
         <activity android:name=".activities.about.child.AboutLicensesActivity" />
         <activity android:name=".activities.about.child.AboutUpdateLogActivity" />
         <activity android:name=".activities.about.child.AboutDevelopmentProcessActivity" />
+        <activity android:name=".activities.about.child.AboutFAQActivity" />
 
         <service
             android:name=".service.MyAccessibilityService"

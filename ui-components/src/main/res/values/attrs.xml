@@ -9,4 +9,10 @@
             <enum name="editor" value="1"/>
         </attr>
     </declare-styleable>
+    <declare-styleable name="CollapseView">
+        <attr name="collapsible" format="boolean" />
+        <attr name="accordion" format="boolean" />
+        <attr name="ghost" format="boolean" />
+        <attr name="titleBackground" format="reference" />
+    </declare-styleable>
 </resources>

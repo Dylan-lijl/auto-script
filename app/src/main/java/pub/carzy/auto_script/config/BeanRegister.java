@@ -7,6 +7,11 @@ import com.qmuiteam.qmui.skin.QMUISkinManager;
 
 import java.util.UUID;
 
+import io.noties.markwon.Markwon;
+import io.noties.markwon.image.ImagesPlugin;
+import io.noties.markwon.syntax.Prism4jThemeDefault;
+import io.noties.markwon.syntax.SyntaxHighlightPlugin;
+import io.noties.prism4j.Prism4j;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.impl.PrefsSetting;
 import pub.carzy.auto_script.config.impl.SnowflakeGenerator;
@@ -40,5 +45,11 @@ public class BeanRegister {
                 .register(QMUISkinManager.defaultInstance(context))
                 .register(AppDatabase.get(context));
 //                .register(new ScriptAccessibilityService());
+        //注册markwon解析器
+        Markwon markwon = Markwon.builder(context)
+                .usePlugin(ImagesPlugin.create())
+                .usePlugin(SyntaxHighlightPlugin.create(new Prism4j(new MyGrammarLocator()), Prism4jThemeDefault.create()))
+                .build();
+        register.register(markwon);
     }
 }

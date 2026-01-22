@@ -37,6 +37,12 @@
         android:title="@string/development_process"
         app:activity="pub.carzy.auto_script.activities.about.child.AboutDevelopmentProcessActivity"
         app:order="40" />
+    <item
+        android:id="@+id/faq"
+        android:enabled="true"
+        android:title="@string/faq"
+        app:activity="pub.carzy.auto_script.activities.about.child.AboutFAQActivity"
+        app:order="50" />
     <!--排最后-->
     <item
         android:id="@+id/ads"
