@@ -4,7 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,27 +16,25 @@ import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
-import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheetListItemModel;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 
-import kotlin.Triple;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.entity.Style;
 import pub.carzy.auto_script.entity.SupportLocaleResult;
 import pub.carzy.auto_script.ui.QMUIBottomSheetListItemModelExt;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.TriConsumer;
+import pub.carzy.auto_script.utils.statics.StaticValues;
 
 
 /**
@@ -42,6 +43,7 @@ import pub.carzy.auto_script.utils.TriConsumer;
 public abstract class BaseActivity extends AppCompatActivity {
     private Locale locale;
     private final Setting setting;
+    protected long styleVersion = StaticValues.EMPTY_DEFAULT_LONG_VALUE;
 
     public BaseActivity() {
         setting = BeanFactory.getInstance().get(Setting.class);
@@ -80,10 +82,10 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     public boolean defaultProcessMenu(int id) {
         if (id == R.id.menu_setting) {
-            //先不做处理
+            Intent intent = new Intent(this, SettingActivity.class);
+            startActivity(intent);
             return true;
         } else if (id == R.id.menu_about && !(this instanceof AboutActivity)) {
-            //先不做处理
             Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);
             return true;
@@ -244,5 +246,59 @@ public abstract class BaseActivity extends AppCompatActivity {
                 ThreadUtil.runOnUi(callback::finallyMethod);
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        QMUITopBarLayout topBar = getTopBar();
+        if (topBar != null) {
+            Long globalStyleVersion = BeanFactory.getInstance().get(StaticValues.STYLE_VERSION);
+            if (styleVersion == -1) {
+                Style style = BeanFactory.getInstance().get(StaticValues.STYLE_CURRENT);
+                if (style == null) {
+                    return;
+                }
+                updateStyle(style, topBar,globalStyleVersion);
+            } else if (styleVersion < globalStyleVersion) {
+                Style style = BeanFactory.getInstance().get(StaticValues.STYLE_CURRENT);
+                if (style == null) {
+                    return;
+                }
+                updateStyle(style, topBar,globalStyleVersion);
+            }
+        }
+    }
+
+    protected void updateStyle(Style style, QMUITopBarLayout topBar, Long globalStyleVersion) {
+        if (style == null || topBar == null) {
+            return;
+        }
+        ActivityUtils.setWindowsStatusBarColor(this, style.getStatusBarBackgroundColor());
+        ActivityUtils.setWindowsStatusLight(this, style.isStatusBarMode());
+        topBar.setBackgroundColor(style.getTopBarBackgroundColor());
+        if (topBar.getTitleView() != null) {
+            topBar.getTitleView().setTextColor(style.getTopBarTextColor());
+        }
+        for (int i = 0; i < topBar.getChildCount(); i++) {
+            View child = topBar.getChildAt(i);
+            if (child == null) {
+                continue;
+            }
+            //判断是否是图片组件
+            if (child instanceof ImageView) {
+                ImageView iv = (ImageView) child;
+                Drawable d = iv.getDrawable();
+                if (d != null) {
+                    d.mutate().setTint(style.getTopBarImageColor());
+                    iv.setImageDrawable(d);
+                }
+            }
+        }
+        styleVersion = globalStyleVersion;
+    }
+
+    protected QMUITopBarLayout getTopBar() {
+        return null;
     }
 }

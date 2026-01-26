@@ -67,7 +67,7 @@ public class ScriptVoEntityModel extends BaseObservable {
     /**
      * 是否需要保存
      */
-    private Boolean saved = false;
+    private Boolean unsaved = false;
     /**
      * 是否是新增
      */
@@ -109,13 +109,13 @@ public class ScriptVoEntityModel extends BaseObservable {
     }
 
     @Bindable
-    public Boolean getSaved() {
-        return saved;
+    public Boolean getUnsaved() {
+        return unsaved;
     }
 
-    public void setSaved(Boolean saved) {
-        this.saved = saved;
-        notifyPropertyChanged(BR.saved);
+    public void setUnsaved(Boolean unsaved) {
+        this.unsaved = unsaved;
+        notifyPropertyChanged(BR.unsaved);
     }
 
     @Bindable

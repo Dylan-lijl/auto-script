@@ -165,4 +165,15 @@
     <string name="download_progress">다운로드 진행률</string>
     <string name="faq">자주 묻는 질문</string>
     <string name="troubleshooting">문제 해결</string>
+    <string name="style">스타일</string>
+    <string name="status_bar">상태 바</string>
+    <string name="background_color">배경 색상</string>
+    <string name="theme_mode">테마 모드</string>
+    <string name="title_bar">타이틀 바</string>
+    <string name="text_color">텍스트 색상</string>
+    <string name="image_color">이미지 색상</string>
+    <string name="overlay">오버레이</string>
+    <string name="position">위치</string>
+    <string name="light">라이트</string>
+    <string name="dark">다크</string>
 </resources>

@@ -5,9 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -42,24 +39,22 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.google.gson.Gson;
-import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
-import com.qmuiteam.qmui.util.QMUIViewHelper;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogBuilder;
 import com.qmuiteam.qmui.widget.popup.QMUIPopup;
 import com.qmuiteam.qmui.widget.popup.QMUIPopups;
+import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -67,7 +62,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -85,7 +79,6 @@ import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
-import pub.carzy.auto_script.entity.ExportScriptEntity;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
@@ -97,10 +90,8 @@ import pub.carzy.auto_script.ui.adapter.SingleStackRender;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.MixedUtil;
-import pub.carzy.auto_script.utils.StoreUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.TypeToken;
-import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
  * @author admin
@@ -115,6 +106,7 @@ public class MacroInfoActivity extends BaseActivity {
     private ActivityResultLauncher<Intent> addInfoLauncher;
     private AppDatabase db;
     private ObservableBoolean edit;
+    private Runnable runnable;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -218,7 +210,29 @@ public class MacroInfoActivity extends BaseActivity {
         edit.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
             @Override
             public void onPropertyChanged(Observable sender, int propertyId) {
-                model.setSaved(true);
+                model.setUnsaved(true);
+            }
+        });
+        bindBackLogic();
+    }
+
+    private void bindBackLogic() {
+        runnable = ActivityUtils.setOnBackPressed(this, r -> {
+            if (model.getUnsaved()) {
+                new QMUIDialog.MessageDialogBuilder(this)
+                        .setTitle("提醒")
+                        .setMessage("内容未保存，确定退出吗？")
+                        .addAction("取消", (dialog, index) -> {
+                            dialog.dismiss();
+                            bindBackLogic();
+                        })
+                        .addAction("确定", (dialog, index) -> {
+                            dialog.dismiss();
+                            finish();
+                        })
+                        .create().show();
+            } else {
+                finish();
             }
         });
     }
@@ -305,7 +319,7 @@ public class MacroInfoActivity extends BaseActivity {
                                         db.scriptPointMapper().deleteByScriptId(id);
                                     });
                                     ThreadUtil.runOnUi(() -> {
-                                        model.setSaved(false);
+                                        model.setUnsaved(false);
                                         d.dismiss();
                                         sheet.dismiss();
                                     });
@@ -345,7 +359,7 @@ public class MacroInfoActivity extends BaseActivity {
                     db.scriptPointMapper().save(model.getPointData());
                 });
                 //修改状态
-                model.setSaved(false);
+                model.setUnsaved(false);
             } catch (Exception ex) {
                 ThreadUtil.runOnUi(() -> Toast.makeText(MacroInfoActivity.this, "保存失败:" + ex.getMessage(), Toast.LENGTH_SHORT).show());
             } finally {
@@ -609,7 +623,7 @@ public class MacroInfoActivity extends BaseActivity {
                     updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
                     updateChartData(binding.flowChatLayout.pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors());
                     //标记未保存
-                    model.setSaved(false);
+                    model.setUnsaved(false);
                 });
             } catch (Exception e) {
                 Log.d(this.getClass().getCanonicalName(), "removeCheckedPoint", e);
@@ -772,7 +786,7 @@ public class MacroInfoActivity extends BaseActivity {
                     updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
                     updateChartData(binding.flowChatLayout.pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors());
                     //标记未保存
-                    model.setSaved(false);
+                    model.setUnsaved(false);
                 });
             } catch (Exception e) {
                 Log.d(this.getClass().getCanonicalName(), "removeCheckedAction", e);
@@ -843,7 +857,7 @@ public class MacroInfoActivity extends BaseActivity {
                         intent.getParcelableExtra("data", ScriptVoEntity.class) : intent.getParcelableExtra("data");
                 if (intent.getBooleanExtra("add", false)) {
                     ThreadUtil.runOnUi(() -> {
-                        model.setSaved(true);
+                        model.setUnsaved(true);
                         model.setAdd(true);
                     });
                 }

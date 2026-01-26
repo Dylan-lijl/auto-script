@@ -2,6 +2,7 @@ package pub.carzy.auto_script.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Build;
 import android.util.DisplayMetrics;
 
@@ -65,5 +66,33 @@ public class MixedUtil {
         } catch (ParseException e) {
             return null;
         }
+    }
+
+    public static  <T> T getValueOrDefault(T v, T d) {
+        if (v == null) {
+            return d;
+        }
+        return v;
+    }
+    public static String colorToHex(int color){
+        return String.format("#%08X", color);
+    }
+
+    /**
+     * 返回 true 表示是亮色，文字应设为黑色
+     * @param color 颜色
+     * @return 是否是亮色
+     */
+    public static boolean isColorLight(int color) {
+        if (color == Color.TRANSPARENT) return true;
+        // 提取 RGB 分量
+        int r = Color.red(color);
+        int g = Color.green(color);
+        int b = Color.blue(color);
+
+        // 计算亮度值 (0-255)
+        double darkness = 1 - (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        // 阈值通常设为 0.5 或 128
+        return darkness < 0.5;
     }
 }

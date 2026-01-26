@@ -1,5 +1,7 @@
 package pub.carzy.auto_script.ui_components.adapters;
 
+import android.view.View;
+
 import androidx.databinding.BindingAdapter;
 
 import java.util.List;
@@ -12,27 +14,32 @@ import pub.carzy.auto_script.ui_components.components.CollapseView;
  */
 public class CollapseBindingAdapter {
     @BindingAdapter("collapsible")
-    public static <T> void bindCollapsible(CollapseView<T> view, boolean collapsible) {
+    public static <D, T extends View, E extends View, C extends View> void bindCollapsible(CollapseView<D,T,E,C> view, boolean collapsible) {
         view.setCollapsible(collapsible);
     }
 
     @BindingAdapter("accordion")
-    public static <T> void bindAccordion(CollapseView<T> view, boolean accordion) {
+    public static <D, T extends View, E extends View, C extends View> void bindAccordion(CollapseView<D,T,E,C> view, boolean accordion) {
         view.setAccordion(accordion);
     }
 
     @BindingAdapter("ghost")
-    public static <T> void bindGhost(CollapseView<T> view, boolean ghost) {
+    public static <D, T extends View, E extends View, C extends View> void bindGhost(CollapseView<D,T,E,C> view, boolean ghost) {
         view.setGhost(ghost);
     }
 
     @BindingAdapter("onRenderListener")
-    public static <T> void bindOnRenderListener(CollapseView<T> view, Consumer<CollapseView.CollapseItem<T>> listener) {
+    public static <D, T extends View, E extends View, C extends View> void bindOnRenderListener(CollapseView<D,T,E,C> view, Consumer<CollapseView.CollapseItem<D,T,E,C>> listener) {
         view.setOnRenderListener(listener);
     }
 
+    @BindingAdapter("onHeaderClickListener")
+    public static <D, T extends View, E extends View, C extends View> void bindOnHeaderClickListener(CollapseView<D,T,E,C> view, Consumer<CollapseView.CollapseItem<D,T,E,C>> listener) {
+        view.setOnHeaderClickListener(listener);
+    }
+
     @BindingAdapter("items")
-    public static <T> void bindItems(CollapseView<T> view, List<T> items) {
+    public static <D, T extends View, E extends View, C extends View> void bindItems(CollapseView<D,T,E,C> view, List<D> items) {
         if (items != null) {
             view.setItems(items);
         }

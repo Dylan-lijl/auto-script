@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <import type="pub.carzy.auto_script.utils.MixedUtil" />
+        <import type="pub.carzy.auto_script.utils.StringUtils" />
+
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.model.SettingModel" />
+    </data>
+
+    <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="@{model.proxy==null?View.INVISIBLE:View.VISIBLE}">
+
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/com_common_top_bar" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="10dp"
+                android:paddingEnd="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/style"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="0dp">
+
+                    <LinearLayout
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:baselineAligned="true">
+
+                        <TextView
+                            android:id="@+id/style_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:drawablePadding="5dp"
+                            android:paddingStart="5dp"
+                            android:paddingEnd="5dp"
+                            android:text="@{model.proxy.currentStyle==null?@string/empty:model.proxy.currentStyle.name}"
+                            android:textColor="@color/link"
+                            android:textSize="16sp"
+                            app:drawableEndCompat="@drawable/arrow_down"
+                            app:drawableTint="@color/link" />
+
+                        <ImageButton
+                            android:id="@+id/style_add_btn"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="10dp"
+                            android:contentDescription="@string/add"
+                            android:src="@drawable/add"
+                            app:tint="@color/link" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:textSize="18sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/status_bar" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            style="@style/FormVerticalItemStyle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="@{model.proxy.currentStyle==null?View.INVISIBLE:View.VISIBLE}">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{@string/label_format(@string/background_color)}" />
+
+                                <Button
+                                    android:id="@+id/status_bar_bgc_btn"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="@{model.proxy.currentStyle.statusBarBackgroundColor}"
+                                    android:text="@{MixedUtil.colorToHex(model.proxy.currentStyle.statusBarBackgroundColor)}"
+                                    android:textColor="@{MixedUtil.isColorLight(model.proxy.currentStyle.statusBarBackgroundColor)?@color/black:@color/white}" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                style="@style/FormVerticalItemStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{@string/label_format(@string/theme_mode)}" />
+
+                                <Button
+                                    android:id="@+id/status_bar_mode_btn"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="@{model.proxy.currentStyle.statusBarMode?@color/white:@color/black}"
+                                    android:text="@{model.proxy.currentStyle.statusBarMode?@string/light:@string/dark}"
+                                    android:textColor="@{model.proxy.currentStyle.statusBarMode?@color/black:@color/white}" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:textSize="18sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_bar" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            style="@style/FormVerticalItemStyle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@{@string/label_format(@string/background_color)}" />
+
+                            <Button
+                                android:id="@+id/top_bar_bgc_btn"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@{model.proxy.currentStyle.topBarBackgroundColor}"
+                                android:text="@{MixedUtil.colorToHex(model.proxy.currentStyle.topBarBackgroundColor)}"
+                                android:textColor="@{MixedUtil.isColorLight(model.proxy.currentStyle.topBarBackgroundColor)?@color/black:@color/white}" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            style="@style/FormVerticalItemStyle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@{@string/label_format(@string/text_color)}" />
+
+                            <Button
+                                android:id="@+id/top_bar_txt_btn"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@{model.proxy.currentStyle.topBarTextColor}"
+                                android:text="@{MixedUtil.colorToHex(model.proxy.currentStyle.topBarTextColor)}"
+                                android:textColor="@{MixedUtil.isColorLight(model.proxy.currentStyle.topBarTextColor)?@color/black:@color/white}" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            style="@style/FormVerticalItemStyle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@{@string/label_format(@string/image_color)}" />
+
+                            <Button
+                                android:id="@+id/top_bar_img_btn"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@{model.proxy.currentStyle.topBarImageColor}"
+                                android:text="@{MixedUtil.colorToHex(model.proxy.currentStyle.topBarImageColor)}"
+                                android:textColor="@{MixedUtil.isColorLight(model.proxy.currentStyle.topBarImageColor)?@color/black:@color/white}" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/overlay"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:visibility="@{model.proxy.floatPoint==null?View.GONE:View.VISIBLE}"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:baselineAligned="true"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/position" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@{@string/label_format(`X`)}" />
+
+                    <EditText
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:autofillHints="false"
+                        android:inputType="numberDecimal"
+                        android:text="@{StringUtils.format(model.proxy.floatPoint.x)}"
+                        tools:ignore="LabelFor" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{@string/label_format(`Y`)}" />
+
+                    <EditText
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:autofillHints="false"
+                        android:inputType="numberDecimal"
+                        android:text="@{StringUtils.format(model.proxy.floatPoint.y)}"
+                        tools:ignore="LabelFor" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
+</layout>

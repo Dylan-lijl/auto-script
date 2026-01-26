@@ -165,4 +165,15 @@
     <string name="download_progress">ダウンロード進行度</string>
     <string name="faq">よくある質問</string>
     <string name="troubleshooting">トラブルシューティング</string>
+    <string name="style">スタイル</string>
+    <string name="status_bar">ステータスバー</string>
+    <string name="background_color">はいけいしょく</string>
+    <string name="theme_mode">テーマモード</string>
+    <string name="title_bar">タイトルバー</string>
+    <string name="text_color">もじいろ</string>
+    <string name="image_color">画像の色</string>
+    <string name="overlay">オーバーレイ</string>
+    <string name="position">いち</string>
+    <string name="light">ライト</string>
+    <string name="dark">ダーク</string>
 </resources>

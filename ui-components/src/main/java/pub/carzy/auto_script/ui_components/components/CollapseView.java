@@ -22,11 +22,12 @@ import java.util.function.Function;
 import pub.carzy.auto_script.ui_components.R;
 
 /**
+ * 第一个参数是数据泛型,剩下依次是标题View,右侧View,内容View,这样写回调时就不需要强转,不会弄错类型
  * @author admin
  */
-public class CollapseView<T> extends LinearLayout {
+public class CollapseView<D, T extends View, E extends View, C extends View> extends LinearLayout {
     private RecyclerView recyclerView;
-    private CollapseAdapter<T> adapter;
+    private CollapseAdapter<D,T,E,C> adapter;
 
     private boolean accordion;
     private boolean collapsible;
@@ -38,11 +39,12 @@ public class CollapseView<T> extends LinearLayout {
         adapter.notifyDataSetChanged();
     }
 
-    private Function<DataWrapper<T>, View> titleFactory;
-    private Function<DataWrapper<T>, View> rightFactory;
-    private Function<DataWrapper<T>, View> contentFactory;
+    private Function<DataWrapper<D>, T> titleFactory;
+    private Function<DataWrapper<D>, E> rightFactory;
+    private Function<DataWrapper<D>, C> contentFactory;
 
-    private Consumer<CollapseItem<T>> onRenderListener;
+    private Consumer<CollapseItem<D,T,E,C>> onRenderListener;
+    private Consumer<CollapseItem<D,T,E,C>> onHeaderClickListener;
 
     public CollapseView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -73,15 +75,15 @@ public class CollapseView<T> extends LinearLayout {
         }
     }
 
-    public void setTitleFactory(Function<DataWrapper<T>, View> factory) {
+    public void setTitleFactory(Function<DataWrapper<D>, T> factory) {
         this.titleFactory = factory;
     }
 
-    public void setRightFactory(Function<DataWrapper<T>, View> factory) {
+    public void setRightFactory(Function<DataWrapper<D>, E> factory) {
         this.rightFactory = factory;
     }
 
-    public void setContentFactory(Function<DataWrapper<T>, View> factory) {
+    public void setContentFactory(Function<DataWrapper<D>, C> factory) {
         this.contentFactory = factory;
     }
 
@@ -93,7 +95,7 @@ public class CollapseView<T> extends LinearLayout {
         this.collapsible = collapsible;
     }
 
-    public void setOnRenderListener(Consumer<CollapseItem<T>> listener) {
+    public void setOnRenderListener(Consumer<CollapseItem<D,T,E,C>> listener) {
         this.onRenderListener = listener;
     }
 
@@ -105,24 +107,32 @@ public class CollapseView<T> extends LinearLayout {
         this.titleBackground = titleBackground;
     }
 
-    public void setItems(List<T> items) {
-        List<DataWrapper<T>> wrappers = new ArrayList<>(items.size());
-        for (T item : items) {
+    public Consumer<CollapseItem<D,T,E,C>> getOnHeaderClickListener() {
+        return onHeaderClickListener;
+    }
+
+    public void setOnHeaderClickListener(Consumer<CollapseItem<D,T,E,C>> onHeaderClickListener) {
+        this.onHeaderClickListener = onHeaderClickListener;
+    }
+
+    public void setItems(List<D> items) {
+        List<DataWrapper<D>> wrappers = new ArrayList<>(items.size());
+        for (D item : items) {
             wrappers.add(new DataWrapper<>(item));
         }
         adapter.setItems(wrappers);
     }
 
     // ---------- Adapter ----------
-    public static class CollapseAdapter<T> extends RecyclerView.Adapter<VH> {
-        private final CollapseView<T> view;
-        private final List<DataWrapper<T>> items = new ArrayList<>();
+    public static class CollapseAdapter<D, T extends View, E extends View, C extends View> extends RecyclerView.Adapter<VH> {
+        private final CollapseView<D, T, E, C> view;
+        private final List<DataWrapper<D>> items = new ArrayList<>();
 
-        CollapseAdapter(CollapseView<T> view) {
+        CollapseAdapter(CollapseView<D, T, E, C> view) {
             this.view = view;
         }
 
-        void setItems(List<DataWrapper<T>> list) {
+        void setItems(List<DataWrapper<D>> list) {
             items.clear();
             items.addAll(list);
             notifyDataSetChanged();
@@ -138,9 +148,9 @@ public class CollapseView<T> extends LinearLayout {
 
         @Override
         public void onBindViewHolder(@NonNull VH holder, int position) {
-            DataWrapper<T> data = items.get(position);
+            DataWrapper<D> data = items.get(position);
 
-            CollapseItem<T> item = new CollapseItem<>();
+            CollapseItem<D, T, E, C> item = new CollapseItem<>();
             item.data = data;
             item.rootView = holder.itemView;
             if (view.getTitleBackground() != null) {
@@ -167,7 +177,7 @@ public class CollapseView<T> extends LinearLayout {
                 item.contentView = view.contentFactory.apply(data);
                 holder.contentContainer.addView(item.contentView);
             }
-            holder.contentContainer.setVisibility(data.isExpanded() ? VISIBLE : GONE);
+            holder.contentContainer.setVisibility(data.isExpanded() && item.getContentView() != null ? VISIBLE : GONE);
 
             holder.header.setOnClickListener(v -> {
                 if (!view.collapsible) return;
@@ -192,7 +202,9 @@ public class CollapseView<T> extends LinearLayout {
                     item.getData().setExpanded(!item.getData().isExpanded());
                     notifyItemChanged(position);
                 }
-
+                if (view.getOnHeaderClickListener() != null) {
+                    view.getOnHeaderClickListener().accept(item);
+                }
             });
             if (view.onRenderListener != null) {
                 view.onRenderListener.accept(item);
@@ -218,12 +230,12 @@ public class CollapseView<T> extends LinearLayout {
     }
 
     // ---------- Item ----------
-    public static class CollapseItem<T> {
+    public static class CollapseItem<D, T extends View, E extends View, C extends View> {
         private View rootView;
-        private View titleView;
-        private View rightView;
-        private View contentView;
-        private DataWrapper<T> data;
+        private T titleView;
+        private E rightView;
+        private C contentView;
+        private DataWrapper<D> data;
 
 
         public View getRootView() {
@@ -234,49 +246,49 @@ public class CollapseView<T> extends LinearLayout {
             this.rootView = rootView;
         }
 
-        public View getTitleView() {
+        public T getTitleView() {
             return titleView;
         }
 
-        public void setTitleView(View titleView) {
+        public void setTitleView(T titleView) {
             this.titleView = titleView;
         }
 
-        public View getRightView() {
+        public E getRightView() {
             return rightView;
         }
 
-        public void setRightView(View rightView) {
+        public void setRightView(E rightView) {
             this.rightView = rightView;
         }
 
-        public View getContentView() {
+        public C getContentView() {
             return contentView;
         }
 
-        public void setContentView(View contentView) {
+        public void setContentView(C contentView) {
             this.contentView = contentView;
         }
 
-        public DataWrapper<T> getData() {
+        public DataWrapper<D> getData() {
             return data;
         }
 
-        public void setData(DataWrapper<T> data) {
+        public void setData(DataWrapper<D> data) {
             this.data = data;
         }
     }
 
-    public static class DataWrapper<T> {
-        private T data;
+    public static class DataWrapper<D> {
+        private D data;
         public boolean expanded;
 
-        public DataWrapper(T data, boolean expanded) {
+        public DataWrapper(D data, boolean expanded) {
             this.data = data;
             this.expanded = expanded;
         }
 
-        public DataWrapper(T data) {
+        public DataWrapper(D data) {
             this(data, false);
         }
 
@@ -292,11 +304,11 @@ public class CollapseView<T> extends LinearLayout {
             this.expanded = expanded;
         }
 
-        public T getData() {
+        public D getData() {
             return data;
         }
 
-        public void setData(T data) {
+        public void setData(D data) {
             this.data = data;
         }
     }

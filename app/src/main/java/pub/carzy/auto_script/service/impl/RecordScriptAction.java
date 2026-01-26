@@ -22,8 +22,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.MacroInfoActivity;
+import pub.carzy.auto_script.config.AbstractSetting;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
+import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.databinding.WindowRecordFloatingButtonBinding;
 import pub.carzy.auto_script.databinding.WindowMaskViewBinding;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
@@ -39,6 +41,7 @@ import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.dto.UpdateParam;
 import pub.carzy.auto_script.utils.BeanHandler;
+import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.Stopwatch;
 import pub.carzy.auto_script.utils.TypeToken;
 
@@ -60,7 +63,9 @@ public class RecordScriptAction extends BasicAction {
     private WindowManager.LayoutParams bindingParams;
     public static final String ACTION_KEY = "record";
     private final Stopwatch watch = new Stopwatch();
-
+    private Setting setting;
+    private boolean showWindow;
+    private int autoRunDelay;
     @Override
     public String key() {
         return ACTION_KEY;
@@ -75,6 +80,7 @@ public class RecordScriptAction extends BasicAction {
                 BeanFactory.getInstance().register(this);
                 idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
                 });
+                setting = BeanFactory.getInstance().get(Setting.class);
                 motionList = new ArrayList<>();
                 motionMap = new HashMap<>();
                 keyMap = new HashMap<>();
@@ -102,8 +108,16 @@ public class RecordScriptAction extends BasicAction {
         } finally {
             lock.unlock();
         }
-        //打开窗口
-        addView(binding, bindingParams);
+        showWindow = MixedUtil.getValueOrDefault(setting.getShowRecordWindow(), AbstractSetting.DefaultValue.SHOW_RECORD_WINDOW);
+        autoRunDelay = MixedUtil.getValueOrDefault(setting.getAutoRunRecord(), AbstractSetting.DefaultValue.AUTO_RUN_RECORD);
+        //后期再做这个录制问题,这种可能只有root模式下能使用
+//        if (showWindow) {
+            //打开窗口
+            addView(binding, bindingParams);
+//        }
+//        if (autoRunDelay==0){
+//
+//        }
         return true;
     }
 

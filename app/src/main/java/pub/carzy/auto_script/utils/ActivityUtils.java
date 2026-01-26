@@ -13,16 +13,25 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.Window;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.ColorInt;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -37,11 +46,14 @@ import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
+import pub.carzy.auto_script.activities.MacroInfoActivity;
+import pub.carzy.auto_script.activities.SettingActivity;
 import pub.carzy.auto_script.activities.about.child.AboutAcknowledgmentsActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
@@ -374,12 +386,7 @@ public class ActivityUtils {
     }
 
     public static QMUIQuickAction createQuickAction(Context context) {
-        return QMUIPopups.quickAction(context,
-                        QMUIDisplayHelper.dp2px(context, 56),
-                        QMUIDisplayHelper.dp2px(context, 56))
-                .shadow(true)
-                .skinManager(QMUISkinManager.defaultInstance(context))
-                .edgeProtection(QMUIDisplayHelper.dp2px(context, 20));
+        return null;
     }
 
     public static Drawable getDrawable(Context context, int drawableId, int colorId) {
@@ -393,13 +400,120 @@ public class ActivityUtils {
     }
 
     public static void openToBrowser(Context context, String url) {
-        if (url==null||url.isEmpty()){
+        if (url == null || url.isEmpty()) {
             return;
         }
         context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
-    public static void copyToClipboard(Context context, String label,String text) {
+
+    public static void copyToClipboard(Context context, String label, String text) {
         ClipboardManager cm = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
         cm.setPrimaryClip(ClipData.newPlainText(label, text));
     }
+
+    public static Runnable setOnBackPressed(AppCompatActivity activity, Consumer<Boolean> callback) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            OnBackInvokedDispatcher dispatcher = activity.getOnBackInvokedDispatcher();
+            // 使用数组或 AtomicReference 来绕过 lambda 内部对自身的引用限制
+            OnBackInvokedCallback[] callbackWrapper = new OnBackInvokedCallback[1];
+            callbackWrapper[0] = () -> {
+                // 触发时自动注销，防止二次分发死循环
+                if (callbackWrapper[0] != null) {
+                    dispatcher.unregisterOnBackInvokedCallback(callbackWrapper[0]);
+                    callbackWrapper[0] = null;
+                }
+                callback.accept(true);
+            };
+            dispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callbackWrapper[0]);
+            // 返回手动注销逻辑
+            return () -> {
+                if (callbackWrapper[0] != null) {
+                    dispatcher.unregisterOnBackInvokedCallback(callbackWrapper[0]);
+                    callbackWrapper[0] = null;
+                }
+            };
+        } else {
+            OnBackPressedCallback backStackCallback = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    // AndroidX 的拦截是临时的，如果不执行此 remove，后续 onBackPressed 仍会被拦截
+                    this.remove();
+                    callback.accept(true);
+                }
+            };
+
+            activity.getOnBackPressedDispatcher().addCallback(activity, backStackCallback);
+
+            return backStackCallback::remove;
+        }
+    }
+
+    /**
+     * 设置状态栏背景颜色（兼容 Android 各版本）
+     *
+     * @param activity Activity
+     * @param color 状态栏颜色
+     */
+    public static void setWindowsStatusBarColor(Activity activity, @ColorInt int color) {
+        Window window = activity.getWindow();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // 允许绘制系统栏背景
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            // 取消半透明，否则颜色不会正确覆盖
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+            window.setStatusBarColor(color);
+            return;
+        }
+
+        // Android < 21 无法改变状态栏颜色，忽略即可
+    }
+
+
+    /**
+     * 设置状态栏图标是否为深色
+     *
+     * @param activity 当前 Activity
+     * @param light    true = 深色图标(适用于浅色背景), false = 浅色图标(适用于深色背景)
+     */
+    public static void setWindowsStatusLight(Activity activity, boolean light) {
+        Window window = activity.getWindow();
+
+        // Android 11+ (API 30+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController controller = window.getInsetsController();
+            if (controller != null) {
+                if (light) {
+                    controller.setSystemBarsAppearance(
+                            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                    );
+                } else {
+                    controller.setSystemBarsAppearance(
+                            0,
+                            WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                    );
+                }
+            }
+            return;
+        }
+
+        // Android 6.0 - Android 10 (API 23 ~ 29)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            View decor = window.getDecorView();
+            int flags = decor.getSystemUiVisibility();
+            if (light) {
+                flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            } else {
+                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            }
+            decor.setSystemUiVisibility(flags);
+            return;
+        }
+
+        // Android 5.1 及以下无支持
+        // 状态栏图标默认白色，无法更改
+    }
+
 }

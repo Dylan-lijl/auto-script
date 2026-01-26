@@ -11,13 +11,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Comparator;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
 import pub.carzy.auto_script.databinding.ComAboutLicensesBinding;
-import pub.carzy.auto_script.entity.AcknowledgementEntity;
-import pub.carzy.auto_script.entity.AcknowledgementImport;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**

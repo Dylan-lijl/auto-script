@@ -87,7 +87,7 @@
                 android:scaleType="centerInside"
                 android:src="@drawable/asterisk"
                 android:tint="@color/warning"
-                android:visibility="@{model.saved?View.VISIBLE:View.GONE}" />
+                android:visibility="@{model.unsaved?View.VISIBLE:View.GONE}" />
             <ImageButton
                 android:id="@+id/action_start_btn"
                 style="@style/TextButtonStyle"

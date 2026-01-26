@@ -1,0 +1,20 @@
+{
+  "data": [
+    {
+      "question": "步骤时序图渲染不准确",
+      "answer": "### 问题描述\n在脚本运行过程记录步骤时序数据并使用 `MPAndroidChart` 进行可视化展示时，出现了步骤图与真实事件不完全对应的情况。\n\n目前采用的渲染策略是自定义实现类：\n\n```\npub.carzy.auto_script.ui.adapter.SingleStackRender\n```\n\n由于 `MPAndroidChart` 本身缺少时序线条图/事件间隔图表类型，现采用的实现方式更偏向横向 BarChart 的 workaround，因此会出现以下偏差：\n\n- 事件执行顺序与显示顺序偶尔不一致\n- 按下与抬起时刻难以对齐\n- 间隔跨度表现不线性\n\n---\n\n### 技术分析\n根本原因是 `MPAndroidChart` 的数据模型主要基于：\n\n- **连续数值坐标**（适合折线、柱状、面积图）\n- **非事件驱动模型**（没有原生 discrete time event abstraction）\n\n而脚本执行记录是一个典型的离散时序事件数据结构：\n\n```\ndown → wait → move → up → ...\n```\n\n离散时序图在常见图表库中属于独立类别，通常由以下模型支持：\n\n- timeline chart\n- event timeline\n- gantt-like chart\n\n而 MPAndroidChart 缺少这些能力，所以需要自行实现渲染逻辑。\n\n---\n\n### 当前结论\n该问题暂未解决，目前无法确认属于：\n\n> **A：自定义处理缺失** 还是 **B：图表库功能不足**\n\n预计需要：\n\n1. **自绘 timeline renderer** 处理离散事件\n2. 或 **更换 chart 引擎** 支持 gantt/timeline 模型\n\n如后续有更优实现将会更新。\n",
+      "resolved": false,
+      "url": null,
+      "users": [],
+      "order": 0
+    },
+    {
+      "question": "无障碍手势执行精度不足且无法分离按下与抬起",
+      "answer": "### 问题描述\n在无障碍模式 (AccessibilityService) 运行脚本时，手势输入存在以下问题：\n\n- 手势轨迹运行精度不足\n- 无法独立控制 **按下 (down)** 与 **抬起 (up)**\n- 某些按键输入失效\n\n---\n\n### 技术分析\nAndroid 无障碍手势 API 的构建基于：\n\n```\nGestureDescription\n```\n其输入模型要求手势以：\n\n```\nPath\n```\n构建，这意味着系统强制使用路径轨迹抽象来发送事件，而非 event-driven 抽象。\n\n路径模型具有以下限制：\n\n1. `Down` 与 `Up` 属于同一条路径中的隐式行为，无法独立触发\n2. 不支持多段式事件（如 down → wait → up → wait → down → ...）\n3. 等效延迟只能依靠 `StrokeDescription` 的 `startTime` 实现\n\n而脚本执行通常更接近底层输入事件模型：\n\n```\nMotionEvent.ACTION_DOWN\nMotionEvent.ACTION_MOVE\nMotionEvent.ACTION_UP\n```\n\n两者语义不一致导致行为偏差。\n\n---\n\n### 关于键盘事件失效\n另一个现象是某些按键在 Accessibility 环境下无法正确传递。\n\n可能原因包括：\n\n- AccessibilityService 默认不具备 full input dispatch 权限\n- 某些硬件/虚拟键不在 accessibility 输入路径中\n- AOSP 层 filtering\n\n---\n\n### 当前结论\n经验证目前无法通过 Accessibility API 达到原生输入系统同等级别的控制精度。\n\n预计需要满足至少以下条件之一才能解决：\n\n1. 改用 InputManager / Instrumentation / Shell injection\n2. 使用 system 权限 或 root 权限\n3. 或等待 Android API 对 gesture event 模型扩展\n\n因此问题暂未解决。\n",
+      "resolved": false,
+      "url": null,
+      "users": [],
+      "order": 10
+    }
+  ]
+}

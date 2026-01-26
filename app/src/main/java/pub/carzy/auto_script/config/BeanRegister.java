@@ -1,10 +1,10 @@
 package pub.carzy.auto_script.config;
 
 import android.app.Application;
-import android.content.Context;
 
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 
+import java.util.List;
 import java.util.UUID;
 
 import io.noties.markwon.Markwon;
@@ -16,7 +16,10 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.impl.PrefsSetting;
 import pub.carzy.auto_script.config.impl.SnowflakeGenerator;
 import pub.carzy.auto_script.db.AppDatabase;
+import pub.carzy.auto_script.entity.Style;
+import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.TypeToken;
+import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
  * @author admin
@@ -34,6 +37,27 @@ public class BeanRegister {
         }
         QMUISkinManager manager = BeanFactory.getInstance().get(QMUISkinManager.class);
         manager.addSkin(1, R.style.Theme_Auto_Script);
+        //获取样式
+        ThreadUtil.runOnCpu(() -> {
+            List<Style> styles = setting.getAllStyle();
+            if (styles.isEmpty()) {
+                return;
+            }
+            Style currentStyle = null;
+            for (Style style : styles) {
+                if (currentStyle == null) {
+                    currentStyle = style;
+                    continue;
+                }
+                if (currentStyle.getCurrentVersion() < style.getCurrentVersion()) {
+                    currentStyle = style;
+                }
+            }
+            if (currentStyle != null) {
+                BeanFactory.getInstance().register(StaticValues.STYLE_VERSION, System.currentTimeMillis());
+                BeanFactory.getInstance().register(StaticValues.STYLE_CURRENT, currentStyle);
+            }
+        });
     }
 
     private static void registerSetting(Application context) {
@@ -51,5 +75,7 @@ public class BeanRegister {
                 .usePlugin(SyntaxHighlightPlugin.create(new Prism4j(new MyGrammarLocator()), Prism4jThemeDefault.create()))
                 .build();
         register.register(markwon);
+        //样式版本
+        register.register(StaticValues.STYLE_VERSION, StaticValues.EMPTY_DEFAULT_LONG_VALUE);
     }
 }

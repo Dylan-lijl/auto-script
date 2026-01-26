@@ -10,6 +10,10 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import pub.carzy.auto_script.config.AbstractSetting;
 
 /**
@@ -25,6 +29,11 @@ public class PrefsSetting extends AbstractSetting {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
+    @Override
+    public List<String> keys() {
+        return new ArrayList<>(prefs.getAll().keySet());
+    }
+
     @SuppressLint("CommitPrefEdits")
     @Override
     public void reset() {
@@ -33,10 +42,10 @@ public class PrefsSetting extends AbstractSetting {
 
     @Override
     protected <T> void write(String key, T value) {
-        if (value == null) return;
-
         SharedPreferences.Editor editor = prefs.edit();
-        if (value instanceof Integer) {
+        if (value == null) {
+            editor.remove(key);
+        } else if (value instanceof Integer) {
             editor.putInt(key, (Integer) value);
         } else if (value instanceof Long) {
             editor.putLong(key, (Long) value);

@@ -23,6 +23,7 @@ import java.util.List;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
 import pub.carzy.auto_script.databinding.ComAboutDevelopmentProcessBinding;
+import pub.carzy.auto_script.entity.BasicFileImport;
 import pub.carzy.auto_script.entity.DevelopmentProcessItem;
 import pub.carzy.auto_script.entity.WrapperEntity;
 import pub.carzy.auto_script.utils.ActivityUtils;
@@ -55,7 +56,7 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
                     Gson gson = new Gson();
                     WrapperEntity<DevelopmentProcessItem> wrapper = gson.fromJson(reader, new TypeToken<>() {
                     });
-                    wrapper.getData().sort(Comparator.comparing(DevelopmentProcessItem::getOrder));
+                    wrapper.getData().sort(Comparator.comparing(BasicFileImport::getOrder));
                     updateList(wrapper.getData());
                 } catch (IOException e) {
                     throw new RuntimeException(e);

@@ -3,12 +3,14 @@ package pub.carzy.auto_script.entity;
 import java.util.List;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author admin
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class AcknowledgementEntity {
+public class AcknowledgementEntity extends BasicFileImport{
     public static final int PEOPLE = 1;
     public static final int ORGANIZATION = 2;
     public static final int LIBRARY = 3;
@@ -16,7 +18,6 @@ public class AcknowledgementEntity {
     private String title;
     private Integer type;
     private String content;
-    private Integer order;
     private List<String> href;
     private Boolean deleteLine;
 }

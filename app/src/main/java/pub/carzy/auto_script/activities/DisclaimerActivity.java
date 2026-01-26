@@ -12,11 +12,13 @@ import com.qmuiteam.qmui.util.QMUIViewHelper;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 
 import pub.carzy.auto_script.R;
+import pub.carzy.auto_script.config.AbstractSetting;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.databinding.ViewDisclaimerBinding;
 import pub.carzy.auto_script.model.DisclaimerModel;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
+import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -104,7 +106,7 @@ public class DisclaimerActivity extends BaseActivity {
     private void startCountDown() {
         // 倒计时
         ThreadUtil.runOnCpu(() -> {
-            Integer tick = setting.getTick();
+            Integer tick = MixedUtil.getValueOrDefault(setting.getTick(), AbstractSetting.DefaultValue.TICK);
             ThreadUtil.runOnUi(() -> {
                 model.setTick(tick);
                 timer = new CountDownTimer(tick * 1000, 1000) {

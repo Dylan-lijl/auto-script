@@ -21,6 +21,7 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.databinding.ComAboutFAQBinding;
+import pub.carzy.auto_script.entity.BasicFileImport;
 import pub.carzy.auto_script.entity.FAQEntity;
 import pub.carzy.auto_script.entity.WrapperEntity;
 import pub.carzy.auto_script.model.AboutFAQModel;
@@ -54,7 +55,7 @@ public class AboutFAQActivity extends BaseActivity {
                     Gson gson = new Gson();
                     WrapperEntity<FAQEntity> data = gson.fromJson(reader, new TypeToken<>() {
                     });
-                    data.getData().sort(Comparator.comparing(FAQEntity::getOrder));
+                    data.getData().sort(Comparator.comparing(BasicFileImport::getOrder));
                     model.setData(data.getData());
                     updateList();
                 } catch (IOException e) {
@@ -70,8 +71,9 @@ public class AboutFAQActivity extends BaseActivity {
         });
     }
 
+    @SuppressWarnings("unchecked")
     private void updateList() {
-        CollapseView<FAQEntity> collapseView = binding.collapseView;
+        CollapseView<FAQEntity,TextView,ImageView,TextView> collapseView = binding.collapseView;
         collapseView.setTitleFactory(item -> {
             TextView textView = new TextView(this);
             textView.setText(item.getData().getQuestion());
@@ -88,7 +90,7 @@ public class AboutFAQActivity extends BaseActivity {
             return textView;
         });
         collapseView.setOnRenderListener((item) -> {
-            ImageView view = (ImageView) item.getRightView();
+            ImageView view = item.getRightView();
             view.setImageDrawable(ContextCompat.getDrawable(this, item.getData().isExpanded() ? R.drawable.arrow_down : R.drawable.arrow_left));
         });
     }

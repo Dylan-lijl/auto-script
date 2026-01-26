@@ -165,4 +165,15 @@
     <string name="download_progress">下載進度</string>
     <string name="faq">常見問題</string>
     <string name="troubleshooting">疑難雜症</string>
+    <string name="style">樣式</string>
+    <string name="status_bar">狀態欄</string>
+    <string name="background_color">背景顏色</string>
+    <string name="theme_mode">主題模式</string>
+    <string name="title_bar">標題欄</string>
+    <string name="text_color">文字顏色</string>
+    <string name="image_color">圖片顏色</string>
+    <string name="overlay">懸浮窗</string>
+    <string name="position">位置</string>
+    <string name="light">亮色</string>
+    <string name="dark">暗色</string>
 </resources>

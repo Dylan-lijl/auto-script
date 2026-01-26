@@ -43,6 +43,12 @@
         android:title="@string/faq"
         app:activity="pub.carzy.auto_script.activities.about.child.AboutFAQActivity"
         app:order="50" />
+    <item
+        android:id="@+id/troubleshooting"
+        android:enabled="true"
+        android:title="@string/troubleshooting"
+        app:activity="pub.carzy.auto_script.activities.about.child.AboutTroubleshootingActivity"
+        app:order="60" />
     <!--排最后-->
     <item
         android:id="@+id/ads"

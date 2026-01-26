@@ -165,4 +165,15 @@
     <string name="download_progress">Download Progress</string>
     <string name="faq">FAQ</string>
     <string name="troubleshooting">Troubleshooting</string>
+    <string name="style">Style</string>
+    <string name="status_bar">Status Bar</string>
+    <string name="background_color">Background Color</string>
+    <string name="theme_mode">Theme Mode</string>
+    <string name="title_bar">Title Bar</string>
+    <string name="text_color">Text Color</string>
+    <string name="image_color">Image Color</string>
+    <string name="overlay">Overlay</string>
+    <string name="position">Position</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
 </resources>

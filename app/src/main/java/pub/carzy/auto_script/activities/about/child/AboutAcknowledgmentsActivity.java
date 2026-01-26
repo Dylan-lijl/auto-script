@@ -34,7 +34,7 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
 import pub.carzy.auto_script.databinding.ComAboutAcknowledgmentsBinding;
 import pub.carzy.auto_script.entity.AcknowledgementEntity;
-import pub.carzy.auto_script.entity.AcknowledgementImport;
+import pub.carzy.auto_script.entity.BasicFileImport;
 import pub.carzy.auto_script.entity.WrapperEntity;
 import pub.carzy.auto_script.model.AboutAcknowledgmentModel;
 import pub.carzy.auto_script.utils.ActivityUtils;
@@ -70,7 +70,7 @@ public class AboutAcknowledgmentsActivity extends BaseActivity {
                     Gson gson = new Gson();
                     WrapperEntity<AcknowledgementEntity> data = gson.fromJson(reader, new TypeToken<>() {
                     });
-                    data.getData().sort(Comparator.comparing(AcknowledgementEntity::getOrder));
+                    data.getData().sort(Comparator.comparing(BasicFileImport::getOrder));
                     model.setData(data.getData());
                     updateList();
                 } catch (IOException e) {

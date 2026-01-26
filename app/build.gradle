@@ -50,6 +50,7 @@ dependencies {
     annotationProcessor libs.prism4j.bundler
     implementation libs.image
     implementation libs.linkify
+    implementation(libs.colorpickerview)
     implementation(libs.prism4j) {
         exclude group: 'org.jetbrains', module: 'annotations-java5'
     }
