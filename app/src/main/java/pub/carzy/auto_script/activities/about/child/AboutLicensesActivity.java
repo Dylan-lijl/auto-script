@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
 import com.google.gson.Gson;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,10 +33,13 @@ public class AboutLicensesActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.com_about_licenses);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         loadData();
     }
-
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
+    }
     private void loadData() {
         ThreadUtil.runOnCpu(() -> {
             InputStream is = getResources().openRawResource(R.raw.licenses);

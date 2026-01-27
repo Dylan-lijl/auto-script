@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -99,7 +100,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         return false;
     }
 
-    protected void initTopBar(QMUITopBarLayout actionBar) {
+    protected void initTopBar() {
+        QMUITopBarLayout actionBar = getTopBar();
         if (actionBar == null) {
             return;
         }
@@ -253,30 +255,30 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onStart();
         QMUITopBarLayout topBar = getTopBar();
         if (topBar != null) {
-            Long globalStyleVersion = BeanFactory.getInstance().get(StaticValues.STYLE_VERSION);
+            Long globalStyleVersion = BeanFactory.getInstance().get(StaticValues.STYLE_VERSION, false);
+            Style style = BeanFactory.getInstance().get(StaticValues.STYLE_CURRENT, false);
+            if (style == null) {
+                style = Style.DEFAULT_STYLE;
+            }
             if (styleVersion == -1) {
-                Style style = BeanFactory.getInstance().get(StaticValues.STYLE_CURRENT);
-                if (style == null) {
-                    return;
-                }
-                updateStyle(style, topBar,globalStyleVersion);
+                updateStyle(style, topBar, globalStyleVersion);
             } else if (styleVersion < globalStyleVersion) {
-                Style style = BeanFactory.getInstance().get(StaticValues.STYLE_CURRENT);
-                if (style == null) {
-                    return;
-                }
-                updateStyle(style, topBar,globalStyleVersion);
+                updateStyle(style, topBar, globalStyleVersion);
             }
         }
     }
 
-    protected void updateStyle(Style style, QMUITopBarLayout topBar, Long globalStyleVersion) {
+    protected void updateStyle(Style style, QMUITopBarLayout topBarLayout, Long globalStyleVersion) {
+        if (topBarLayout == null) {
+            return;
+        }
+        QMUITopBar topBar = topBarLayout.getTopBar();
         if (style == null || topBar == null) {
             return;
         }
         ActivityUtils.setWindowsStatusBarColor(this, style.getStatusBarBackgroundColor());
         ActivityUtils.setWindowsStatusLight(this, style.isStatusBarMode());
-        topBar.setBackgroundColor(style.getTopBarBackgroundColor());
+        topBarLayout.setBackgroundColor(style.getTopBarBackgroundColor());
         if (topBar.getTitleView() != null) {
             topBar.getTitleView().setTextColor(style.getTopBarTextColor());
         }

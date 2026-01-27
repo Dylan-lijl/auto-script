@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.Getter;
 import pub.carzy.auto_script.ex.BeanNotFoundException;
-import pub.carzy.auto_script.utils.TypeToken;
+import pub.carzy.auto_script.utils.MyTypeToken;
 
 /**
  * @author admin
@@ -53,7 +53,7 @@ public class BeanFactory {
         return this;
     }
 
-    public <T> BeanFactory register(TypeToken<T> type, Object instance) {
+    public <T> BeanFactory register(MyTypeToken<T> type, Object instance) {
         Objects.requireNonNull(type, "Generic type cannot be null");
         Objects.requireNonNull(instance, "Instance cannot be null");
         genericTypeMap.put(type.getType(), instance);
@@ -62,7 +62,7 @@ public class BeanFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(TypeToken<?> type, boolean ex) {
+    public <T> T get(MyTypeToken<?> type, boolean ex) {
         Object instance = genericTypeMap.get(type.getType());
         if (instance == null) {
             if (ex) {
@@ -75,7 +75,7 @@ public class BeanFactory {
         return (T) instance;
     }
 
-    public <T> T get(TypeToken<?> type) {
+    public <T> T get(MyTypeToken<?> type) {
         return get(type, true);
     }
 
@@ -176,6 +176,33 @@ public class BeanFactory {
                     }
                 }
             }
+        }
+    }
+    public void unregister(Class<?> clazz) {
+        Set<String> names = typeMap.get(clazz);
+        if (names == null || names.isEmpty()) return;
+
+        // copy 防止 ConcurrentModification
+        for (String name : new HashSet<>(names)) {
+            unregister(name);
+        }
+    }
+
+    public void unregister(MyTypeToken<?> token) {
+        Type type = token.getType();
+        Object bean = genericTypeMap.remove(type);
+        if (bean == null) return;
+
+        // 同时需要从 nameMap 中删除同一个 bean
+        String removeKey = null;
+        for (Map.Entry<String, Object> e : nameMap.entrySet()) {
+            if (e.getValue() == bean) {
+                removeKey = e.getKey();
+                break;
+            }
+        }
+        if (removeKey != null) {
+            unregister(removeKey);
         }
     }
 

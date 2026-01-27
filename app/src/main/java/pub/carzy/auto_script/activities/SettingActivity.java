@@ -6,17 +6,13 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -25,6 +21,7 @@ import androidx.databinding.DataBindingUtil;
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUITopBar;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogView;
@@ -52,7 +49,7 @@ import pub.carzy.auto_script.model.SettingModel;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
-import pub.carzy.auto_script.utils.TypeToken;
+import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
@@ -71,18 +68,37 @@ public class SettingActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.view_setting);
         setting = BeanFactory.getInstance().get(Setting.class);
-        idGenerator = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
+        idGenerator = BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
         });
         model = new SettingModel();
         binding.setModel(model);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         readConfig();
         initListeners();
     }
 
     private void initListeners() {
-        binding.styleAddBtn.setOnClickListener(e -> addNewStyle());
+        binding.styleAddBtn.setOnClickListener(e -> editStyle(true));
         binding.styleBtn.setOnClickListener(this::showAllStyle);
+        binding.styleRemoveBtn.setOnClickListener((e) -> ActivityUtils.createDeleteViewDialog(this, null, (qmuiDialog, integer) -> {
+            qmuiDialog.dismiss();
+            Style style = model.getProxy().getCurrentStyle();
+            if (style == null) {
+                return;
+            }
+            ThreadUtil.runOnCpu(() -> {
+                setting.removeStyle(style.getId());
+                //选择其他样式
+                ThreadUtil.runOnUi(() -> {
+                    model.getProxy().getStyles().remove(style);
+                    model.getProxy().updateCurrentStyle();
+                    updateGlobalStyle(model.getProxy().getCurrentStyle());
+                });
+            });
+        }).show());
+        binding.styleEditBtn.setOnClickListener(e -> {
+            editStyle(false);
+        });
         binding.statusBarBgcBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getStatusBarBackgroundColor(),
                 color -> {
                     model.getProxy().getCurrentStyle().setStatusBarBackgroundColor(color);
@@ -106,7 +122,7 @@ public class SettingActivity extends BaseActivity {
         binding.topBarTxtBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarTextColor(),
                 color -> {
                     model.getProxy().getCurrentStyle().setTopBarTextColor(color);
-                    if (binding.topBarLayout.actionBar.getTitleView()!=null){
+                    if (binding.topBarLayout.actionBar.getTitleView() != null) {
                         binding.topBarLayout.actionBar.getTitleView().setTextColor(color);
                     }
                     updateGlobalStyle(model.getProxy().getCurrentStyle());
@@ -116,14 +132,14 @@ public class SettingActivity extends BaseActivity {
                 color -> {
                     model.getProxy().getCurrentStyle().setTopBarImageColor(color);
                     QMUITopBar topBar = binding.topBarLayout.actionBar.getTopBar();
-                    if (topBar!=null){
-                        for (int i=0;i<topBar.getChildCount();i++){
+                    if (topBar != null) {
+                        for (int i = 0; i < topBar.getChildCount(); i++) {
                             View child = topBar.getChildAt(i);
-                            if (child==null){
+                            if (child == null) {
                                 continue;
                             }
                             //判断是否是图片组件
-                            if (child instanceof ImageView){
+                            if (child instanceof ImageView) {
                                 ImageView iv = (ImageView) child;
                                 Drawable d = iv.getDrawable();
                                 if (d != null) {
@@ -139,8 +155,14 @@ public class SettingActivity extends BaseActivity {
     }
 
     private void updateGlobalStyle(Style currentStyle) {
-        BeanFactory.getInstance().register(StaticValues.STYLE_VERSION,System.currentTimeMillis());
-        BeanFactory.getInstance().register(StaticValues.STYLE_CURRENT,currentStyle);
+        long version = System.currentTimeMillis();
+        BeanFactory.getInstance().register(StaticValues.STYLE_VERSION, version);
+        if (currentStyle == null) {
+            BeanFactory.getInstance().unregister(StaticValues.STYLE_CURRENT);
+        } else {
+            BeanFactory.getInstance().register(StaticValues.STYLE_CURRENT, currentStyle);
+        }
+        updateStyle(currentStyle, getTopBar(), version);
     }
 
     private void showAllStyle(View e) {
@@ -156,6 +178,7 @@ public class SettingActivity extends BaseActivity {
             if (style != null && style != currentStyle) {
                 style.setCurrentVersion(System.currentTimeMillis());
                 model.getProxy().updateCurrentStyle();
+                updateGlobalStyle(style);
                 ThreadUtil.runOnCpu(() -> setting.updateStyle(style));
             }
             if (popups[0] != null) {
@@ -175,7 +198,7 @@ public class SettingActivity extends BaseActivity {
                 .show(e);
     }
 
-    private void addNewStyle() {
+    private void editStyle(boolean add) {
         AtomicReference<String> name = new AtomicReference<>(getString(R.string.unknown));
         new QMUIDialog.CustomDialogBuilder(this) {
             @Nullable
@@ -197,6 +220,12 @@ public class SettingActivity extends BaseActivity {
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         1.0f
                 );
+                if (!add) {
+                    Style style = model.getProxy().getCurrentStyle();
+                    if (style != null) {
+                        text.setText(style.getName());
+                    }
+                }
                 text.setLayoutParams(params);
                 text.addTextChangedListener(new TextWatcher() {
                     @Override
@@ -217,7 +246,7 @@ public class SettingActivity extends BaseActivity {
                 root.addView(text);
                 return root;
             }
-        }.setTitle("添加新样式")
+        }.setTitle(add ? R.string.add_new_style : R.string.rename)
                 .addAction(R.string.cancel, (dialog, index) -> {
                     dialog.dismiss();
                 })
@@ -226,22 +255,37 @@ public class SettingActivity extends BaseActivity {
                     if (name.get().isEmpty()) {
                         name.set(getString(R.string.unknown));
                     }
-                    Style style = new Style();
-                    style.setId(idGenerator.nextId());
-                    style.setName(name.get());
-                    style.setTopBarImageColor(getColor(R.color.black));
-                    style.setTopBarTextColor(getColor(R.color.white));
-                    style.setTopBarBackgroundColor(getColor(R.color.teal_200));
-                    style.setStatusBarBackgroundColor(getColor(R.color.teal_200));
-                    style.setStatusBarMode(true);
-                    style.setCurrentVersion(System.currentTimeMillis());
-                    model.getProxy().getStyles().add(style);
-                    //todo 添加和切换样式都要更新全局,同时国际化语言
+                    Style style;
+                    if (add) {
+                        style = new Style();
+                        style.setId(idGenerator.nextId());
+                        style.setName(name.get());
+                        style.setTopBarImageColor(getColor(R.color.black));
+                        style.setTopBarTextColor(getColor(R.color.white));
+                        style.setTopBarBackgroundColor(getColor(R.color.teal_200));
+                        style.setStatusBarBackgroundColor(getColor(R.color.teal_200));
+                        style.setStatusBarMode(true);
+                        style.setCurrentVersion(System.currentTimeMillis());
+                        model.getProxy().getStyles().add(style);
+                        model.getProxy().updateCurrentStyle();
+                        updateGlobalStyle(style);
+                    } else {
+                        style = model.getProxy().getCurrentStyle();
+                        style.setName(name.get());
+                        if (style == null) {
+                            return;
+                        }
+                    }
                     ThreadUtil.runOnCpu(() -> {
                         setting.updateStyle(style);
                     });
                 })
                 .create().show();
+    }
+
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
     }
 
     private void openColorSelector(int defaultColor, Consumer<Integer> callback) {
@@ -258,7 +302,7 @@ public class SettingActivity extends BaseActivity {
                 return b.getRoot();
             }
         }
-                .setTitle("请选择颜色").create();
+                .setTitle(R.string.select_color_message).create();
         dialog.show();
     }
 

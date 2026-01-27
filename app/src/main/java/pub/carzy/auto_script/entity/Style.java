@@ -4,11 +4,26 @@ import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
 import pub.carzy.auto_script.BR;
+import pub.carzy.auto_script.R;
 
 /**
  * @author admin
  */
 public class Style extends BaseObservable {
+    public static final Style DEFAULT_STYLE;
+
+    static {
+        DEFAULT_STYLE = new Style();
+        DEFAULT_STYLE.setId(-1);
+        DEFAULT_STYLE.setName("null");
+        DEFAULT_STYLE.setCurrentVersion(System.currentTimeMillis());
+        DEFAULT_STYLE.setStatusBarMode(true);
+        DEFAULT_STYLE.setStatusBarBackgroundColor(R.color.white);
+        DEFAULT_STYLE.setTopBarBackgroundColor(R.color.white);
+        DEFAULT_STYLE.setTopBarTextColor(R.color.black);
+        DEFAULT_STYLE.setTopBarImageColor(R.color.black);
+    }
+
     private long id;
     private long currentVersion;
     /**

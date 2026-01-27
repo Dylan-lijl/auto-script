@@ -13,6 +13,7 @@ import androidx.databinding.DataBindingUtil;
 
 import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class ActionAddActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.view_action_add);
         initIntent();
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         List<MacroInfoActivity.CodeOption> options = MacroInfoActivity.CodeOption.allKeyEvent();
         binding.dropdown.setAdapter(MacroInfoActivity.CodeOption.createAdapter(this, options));
         binding.dropdown.setOnItemClickListener((parent, view, position, id) -> {
@@ -50,8 +51,12 @@ public class ActionAddActivity extends BaseActivity {
         });
         initListener();
     }
-
-    private void initTopBar() {
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
+    }
+    @Override
+    public void initTopBar() {
         binding.topBarLayout.actionBar.setTitle(getActionBarTitle());
         QMUIAlphaImageButton manyBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
         manyBtn.setOnClickListener(e -> openBottomSheet());

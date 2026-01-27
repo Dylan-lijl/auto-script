@@ -176,4 +176,9 @@
     <string name="position">Position</string>
     <string name="light">Light</string>
     <string name="dark">Dark</string>
+    <string name="add_new_style">Add New Style</string>
+    <string name="select_color_message">Please select a color</string>
+    <string name="dialogue_process">Dialogue Process</string>
+    <string name="future_plans">Future Plans</string>
+    <string name="other">Other</string>
 </resources>

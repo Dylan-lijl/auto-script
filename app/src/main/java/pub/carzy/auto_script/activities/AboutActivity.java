@@ -18,6 +18,7 @@ import androidx.databinding.DataBindingUtil;
 import com.google.gson.Gson;
 import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
@@ -76,7 +77,7 @@ public class AboutActivity extends BaseActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.view_about);
         model = new AboutModel();
         binding.setModel(model);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         init();
         initGroupListView();
     }
@@ -385,5 +386,10 @@ public class AboutActivity extends BaseActivity {
         addDefaultMenu(builder);
         QMUIBottomSheet build = builder.build();
         build.show();
+    }
+
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
     }
 }

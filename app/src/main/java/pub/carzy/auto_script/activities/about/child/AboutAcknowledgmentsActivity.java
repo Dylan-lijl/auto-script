@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.grouplist.QMUICommonListItemView;
 import com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView;
 import com.qmuiteam.qmui.widget.popup.QMUIPopup;
@@ -35,9 +36,11 @@ import pub.carzy.auto_script.activities.BaseActivity;
 import pub.carzy.auto_script.databinding.ComAboutAcknowledgmentsBinding;
 import pub.carzy.auto_script.entity.AcknowledgementEntity;
 import pub.carzy.auto_script.entity.BasicFileImport;
+import pub.carzy.auto_script.entity.DevelopmentProcessItem;
 import pub.carzy.auto_script.entity.WrapperEntity;
 import pub.carzy.auto_script.model.AboutAcknowledgmentModel;
 import pub.carzy.auto_script.utils.ActivityUtils;
+import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -53,10 +56,13 @@ public class AboutAcknowledgmentsActivity extends BaseActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.com_about_acknowledgments);
         model = new AboutAcknowledgmentModel();
         binding.setModel(model);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         loadData();
     }
-
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
+    }
     @Override
     protected String getActionBarTitle() {
         return getString(R.string.acknowledgments);
@@ -64,24 +70,15 @@ public class AboutAcknowledgmentsActivity extends BaseActivity {
 
     private void loadData() {
         ThreadUtil.runOnCpu(() -> {
-            InputStream is = getResources().openRawResource(R.raw.acknowledgements);
-            try {
-                try (InputStreamReader reader = new InputStreamReader(is)) {
-                    Gson gson = new Gson();
-                    WrapperEntity<AcknowledgementEntity> data = gson.fromJson(reader, new TypeToken<>() {
-                    });
-                    data.getData().sort(Comparator.comparing(BasicFileImport::getOrder));
-                    model.setData(data.getData());
-                    updateList();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            } finally {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            WrapperEntity<AcknowledgementEntity> data = MixedUtil.loadFileData(
+                    this,
+                    R.raw.acknowledgements,
+                    new TypeToken<>() {
+                    }
+            );
+            if (data != null) {
+                model.setData(data.getData());
+                updateList();
             }
         });
     }

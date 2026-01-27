@@ -1,45 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="model"
             type="pub.carzy.auto_script.model.CommonColorSelectorModel" />
     </data>
-
+    <!-- @see pub.carzy.auto_script.adapter.CommonColorAdapter-->
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_margin="30dp"
-        android:padding="30dp"
-        android:gravity="center_horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="30dp">
+
         <com.skydoves.colorpickerview.ColorPickerView
             android:id="@+id/colorPickerView"
-            app:colorModel="@{model}"
-            app:alphaBar="@{alphaSlideBar}"
-            app:actionMode="last"
             android:layout_width="match_parent"
-            android:layout_height="300dp"  />
+            android:layout_height="300dp"
+            app:actionMode="last"
+            app:alphaBar="@{alphaSlideBar}"
+            app:brightnessBar="@{brightnessSlide}"
+            app:colorModel="@{model}" />
+
         <com.skydoves.colorpickerview.sliders.AlphaSlideBar
-            android:layout_marginTop="20dp"
             android:id="@+id/alphaSlideBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:borderSize_AlphaSlideBar="5"
+            android:layout_marginTop="20dp"
             app:borderColor_AlphaSlideBar="@android:color/darker_gray"
+            app:borderSize_AlphaSlideBar="5"
             app:selector_AlphaSlideBar="@drawable/colorpickerview_wheel" />
-        <!--输入只允许#开头16进制颜色-->
-        <EditText
-            android:autofillHints="false"
-            android:text="@={model.colorString}"
-            android:digits="#0123456789ABCDEFabcdef"
-            android:maxLength="9"
-            android:inputType="textCapCharacters"
-            android:layout_width="200dp"
+
+        <com.skydoves.colorpickerview.sliders.BrightnessSlideBar
+            android:layout_marginTop="10dp"
+            android:id="@+id/brightnessSlide"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:ignore="LabelFor" />
+            app:borderColor_BrightnessSlider="@android:color/darker_gray"
+            app:borderSize_BrightnessSlider="5"
+            app:selector_BrightnessSlider="@drawable/colorpickerview_wheel" />
+        <!--输入只允许#开头16进制颜色-->
+        <LinearLayout
+            android:layout_marginTop="10dp"
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
+                android:background="@drawable/round_border"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:autofillHints="false"
+                android:digits="#0123456789ABCDEFabcdef"
+                android:inputType="textCapCharacters"
+                android:maxLength="9"
+                app:onFocusLost="@{model}"
+                android:text="@{model.colorString}"
+                app:colorView="@{colorPickerView}"
+                tools:ignore="LabelFor" />
+            <Button
+                android:focusableInTouchMode="true"
+                android:textColor="@color/link"
+                android:layout_marginStart="10dp"
+                android:layout_gravity="center_vertical"
+                style="@style/TextButtonStyle"
+                android:text="@string/confirm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
     </LinearLayout>
 </layout>

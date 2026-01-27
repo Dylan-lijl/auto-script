@@ -10,6 +10,7 @@ import androidx.databinding.DataBindingUtil;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,11 +22,13 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.databinding.ComAboutFAQBinding;
+import pub.carzy.auto_script.entity.AcknowledgementEntity;
 import pub.carzy.auto_script.entity.BasicFileImport;
 import pub.carzy.auto_script.entity.FAQEntity;
 import pub.carzy.auto_script.entity.WrapperEntity;
 import pub.carzy.auto_script.model.AboutFAQModel;
 import pub.carzy.auto_script.ui_components.components.CollapseView;
+import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -43,37 +46,33 @@ public class AboutFAQActivity extends BaseActivity {
         markwon = BeanFactory.getInstance().get(Markwon.class);
         model = new AboutFAQModel();
         binding.setModel(model);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         loadData();
+    }
+
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
     }
 
     private void loadData() {
         ThreadUtil.runOnCpu(() -> {
-            InputStream is = getResources().openRawResource(R.raw.faq);
-            try {
-                try (InputStreamReader reader = new InputStreamReader(is)) {
-                    Gson gson = new Gson();
-                    WrapperEntity<FAQEntity> data = gson.fromJson(reader, new TypeToken<>() {
-                    });
-                    data.getData().sort(Comparator.comparing(BasicFileImport::getOrder));
-                    model.setData(data.getData());
-                    updateList();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            } finally {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            WrapperEntity<FAQEntity> data = MixedUtil.loadFileData(
+                    this,
+                    R.raw.faq,
+                    new TypeToken<>() {
+                    }
+            );
+            if (data != null) {
+                model.setData(data.getData());
+                updateList();
             }
         });
     }
 
     @SuppressWarnings("unchecked")
     private void updateList() {
-        CollapseView<FAQEntity,TextView,ImageView,TextView> collapseView = binding.collapseView;
+        CollapseView<FAQEntity, TextView, ImageView, TextView> collapseView = binding.collapseView;
         collapseView.setTitleFactory(item -> {
             TextView textView = new TextView(this);
             textView.setText(item.getData().getQuestion());

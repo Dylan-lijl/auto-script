@@ -176,4 +176,9 @@
     <string name="position">位置</string>
     <string name="light">亮色</string>
     <string name="dark">暗色</string>
+    <string name="add_new_style">添加新樣式</string>
+    <string name="select_color_message">請選擇顏色</string>
+    <string name="dialogue_process">對話過程</string>
+    <string name="future_plans">後續計畫</string>
+    <string name="other">其它</string>
 </resources>

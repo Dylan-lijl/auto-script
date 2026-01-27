@@ -14,6 +14,7 @@ import androidx.databinding.DataBindingUtil;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ import pub.carzy.auto_script.entity.WrapperEntity;
 import pub.carzy.auto_script.model.AboutTroubleshootingModel;
 import pub.carzy.auto_script.ui_components.components.CollapseView;
 import pub.carzy.auto_script.utils.ActivityUtils;
+import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.StringUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -51,30 +53,24 @@ public class AboutTroubleshootingActivity extends BaseActivity {
         markwon = BeanFactory.getInstance().get(Markwon.class);
         model = new AboutTroubleshootingModel();
         binding.setModel(model);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         loadData();
     }
-
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
+    }
     private void loadData() {
         ThreadUtil.runOnCpu(() -> {
-            InputStream is = getResources().openRawResource(R.raw.troubleshooting);
-            try {
-                try (InputStreamReader reader = new InputStreamReader(is)) {
-                    Gson gson = new Gson();
-                    WrapperEntity<TroubleshootingEntity> data = gson.fromJson(reader, new TypeToken<>() {
-                    });
-                    data.getData().sort(Comparator.comparing(BasicFileImport::getOrder));
-                    model.setData(data.getData());
-                    updateList();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            } finally {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            WrapperEntity<TroubleshootingEntity> data = MixedUtil.loadFileData(
+                    this,
+                    R.raw.troubleshooting,
+                    new TypeToken<>() {
+                    }
+            );
+            if (data != null) {
+                model.setData(data.getData());
+                updateList();
             }
         });
     }

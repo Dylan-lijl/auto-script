@@ -41,13 +41,11 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
-import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
-import com.qmuiteam.qmui.widget.dialog.QMUIDialogBuilder;
 import com.qmuiteam.qmui.widget.popup.QMUIPopup;
 import com.qmuiteam.qmui.widget.popup.QMUIPopups;
-import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -62,7 +60,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -91,7 +88,7 @@ import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
-import pub.carzy.auto_script.utils.TypeToken;
+import pub.carzy.auto_script.utils.MyTypeToken;
 
 /**
  * @author admin
@@ -117,7 +114,10 @@ public class MacroInfoActivity extends BaseActivity {
         initTopBar();
         initFlowChatLayout();
     }
-
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
+    }
     private void initFlowChatLayout() {
         // 设置没有数据时显示的文字,,,按照mvvm思想这个属性应该写在xml,但是这个库未提供xml属性
         binding.flowChatLayout.actionBarChart.setNoDataText(getString(R.string.message_no_data));
@@ -132,8 +132,9 @@ public class MacroInfoActivity extends BaseActivity {
         addInfoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), createProcessAddInfoResult());
     }
 
-    private void initTopBar() {
-        initTopBar(binding.topBarLayout.actionBar);
+    @Override
+    public void initTopBar() {
+        super.initTopBar();
         binding.flowChatToolbar.actionStartBtn.setOnClickListener(e -> changeRunService());
     }
 
@@ -194,7 +195,7 @@ public class MacroInfoActivity extends BaseActivity {
     }
 
     private void init() {
-        idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
+        idWorker = BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
         });
         db = BeanFactory.getInstance().get(AppDatabase.class);
         binding = DataBindingUtil.setContentView(this, R.layout.view_macro_info);

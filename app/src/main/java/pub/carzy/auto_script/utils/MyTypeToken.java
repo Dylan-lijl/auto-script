@@ -9,10 +9,10 @@ import lombok.Getter;
  * @author admin
  */
 @Getter
-public abstract class TypeToken<T> {
+public abstract class MyTypeToken<T> {
     private final Type type;
 
-    protected TypeToken() {
+    protected MyTypeToken() {
         Type superClass = getClass().getGenericSuperclass();
         if (superClass instanceof ParameterizedType) {
             this.type = ((ParameterizedType) superClass).getActualTypeArguments()[0];

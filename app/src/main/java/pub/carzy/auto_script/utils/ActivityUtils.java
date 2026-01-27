@@ -23,6 +23,10 @@ import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
@@ -30,6 +34,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.ColorInt;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -39,7 +44,11 @@ import androidx.fragment.app.Fragment;
 
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+import com.qmuiteam.qmui.widget.QMUIWrapContentListView;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogView;
+import com.qmuiteam.qmui.widget.popup.QMUIFullScreenPopup;
+import com.qmuiteam.qmui.widget.popup.QMUIPopup;
 import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
 
@@ -55,6 +64,7 @@ import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.activities.SettingActivity;
 import pub.carzy.auto_script.activities.about.child.AboutAcknowledgmentsActivity;
+import pub.carzy.auto_script.adapter.SingleSimpleAdapter;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.Setting;
@@ -113,26 +123,40 @@ public class ActivityUtils {
                 .create();
     }
 
-    public static QMUIDialog createDeleteViewDialog(@NonNull Context context, @LayoutRes int layoutId) {
+    public static QMUIDialog createDeleteViewDialog(@NonNull Context context) {
+        return createDeleteViewDialog(context, null);
+    }
+
+    public static QMUIDialog createDeleteViewDialog(@NonNull Context context, @LayoutRes Integer layoutId) {
         return createDeleteViewDialog(context, layoutId, null);
     }
 
-    public static QMUIDialog createDeleteViewDialog(@NonNull Context context, @LayoutRes int layoutId, BiConsumer<QMUIDialog, Integer> confirm) {
+    public static QMUIDialog createDeleteViewDialog(@NonNull Context context, @LayoutRes Integer layoutId, BiConsumer<QMUIDialog, Integer> confirm) {
         return createDeleteViewDialog(context, layoutId, confirm, null);
     }
 
-    public static QMUIDialog createDeleteViewDialog(@NonNull Context context, @LayoutRes int layoutId, BiConsumer<QMUIDialog, Integer> confirm, BiConsumer<QMUIDialog, Integer> cancel) {
-        return new QMUIDialog.CustomDialogBuilder(context)
-                .setLayout(layoutId)
+    public static QMUIDialog createDeleteViewDialog(@NonNull Context context, @LayoutRes Integer layoutId, BiConsumer<QMUIDialog, Integer> confirm, BiConsumer<QMUIDialog, Integer> cancel) {
+        QMUIDialog.CustomDialogBuilder builder = new QMUIDialog.CustomDialogBuilder(context) {
+            @Nullable
+            @Override
+            protected View onCreateContent(QMUIDialog dialog, QMUIDialogView parent, Context context) {
+                return layoutId == null ? new TextView(context) : super.onCreateContent(dialog, parent, context);
+            }
+        };
+        return builder
                 .setTitle(R.string.delete_dialog_title)
                 .addAction(R.string.cancel, (d, i) -> {
                     if (cancel != null) {
                         cancel.accept(d, i);
+                    }else{
+                        d.dismiss();
                     }
                 })
                 .addAction(R.string.confirm, (d, i) -> {
                     if (confirm != null) {
                         confirm.accept(d, i);
+                    }else{
+                        d.dismiss();
                     }
                 })
                 .create();
@@ -386,7 +410,12 @@ public class ActivityUtils {
     }
 
     public static QMUIQuickAction createQuickAction(Context context) {
-        return null;
+        return QMUIPopups.quickAction(context,
+                        QMUIDisplayHelper.dp2px(context, 56),
+                        QMUIDisplayHelper.dp2px(context, 56))
+                .shadow(true)
+                .skinManager(QMUISkinManager.defaultInstance(context))
+                .edgeProtection(QMUIDisplayHelper.dp2px(context, 20));
     }
 
     public static Drawable getDrawable(Context context, int drawableId, int colorId) {
@@ -452,7 +481,7 @@ public class ActivityUtils {
      * 设置状态栏背景颜色（兼容 Android 各版本）
      *
      * @param activity Activity
-     * @param color 状态栏颜色
+     * @param color    状态栏颜色
      */
     public static void setWindowsStatusBarColor(Activity activity, @ColorInt int color) {
         Window window = activity.getWindow();
@@ -516,4 +545,14 @@ public class ActivityUtils {
         // 状态栏图标默认白色，无法更改
     }
 
+    public static QMUIPopup listPopup(Context context, int width, int maxHeight, BaseAdapter adapter, AdapterView.OnItemClickListener onItemClickListener, AdapterView.OnItemLongClickListener longClickListener) {
+        ListView listView = new QMUIWrapContentListView(context, maxHeight);
+        listView.setAdapter(adapter);
+        listView.setVerticalScrollBarEnabled(false);
+        listView.setOnItemClickListener(onItemClickListener);
+        listView.setOnItemLongClickListener(longClickListener);
+        listView.setDivider(null);
+        listView.setPadding(10, 10, 10, 10);
+        return QMUIPopups.popup(context, width).view(listView);
+    }
 }

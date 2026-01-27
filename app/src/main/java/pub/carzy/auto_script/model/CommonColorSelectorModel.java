@@ -1,6 +1,7 @@
 package pub.carzy.auto_script.model;
 
 import android.graphics.Color;
+import android.util.Log;
 
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
@@ -42,13 +43,32 @@ public class CommonColorSelectorModel extends BaseObservable {
     // 对应的，在 EditText 双向绑定时，需要一个反向转换
     public void setColorString(String colorStr) {
         try {
-            if (colorStr != null && (colorStr.length() == 7 || colorStr.length() == 9)) {
-                int parsedColor = Color.parseColor(colorStr);
-                if (this.color.get() != parsedColor) {
-                    setColor(parsedColor);
+            if (colorStr.startsWith("#")){
+                int length = colorStr.length();
+                // 处理简写格式
+                if (length == 4) {
+                    // #RGB -> #RRGGBB
+                    colorStr = "#" + repeat(colorStr.charAt(1)) + repeat(colorStr.charAt(2)) + repeat(colorStr.charAt(3));
+                    length = colorStr.length();
+                } else if (length == 5) {
+                    // #ARGB -> #AARRGGBB
+                    colorStr = "#" + repeat(colorStr.charAt(1)) + repeat(colorStr.charAt(2)) + repeat(colorStr.charAt(3)) + repeat(colorStr.charAt(4));
+                    length = colorStr.length();
                 }
+                if (length == 7 || length == 9) {
+                    int parsedColor = Color.parseColor(colorStr);
+                    if (this.color.get() != parsedColor) {
+                        setColor(parsedColor);
+                    }
+                }
+            }else{
+                setColor(Color.WHITE);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.e("CommonColorSelectorModel", "setColorString", e);
         }
+    }
+    private String repeat(char c) {
+        return String.valueOf(c) + c;
     }
 }

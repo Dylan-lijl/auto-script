@@ -8,6 +8,7 @@
         <import type="android.view.View" />
 
         <import type="pub.carzy.auto_script.utils.MixedUtil" />
+
         <import type="pub.carzy.auto_script.utils.StringUtils" />
 
         <variable
@@ -51,40 +52,80 @@
                     android:paddingEnd="0dp">
 
                     <LinearLayout
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:baselineAligned="true">
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center_vertical">
 
-                        <TextView
+                        <LinearLayout
                             android:id="@+id/style_btn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:drawablePadding="5dp"
-                            android:paddingStart="5dp"
-                            android:paddingEnd="5dp"
-                            android:text="@{model.proxy.currentStyle==null?@string/empty:model.proxy.currentStyle.name}"
-                            android:textColor="@color/link"
-                            android:textSize="16sp"
-                            app:drawableEndCompat="@drawable/arrow_down"
-                            app:drawableTint="@color/link" />
+                            android:baselineAligned="true"
+                            android:gravity="center_vertical"
+                            tools:ignore="UseCompoundDrawables">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="5dp"
+                                android:paddingEnd="5dp"
+                                android:text="@{model.proxy.currentStyle==null?@string/empty:model.proxy.currentStyle.name}"
+                                android:textColor="@color/link"
+                                android:textSize="18sp" />
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_marginStart="2dp"
+                                android:contentDescription="@string/select_color_message"
+                                android:src="@drawable/arrow_down"
+                                app:tint="@color/link" />
+                        </LinearLayout>
 
                         <ImageButton
                             android:id="@+id/style_add_btn"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginStart="10dp"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="20dp"
+                            android:adjustViewBounds="true"
                             android:contentDescription="@string/add"
+                            android:scaleType="fitCenter"
                             android:src="@drawable/add"
-                            app:tint="@color/link" />
+                            app:tint="@color/safe" />
+                        <LinearLayout
+                            android:visibility="@{model.proxy.currentStyle==null?View.GONE:View.VISIBLE}"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+                            <ImageButton
+                                android:id="@+id/style_remove_btn"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_marginStart="10dp"
+                                android:adjustViewBounds="true"
+                                android:contentDescription="@string/delete"
+                                android:scaleType="fitCenter"
+                                android:src="@drawable/delete"
+                                app:tint="@color/danger" />
+                            <ImageButton
+                                android:id="@+id/style_edit_btn"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_marginStart="10dp"
+                                android:adjustViewBounds="true"
+                                android:contentDescription="@string/rename"
+                                android:scaleType="fitCenter"
+                                android:src="@drawable/edit"
+                                app:tint="@color/link" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <TextView
-                        android:textSize="18sp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/status_bar" />
+                        android:text="@string/status_bar"
+                        android:textSize="18sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -133,18 +174,18 @@
                                     android:id="@+id/status_bar_mode_btn"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:background="@{model.proxy.currentStyle.statusBarMode?@color/white:@color/black}"
-                                    android:text="@{model.proxy.currentStyle.statusBarMode?@string/light:@string/dark}"
-                                    android:textColor="@{model.proxy.currentStyle.statusBarMode?@color/black:@color/white}" />
+                                    android:background="@{model.proxy.currentStyle.statusBarMode?@color/black:@color/white}"
+                                    android:text="@{model.proxy.currentStyle.statusBarMode?@string/dark:@string/light}"
+                                    android:textColor="@{model.proxy.currentStyle.statusBarMode?@color/white:@color/black}" />
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
 
                     <TextView
-                        android:textSize="18sp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/title_bar" />
+                        android:text="@string/title_bar"
+                        android:textSize="18sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -222,12 +263,12 @@
                     android:textStyle="bold" />
 
                 <LinearLayout
-                    android:visibility="@{model.proxy.floatPoint==null?View.GONE:View.VISIBLE}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
                     android:baselineAligned="true"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:visibility="@{model.proxy.floatPoint==null?View.GONE:View.VISIBLE}">
 
                     <TextView
                         android:layout_width="wrap_content"

@@ -176,4 +176,9 @@
     <string name="position">いち</string>
     <string name="light">ライト</string>
     <string name="dark">ダーク</string>
+    <string name="add_new_style">新しいスタイルを追加</string>
+    <string name="select_color_message">色を選択してください</string>
+    <string name="dialogue_process">対話の履歴</string>
+    <string name="future_plans">今後の計画</string>
+    <string name="other">その他</string>
 </resources>

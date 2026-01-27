@@ -9,6 +9,7 @@ import androidx.databinding.DataBindingUtil;
 
 import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 
 import pub.carzy.auto_script.R;
@@ -45,11 +46,16 @@ public class DisclaimerActivity extends BaseActivity {
         model = new DisclaimerModel();
         binding.setModel(model);
         setting = BeanFactory.getInstance().get(Setting.class);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         init();
     }
-
-    private void initTopBar() {
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
+    }
+    @Override
+    protected void initTopBar() {
+        super.initTopBar();
         binding.topBarLayout.actionBar.setTitle(getActionBarTitle());
         QMUIAlphaImageButton manyBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
         manyBtn.setOnClickListener(e -> openBottomSheet());

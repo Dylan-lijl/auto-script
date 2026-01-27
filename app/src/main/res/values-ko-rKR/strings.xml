@@ -149,7 +149,7 @@
     <string name="acknowledgments">감사의 말</string>
     <string name="ads">광고</string>
     <string name="open_source_license">오픈 소스 라이선스</string>
-    <string name="development_process">개발 과정</string>
+    <string name="development_process">개발 블루프린트</string>
     <string name="checking_update">업데이트를 확인하는 중…</string>
     <string name="checking_update_failed">최신 버전 가져오기에 실패했습니다</string>
     <string name="no_new_version">사용 가능한 새 버전이 없습니다</string>
@@ -176,4 +176,9 @@
     <string name="position">위치</string>
     <string name="light">라이트</string>
     <string name="dark">다크</string>
+    <string name="add_new_style">새 스타일 추가</string>
+    <string name="select_color_message">색을 선택하세요</string>
+    <string name="dialogue_process">대화 과정</string>
+    <string name="future_plans">향후 계획</string>
+    <string name="other">기타</string>
 </resources>

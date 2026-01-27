@@ -149,7 +149,7 @@
     <string name="acknowledgments">致谢</string>
     <string name="ads">广告</string>
     <string name="open_source_license">开源许可</string>
-    <string name="development_process">开发过程</string>
+    <string name="development_process">开发蓝图</string>
     <string name="checking_update">检查更新中...</string>
     <string name="checking_update_failed">获取最新版本失败</string>
     <string name="no_new_version">没有可用的新版本</string>
@@ -176,4 +176,9 @@
     <string name="position">位置</string>
     <string name="light">亮色</string>
     <string name="dark">暗色</string>
+    <string name="add_new_style">添加新样式</string>
+    <string name="select_color_message">请选择颜色</string>
+    <string name="dialogue_process">对话过程</string>
+    <string name="future_plans">后续计划</string>
+    <string name="other">其他</string>
 </resources>

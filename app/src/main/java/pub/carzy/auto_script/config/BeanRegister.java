@@ -18,7 +18,7 @@ import pub.carzy.auto_script.config.impl.SnowflakeGenerator;
 import pub.carzy.auto_script.db.AppDatabase;
 import pub.carzy.auto_script.entity.Style;
 import pub.carzy.auto_script.utils.ThreadUtil;
-import pub.carzy.auto_script.utils.TypeToken;
+import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
@@ -64,7 +64,7 @@ public class BeanRegister {
         BeanFactory register = BeanFactory.getInstance()
                 .register(new PrefsSetting(context))
                 .register(context)
-                .register(new TypeToken<IdGenerator<Long>>() {
+                .register(new MyTypeToken<IdGenerator<Long>>() {
                 }, new SnowflakeGenerator())
                 .register(QMUISkinManager.defaultInstance(context))
                 .register(AppDatabase.get(context));

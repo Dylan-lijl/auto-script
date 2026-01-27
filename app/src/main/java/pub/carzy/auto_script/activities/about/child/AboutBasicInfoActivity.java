@@ -12,6 +12,7 @@ import androidx.databinding.DataBindingUtil;
 
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
 import com.qmuiteam.qmui.widget.textview.QMUILinkTextView;
@@ -40,10 +41,13 @@ public class AboutBasicInfoActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.com_about_basic_info);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         init();
     }
-
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
+    }
     private void init() {
         AboutBasicInfoModel model = new AboutBasicInfoModel();
         model.setMinSdk(ActivityUtils.minSdk(this));

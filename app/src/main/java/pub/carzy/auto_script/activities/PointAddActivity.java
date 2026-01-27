@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ObservableBoolean;
 
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +35,10 @@ public class PointAddActivity extends BaseActivity {
     private DraggableDotView dotView;
     private ViewGroup overlay;
     private int r = 20;
-
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
+    }
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +64,7 @@ public class PointAddActivity extends BaseActivity {
         afterOrder = (afterOrder = intent.getFloatExtra("afterOrder", -1)) == -1 ? null : afterOrder;
         binding.setIndex(index);
         binding.setData(data);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         initListener();
     }
 

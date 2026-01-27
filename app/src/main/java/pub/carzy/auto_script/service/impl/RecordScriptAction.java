@@ -43,7 +43,7 @@ import pub.carzy.auto_script.service.dto.UpdateParam;
 import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.Stopwatch;
-import pub.carzy.auto_script.utils.TypeToken;
+import pub.carzy.auto_script.utils.MyTypeToken;
 
 /**
  * @author admin
@@ -78,7 +78,7 @@ public class RecordScriptAction extends BasicAction {
             if (!initialized) {
                 //注册上去
                 BeanFactory.getInstance().register(this);
-                idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
+                idWorker = BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
                 });
                 setting = BeanFactory.getInstance().get(Setting.class);
                 motionList = new ArrayList<>();

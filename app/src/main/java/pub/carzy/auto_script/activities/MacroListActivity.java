@@ -40,6 +40,7 @@ import com.qmuiteam.qmui.recyclerView.QMUISwipeViewHolder;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.util.QMUIKeyboardHelper;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout;
 
@@ -85,7 +86,7 @@ import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
-import pub.carzy.auto_script.utils.TypeToken;
+import pub.carzy.auto_script.utils.MyTypeToken;
 
 /**
  * @author admin
@@ -353,7 +354,7 @@ public class MacroListActivity extends BaseActivity {
 
     private void initBase() {
         db = BeanFactory.getInstance().get(AppDatabase.class);
-        idWorker = BeanFactory.getInstance().get(new TypeToken<IdGenerator<Long>>() {
+        idWorker = BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
         });
         model = new MacroListModel();
         binding = DataBindingUtil.setContentView(this, R.layout.view_macro_list);
@@ -416,9 +417,12 @@ public class MacroListActivity extends BaseActivity {
             }
         });
     }
-
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
+    }
     private void initToolbar() {
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
         QMUIAlphaImageButton searchBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.search, QMUIViewHelper.generateViewId());
         EditText searchEdit = createSearchEditText();
         searchBtn.setOnClickListener(v -> {

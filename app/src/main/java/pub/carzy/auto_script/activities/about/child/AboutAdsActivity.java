@@ -5,6 +5,8 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
+import com.qmuiteam.qmui.widget.QMUITopBarLayout;
+
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
 import pub.carzy.auto_script.databinding.ComAboutAdsBinding;
@@ -19,6 +21,10 @@ public class AboutAdsActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.com_about_ads);
-        initTopBar(binding.topBarLayout.actionBar);
+        initTopBar();
+    }
+    @Override
+    protected QMUITopBarLayout getTopBar() {
+        return binding.topBarLayout.actionBar;
     }
 }
