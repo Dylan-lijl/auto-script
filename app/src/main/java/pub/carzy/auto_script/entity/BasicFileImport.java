@@ -7,5 +7,6 @@ import lombok.Data;
  */
 @Data
 public abstract class BasicFileImport {
-    private Integer order;
+    private Integer order = Integer.MAX_VALUE;
+    private Long id;
 }

@@ -181,4 +181,7 @@
     <string name="dialogue_process">대화 과정</string>
     <string name="future_plans">향후 계획</string>
     <string name="other">기타</string>
+    <string name="reduce">감소</string>
+    <string name="test">테스트</string>
+    <string name="move_message">길게 눌러 이동</string>
 </resources>

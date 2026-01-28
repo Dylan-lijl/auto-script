@@ -181,4 +181,7 @@
     <string name="dialogue_process">对话过程</string>
     <string name="future_plans">后续计划</string>
     <string name="other">其他</string>
+    <string name="reduce">减少</string>
+    <string name="test">测试</string>
+    <string name="move_message">长按移动</string>
 </resources>

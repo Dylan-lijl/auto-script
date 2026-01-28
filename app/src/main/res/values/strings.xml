@@ -181,4 +181,7 @@
     <string name="dialogue_process">Dialogue Process</string>
     <string name="future_plans">Future Plans</string>
     <string name="other">Other</string>
+    <string name="reduce">Reduce</string>
+    <string name="test">Test</string>
+    <string name="move_message">Long press to move</string>
 </resources>

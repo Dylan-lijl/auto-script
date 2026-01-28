@@ -181,4 +181,7 @@
     <string name="dialogue_process">対話の履歴</string>
     <string name="future_plans">今後の計画</string>
     <string name="other">その他</string>
+    <string name="reduce">げんしょう</string>
+    <string name="test">テスト</string>
+    <string name="move_message">長押しで移動</string>
 </resources>

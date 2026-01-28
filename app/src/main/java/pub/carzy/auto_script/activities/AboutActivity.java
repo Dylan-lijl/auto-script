@@ -383,7 +383,13 @@ public class AboutActivity extends BaseActivity {
                         return;
                     }
                 });
-        addDefaultMenu(builder);
+        addActionByXml(builder, this, R.xml.actions_common,
+                (b, m, item) -> {
+                    if (item.getId() == R.id.menu_about) {
+                        return;
+                    }
+                    b.addItem(m);
+                });
         QMUIBottomSheet build = builder.build();
         build.show();
     }
