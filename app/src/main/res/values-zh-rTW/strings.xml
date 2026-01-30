@@ -17,7 +17,7 @@
     <string name="help_script_list_run">執行腳本</string>
     <string name="help_script_list_pause">暫停腳本</string>
     <string name="help_script_list_stop">停止腳本</string>
-    <string name="accessibility_service_description">腳本錄製服務</string>
+    <string name="accessibility_service_summary">腳本錄製與回放服務</string>
     <string name="permission_prompt">權限提示</string>
     <string name="permission_content">請啟用輔助功能以支援腳本錄製</string>
     <string name="go_to_open">去打開</string>
@@ -188,4 +188,5 @@
     <string name="issues_submit_message">如有問題，請提交到 GitHub 上</string>
     <string name="auto_play_on">已啟用自動回放</string>
     <string name="auto_play_off">已停用自動回放</string>
+    <string name="accessibility_service_description">應用支援腳本錄製與回放。錄製過程中會保存使用者的手勢與按鍵操作，回放時依照錄製時的狀態與順序執行腳本，實現操作的自動重現。</string>
 </resources>

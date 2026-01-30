@@ -17,7 +17,7 @@
     <string name="help_script_list_run">스크립트 실행</string>
     <string name="help_script_list_pause">스크립트 일시정지</string>
     <string name="help_script_list_stop">스크립트 중지</string>
-    <string name="accessibility_service_description">스크립트 녹음 서비스</string>
+    <string name="accessibility_service_summary">스크립트 녹화 및 재생 서비스</string>
     <string name="permission_prompt">권한 프롬프트</string>
     <string name="permission_content">스크립트 녹화를 지원하려면 보조 기능을 활성화하세요</string>
     <string name="go_to_open">열러 가기</string>
@@ -188,4 +188,5 @@
     <string name="issues_submit_message">문제가 있으면 GitHub에 제출해 주세요</string>
     <string name="auto_play_on">자동 재생이 활성화되었습니다</string>
     <string name="auto_play_off">자동 재생이 비활성화되었습니다</string>
+    <string name="accessibility_service_description">이 애플리케이션은 스크립트 녹화 및 재생을 지원합니다. 녹화 과정에서 사용자의 제스처와 키 입력이 저장되며, 재생 시에는 녹화 당시의 상태와 순서에 따라 스크립트가 실행되어 작업을 자동으로 재현합니다.</string>
 </resources>

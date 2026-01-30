@@ -10,4 +10,4 @@
     android:packageNames="*"
     android:notificationTimeout="100"
     android:settingsActivity="pub.carzy.auto_script.activities.MacroListActivity"
-    android:summary="" />
+    android:summary="@string/accessibility_service_summary" />

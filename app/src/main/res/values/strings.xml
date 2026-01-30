@@ -17,7 +17,7 @@
     <string name="help_script_list_run">Run the script</string>
     <string name="help_script_list_pause">Pause script</string>
     <string name="help_script_list_stop">Stop script</string>
-    <string name="accessibility_service_description">Script Recording Service</string>
+    <string name="accessibility_service_summary">Script Recording and Playback Service</string>
     <string name="permission_prompt">Permission prompt</string>
     <string name="permission_content">Please enable auxiliary functions to support script recording</string>
     <string name="go_to_open">Go to open</string>
@@ -188,4 +188,5 @@
     <string name="issues_submit_message">If you encounter any issues, please submit them on GitHub</string>
     <string name="auto_play_on">Auto playback enabled</string>
     <string name="auto_play_off">Auto playback disabled</string>
+    <string name="accessibility_service_description">The application supports script recording and playback. During recording, the user’s gestures and key operations are saved. During playback, the script is executed according to the state and order at the time of recording, enabling automatic reproduction of operations.</string>
 </resources>

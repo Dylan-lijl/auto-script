@@ -17,7 +17,7 @@
     <string name="help_script_list_run">スクリプトを実行</string>
     <string name="help_script_list_pause">スクリプトを一時停止</string>
     <string name="help_script_list_stop">スクリプトを停止</string>
-    <string name="accessibility_service_description">スクリプト録音サービス</string>
+    <string name="accessibility_service_summary">スクリプト録制・再生サービス</string>
     <string name="permission_prompt">権限プロンプト</string>
     <string name="permission_content">スクリプト録画をサポートするために補助機能を有効にしてください</string>
     <string name="go_to_open">開きに行く</string>
@@ -188,4 +188,5 @@
     <string name="issues_submit_message">問題がある場合は、GitHub に投稿してください</string>
     <string name="auto_play_on">自動再生が有効になりました</string>
     <string name="auto_play_off">自動再生が無効になりました</string>
+    <string name="accessibility_service_description">本アプリはスクリプトの録画と再生に対応しています。録画中はユーザーのジェスチャーやキー操作が保存され、再生時には録画時の状態と順序に従ってスクリプトが実行され、操作を自動的に再現します。</string>
 </resources>
