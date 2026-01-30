@@ -3,6 +3,7 @@ package pub.carzy.auto_script.activities.about.child;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -31,6 +32,8 @@ import com.qmuiteam.qmui.widget.tab.QMUITabBuilder;
 import com.qmuiteam.qmui.widget.tab.QMUITabSegment;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -352,6 +355,25 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
         public Integer getLayoutId() {
             return R.layout.com_about_dev_other;
         }
+
+        @Override
+        protected void selected(boolean first) {
+            super.selected(first);
+            if (first) {
+                binding.linkBtn.setOnClickListener(e -> ActivityUtils.openToBrowser(context, binding.linkBtn.getText().toString()));
+                binding.linkBtn.setOnLongClickListener(e -> {
+                    ActivityUtils.copyToClipboard(context, "link", binding.linkBtn.getText().toString());
+                    Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show();
+                    return true;
+                });
+                binding.issuesBtn.setOnClickListener(e -> ActivityUtils.openToBrowser(context, binding.issuesBtn.getText().toString()));
+                binding.issuesBtn.setOnLongClickListener(e -> {
+                    ActivityUtils.copyToClipboard(context, "link", binding.issuesBtn.getText().toString());
+                    Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show();
+                    return true;
+                });
+            }
+        }
     }
 
     static class TestCallback extends TabCallback<ComAboutDevTestBinding> {
@@ -440,7 +462,10 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
                 binding.resetBtn.setOnClickListener(e -> {
                     m.reset();
                 });
+                binding.testBtn.setOnClickListener(e->createTestListener());
             }
+        }
+        private void createTestListener() {
         }
     }
 }

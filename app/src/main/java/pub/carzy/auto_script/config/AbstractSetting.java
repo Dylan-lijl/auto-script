@@ -19,6 +19,7 @@ public abstract class AbstractSetting implements Setting {
         protected static final String SHOW_RECORD_WINDOW = "show_record_window";
         protected static final String AUTO_RUN_RECORD = "auto_run_record";
         protected static final String STYLE = "style_";
+        protected static final String AUTO_PLAY = "auto_play";
     }
 
     public static class DefaultValue {
@@ -134,5 +135,15 @@ public abstract class AbstractSetting implements Setting {
     @Override
     public void removeStyle(long id) {
         write(Key.STYLE + id, null);
+    }
+
+    @Override
+    public void setAutoPlay(Boolean v) {
+        write(Key.AUTO_PLAY, v);
+    }
+
+    @Override
+    public Boolean getAutoPlay() {
+        return read(Key.AUTO_PLAY, true, Boolean.class);
     }
 }

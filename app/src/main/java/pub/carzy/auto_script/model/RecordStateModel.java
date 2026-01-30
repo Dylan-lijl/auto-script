@@ -14,6 +14,17 @@ public class RecordStateModel extends BaseObservable {
     public static final int STATE_PAUSED = 2;
 
     private int state = STATE_IDLE;
+    private boolean autoReplay;
+
+    @Bindable
+    public boolean isAutoReplay() {
+        return autoReplay;
+    }
+
+    public void setAutoReplay(boolean autoReplay) {
+        this.autoReplay = autoReplay;
+        notifyPropertyChanged(BR.autoReplay);
+    }
 
     @Bindable
     public int getState() {

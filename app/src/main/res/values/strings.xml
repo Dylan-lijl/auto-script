@@ -13,7 +13,7 @@
     <string name="language">English</string>
     <string name="no_language_support">No available languages detected</string>
     <string name="script_list_title">Script List</string>
-    <string name="help_script_list_record">Recording Script</string>
+    <string name="help_script_list_record">Record Script</string>
     <string name="help_script_list_run">Run the script</string>
     <string name="help_script_list_pause">Pause script</string>
     <string name="help_script_list_stop">Stop script</string>
@@ -184,4 +184,8 @@
     <string name="reduce">Reduce</string>
     <string name="test">Test</string>
     <string name="move_message">Long press to move</string>
+    <string name="project_principles">Project Principles</string>
+    <string name="issues_submit_message">If you encounter any issues, please submit them on GitHub</string>
+    <string name="auto_play_on">Auto playback enabled</string>
+    <string name="auto_play_off">Auto playback disabled</string>
 </resources>

@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.service;
 
+import android.accessibilityservice.AccessibilityGestureEvent;
 import android.accessibilityservice.AccessibilityService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,7 +10,10 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.accessibility.AccessibilityEvent;
+
+import androidx.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -85,6 +89,12 @@ public class MyAccessibilityService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         opens.forEach((k, v) -> v.onAccessibilityEvent(event));
+    }
+
+    @Override
+    public void onMotionEvent(@NonNull MotionEvent event) {
+        Log.d(this.getClass().getCanonicalName(), "onMotionEvent: " + event);
+        super.onMotionEvent(event);
     }
 
     @Override

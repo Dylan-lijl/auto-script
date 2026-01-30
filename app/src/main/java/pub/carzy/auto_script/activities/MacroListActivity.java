@@ -515,6 +515,7 @@ public class MacroListActivity extends BaseActivity {
                             return;
                         }
                         m.setText(item.getTitle() + "(" + adapter.checkedSize() + ")");
+                    }else if (item.getId()==R.id.record_script){
                     }
                     builder.addItem(m);
                 });

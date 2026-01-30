@@ -20,6 +20,17 @@
         android:padding="8dp">
 
         <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/auto_play_btn"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:adjustViewBounds="true"
+            android:background="@color/transparent"
+            android:src="@drawable/checked"
+            android:scaleType="fitCenter"
+            android:tint="@{recordState.autoReplay?@color/link:@color/disabled}"
+            android:visibility="@{recordState.state==RecordStateModel.STATE_IDLE||recordState.state==RecordStateModel.STATE_PAUSED?View.VISIBLE:View.GONE}" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/btnFloatingRecord"
             android:layout_width="wrap_content"
             android:layout_height="36dp"

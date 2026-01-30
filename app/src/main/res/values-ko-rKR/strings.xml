@@ -13,7 +13,7 @@
     <string name="language">한국어</string>
     <string name="no_language_support">사용 가능한 언어가 없습니다</string>
     <string name="script_list_title">스크립트 목록</string>
-    <string name="help_script_list_record">녹음 스크립트</string>
+    <string name="help_script_list_record">스크립트 녹화</string>
     <string name="help_script_list_run">스크립트 실행</string>
     <string name="help_script_list_pause">스크립트 일시정지</string>
     <string name="help_script_list_stop">스크립트 중지</string>
@@ -184,4 +184,8 @@
     <string name="reduce">감소</string>
     <string name="test">테스트</string>
     <string name="move_message">길게 눌러 이동</string>
+    <string name="project_principles">프로젝트 원리</string>
+    <string name="issues_submit_message">문제가 있으면 GitHub에 제출해 주세요</string>
+    <string name="auto_play_on">자동 재생이 활성화되었습니다</string>
+    <string name="auto_play_off">자동 재생이 비활성화되었습니다</string>
 </resources>

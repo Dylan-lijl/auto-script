@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.Toast;
 
 import androidx.databinding.DataBindingUtil;
 
@@ -18,11 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.MacroInfoActivity;
-import pub.carzy.auto_script.config.AbstractSetting;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.Setting;
@@ -37,13 +38,16 @@ import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.model.RecordStateModel;
 import pub.carzy.auto_script.service.BasicAction;
+import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.service.dto.CloseParam;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.dto.UpdateParam;
+import pub.carzy.auto_script.service.sub.SimpleReplay;
 import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.Stopwatch;
 import pub.carzy.auto_script.utils.MyTypeToken;
+import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
  * @author admin
@@ -52,6 +56,8 @@ public class RecordScriptAction extends BasicAction {
     private WindowMaskViewBinding mask;
     private RecordStateModel recordStateModel;
     private WindowManager.LayoutParams maskParams;
+    private final List<MotionEntity> finalMotions = new ArrayList<>();
+    private final List<KeyEntity> finalKeyList = new ArrayList<>();
     private List<MotionEntity> motionList;
     private Map<Integer, MotionEntity> motionMap;
     private List<KeyEntity> keyList;
@@ -63,9 +69,10 @@ public class RecordScriptAction extends BasicAction {
     private WindowManager.LayoutParams bindingParams;
     public static final String ACTION_KEY = "record";
     private final Stopwatch watch = new Stopwatch();
+    private final AtomicLong startTime = new AtomicLong(0);
     private Setting setting;
-    private boolean showWindow;
-    private int autoRunDelay;
+    private SimpleReplay replay;
+
     @Override
     public String key() {
         return ACTION_KEY;
@@ -92,6 +99,7 @@ public class RecordScriptAction extends BasicAction {
                         false
                 );
                 binding.setRecordState(recordStateModel = new RecordStateModel());
+                recordStateModel.setAutoReplay(setting.getAutoPlay());
                 bindingParams = createBindingParams(binding);
                 mask = DataBindingUtil.inflate(
                         LayoutInflater.from(service),
@@ -101,6 +109,7 @@ public class RecordScriptAction extends BasicAction {
                 );
                 maskParams = createMaskLayoutParams();
                 processView();
+                replay = new SimpleReplay(service);
                 initialized = true;
             }
         } catch (Exception e) {
@@ -108,12 +117,10 @@ public class RecordScriptAction extends BasicAction {
         } finally {
             lock.unlock();
         }
-        showWindow = MixedUtil.getValueOrDefault(setting.getShowRecordWindow(), AbstractSetting.DefaultValue.SHOW_RECORD_WINDOW);
-        autoRunDelay = MixedUtil.getValueOrDefault(setting.getAutoRunRecord(), AbstractSetting.DefaultValue.AUTO_RUN_RECORD);
         //后期再做这个录制问题,这种可能只有root模式下能使用
 //        if (showWindow) {
-            //打开窗口
-            addView(binding, bindingParams);
+        //打开窗口
+        addView(binding, bindingParams);
 //        }
 //        if (autoRunDelay==0){
 //
@@ -128,29 +135,72 @@ public class RecordScriptAction extends BasicAction {
         View root = mask.getRoot();
         root.setOnTouchListener(createMaskMotionEventListener());
         addViewTouch(createMoveListener(binding.getRoot(), bindingParams), binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop);
+        binding.autoPlayBtn.setOnClickListener(e -> {
+            recordStateModel.setAutoReplay(!recordStateModel.isAutoReplay());
+            Toast.makeText(service, service.getString(recordStateModel.isAutoReplay() ? R.string.auto_play_on : R.string.auto_play_off), Toast.LENGTH_SHORT).show();
+        });
         binding.btnFloatingRecord.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_RECORDING);
             motionList.clear();
             motionMap.clear();
             keyList.clear();
             keyMap.clear();
+            finalKeyList.clear();
+            finalMotions.clear();
             addView(mask, maskParams);
             reAddView(binding, bindingParams);
             watch.reset();
             watch.start();
+            startTime.set(watch.getElapsedMillis());
         });
         binding.btnFloatingPause.setOnClickListener(v -> {
             recordStateModel.setState(RecordStateModel.STATE_PAUSED);
             removeView(mask);
             watch.pause();
+            //迁移数据
+            finalMotions.addAll(motionList);
+            finalKeyList.addAll(keyList);
+            //存入临时变量
+            List<MotionEntity> tmpMotions = new ArrayList<>(motionList);
+            List<KeyEntity> tmpKeys = new ArrayList<>(keyList);
+            motionList.clear();
+            keyList.clear();
+            motionMap.clear();
+            keyMap.clear();
+            if (recordStateModel.isAutoReplay() && (!tmpMotions.isEmpty() || !tmpKeys.isEmpty())) {
+                ReplayModel model = createReplayActionModel(tmpMotions, tmpKeys);
+                if (model != null) {
+                    //进行回放
+                    replay.setModel(model);
+                    replay.setRepeatCount(1);
+                    replay.clearCallback();
+                    replay.addCallback(new SimpleReplay.ResultListener() {
+                        @Override
+                        public void stop(int code, String message, Exception e) {
+                            if (code == SimpleReplay.ResultListener.SUCCESS) {
+                                //停止了就唤醒 暂时不要,不然用户会停顿,还不如用户手动去点恢复
+                                /*ThreadUtil.runOnUi(() -> {
+                                    resumeTask();
+                                });*/
+                                //清空数据
+                                replay.clear();
+                            }
+                        }
+                    });
+                    replay.start();
+                }
+            }
         });
         binding.btnFloatingRun.setOnClickListener(v -> {
-            recordStateModel.setState(RecordStateModel.STATE_RECORDING);
-            addView(mask, maskParams);
-            reAddView(binding, bindingParams);
-            watch.resume();
+            if (replay.getStatus() == SimpleReplay.RUNNING) {
+                replay.stop();
+            }
+            resumeTask();
         });
         binding.btnFloatingStop.setOnClickListener(v -> {
+            if (replay.getStatus() == SimpleReplay.RUNNING) {
+                replay.stop();
+            }
             long millis = watch.getElapsedMillis();
             watch.stop();
             recordStateModel.setState(RecordStateModel.STATE_IDLE);
@@ -159,16 +209,32 @@ public class RecordScriptAction extends BasicAction {
             // **重要:** 从非 Activity 上下文 (Service) 启动 Activity 必须添加此 Flag
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             // 3. 传递 motionList
-            intent.putExtra("data", transformData(millis));
+            intent.putExtra("data", transformData(millis, 0, finalMotions, finalKeyList));
             intent.putExtra("add", true);
             // 4. 启动 Activity
             service.startActivity(intent);
             service.close(ACTION_KEY, null);
         });
         binding.btnFloatingClose.setOnClickListener(v -> {
+            if (replay.getStatus() == SimpleReplay.RUNNING) {
+                replay.stop();
+            }
             watch.stop();
             service.close(ACTION_KEY, null);
         });
+    }
+
+    private void resumeTask() {
+        recordStateModel.setState(RecordStateModel.STATE_RECORDING);
+        addView(mask, maskParams);
+        reAddView(binding, bindingParams);
+        watch.resume();
+        startTime.set(watch.getElapsedMillis());
+    }
+
+    private ReplayModel createReplayActionModel(List<MotionEntity> tmpMotions, List<KeyEntity> tmpKeys) {
+        ScriptVoEntity entity = transformData(-1, startTime.get(), tmpMotions, tmpKeys);
+        return ReplayModel.create(entity.getRoot(), entity.getActions(), entity.getPoints());
     }
 
     @Override
@@ -199,23 +265,23 @@ public class RecordScriptAction extends BasicAction {
         return super.onKeyEvent(event);
     }
 
-    private ScriptVoEntity transformData(long millis) {
+    private ScriptVoEntity transformData(long millis, long align, List<MotionEntity> motions, List<KeyEntity> keys) {
         ScriptVoEntity entity = new ScriptVoEntity();
         ScriptEntity root = new ScriptEntity();
         entity.setRoot(root);
         root.setId(idWorker.nextId());
         root.setName(service.getString(R.string.untitled));
-        root.setActionCount(motionList.size() + keyList.size());
+        root.setActionCount(motions.size() + keys.size());
         root.setDelayStart(0L);
         long maxTime = 0L;
         //手势
-        for (MotionEntity motionEntity : motionList) {
+        for (MotionEntity motionEntity : motions) {
             ScriptActionEntity actionEntity = BeanHandler.copy(motionEntity, ScriptActionEntity.class);
             actionEntity.setType(ScriptActionEntity.GESTURE);
             actionEntity.setId(idWorker.nextId());
             actionEntity.setScriptId(root.getId());
             actionEntity.setPointCount(motionEntity.getPoints().size());
-            actionEntity.setStartTime(motionEntity.getDownTime());
+            actionEntity.setStartTime(motionEntity.getDownTime() - align);
             actionEntity.setDuration(0L);
             int size = motionEntity.getPoints().size();
             for (int i = 0; i < size; i++) {
@@ -244,13 +310,13 @@ public class RecordScriptAction extends BasicAction {
             maxTime = Math.max(maxTime, actionEntity.getStartTime() + actionEntity.getDuration());
         }
         //键
-        for (KeyEntity keyEntity : keyList) {
+        for (KeyEntity keyEntity : keys) {
             if (keyEntity.getUpTime() == null) {
                 keyEntity.setUpTime(keyEntity.getDownTime());
             }
             ScriptActionEntity actionEntity = BeanHandler.copy(keyEntity, ScriptActionEntity.class);
             actionEntity.setType(ScriptActionEntity.KEY_EVENT);
-            actionEntity.setStartTime(keyEntity.getDownTime());
+            actionEntity.setStartTime(keyEntity.getDownTime() - align);
             actionEntity.setDuration(Math.max(keyEntity.getUpTime() - keyEntity.getDownTime(), 1L));
             actionEntity.setId(idWorker.nextId());
             actionEntity.setScriptId(root.getId());
@@ -258,7 +324,7 @@ public class RecordScriptAction extends BasicAction {
             entity.getActions().add(actionEntity);
             maxTime = Math.max(maxTime, actionEntity.getStartTime() + actionEntity.getDuration());
         }
-        root.setDelayEnd(millis - maxTime);
+        root.setDelayEnd(Math.max(millis - maxTime, 0));
         entity.getRoot().setTotalDuration(maxTime);
         return entity;
     }

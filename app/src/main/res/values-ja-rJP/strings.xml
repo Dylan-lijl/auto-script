@@ -13,7 +13,7 @@
     <string name="language">日本語</string>
     <string name="no_language_support">利用可能な言語が見つかりません</string>
     <string name="script_list_title">スクリプト一覧</string>
-    <string name="help_script_list_record">録音スクリプト</string>
+    <string name="help_script_list_record">録制スクリプト</string>
     <string name="help_script_list_run">スクリプトを実行</string>
     <string name="help_script_list_pause">スクリプトを一時停止</string>
     <string name="help_script_list_stop">スクリプトを停止</string>
@@ -184,4 +184,8 @@
     <string name="reduce">げんしょう</string>
     <string name="test">テスト</string>
     <string name="move_message">長押しで移動</string>
+    <string name="project_principles">プロジェクトの原理</string>
+    <string name="issues_submit_message">問題がある場合は、GitHub に投稿してください</string>
+    <string name="auto_play_on">自動再生が有効になりました</string>
+    <string name="auto_play_off">自動再生が無効になりました</string>
 </resources>

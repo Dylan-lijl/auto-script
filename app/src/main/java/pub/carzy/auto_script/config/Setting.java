@@ -48,4 +48,6 @@ public interface Setting extends Serializable {
     Style getStyle(long id) ;
 
     void removeStyle(long id);
+    void setAutoPlay(Boolean v);
+    Boolean getAutoPlay();
 }

@@ -2,18 +2,13 @@
   "data": [
     {
       "order": 0,
-      "question": "测试1",
-      "answer": "xxx"
+      "question": "使用方法",
+      "answer": "## 无障碍脚本录制与回放使用说明\n\n### 一、开始录制脚本\n\n1. 点击 **录制按钮**  \n   根据提示依次开启以下权限：\n   - 无障碍权限\n   - 悬浮窗权限\n\n2. 权限开启完成后，返回需要录制操作的应用界面\n\n3. 再次点击 **录制**  \n   系统会显示操作蒙层，所有在蒙层上的点击与操作都会被记录\n\n4. 当需要暂时中断录制时，点击 **暂停**  \n   蒙层将被取消，此时可进行非录制相关操作\n\n5. 再次点击 **录制**，重复上述步骤  \n   可多次执行「录制 → 暂停 → 录制」，逐步完成整个操作流程\n\n---\n\n### 二、结束录制\n\n- 点击 **停止录制**  \n  系统将自动跳转至 **脚本详情界面**\n\n在脚本详情界面中，你可以：\n- 保存脚本\n- 编辑脚本内容\n- 查看录制的操作步骤\n- 进行脚本管理等操作\n\n---\n\n### 三、回放脚本\n\n1. 在脚本详情界面点击 **运行**\n\n2. 根据提示确认并开启所需的 **无障碍权限**\n\n3. 权限开启完成后，返回需要回放脚本的应用界面\n\n4. 再次点击 **运行**  \n   脚本将按照录制顺序自动执行所有操作\n\n---\n\n### 四、使用提示\n\n- 请确保回放时的应用界面与录制时保持一致  \n- 回放过程中避免手动操作，以免影响脚本执行  \n- 若系统回收权限，需要重新授权后方可继续使用\n"
     },
     {
       "order": 10,
-      "question": "测试222222222222222222222222222222",
-      "answer": "xxx"
-    },
-    {
-      "order": 20,
-      "question": "测试333",
-      "answer": "xxx"
+      "question": "使用限制",
+      "answer": "## 当前功能限制说明（无障碍模式）\n\n目前仅支持 **无障碍模式** 进行脚本回放，但该模式在系统层面存在一定限制，使用前请了解以下情况：\n\n### 一、按键事件限制\n在无障碍模式下，**按键类事件在回放过程中大概率无法正常生效**，这属于系统级限制，而非应用问题。\n\n### 二、手势时长限制\n无障碍手势存在最大执行时长限制，**单次手势的持续时间不能超过约 60 秒**。  \n超过该时长的手势将无法被系统接受或执行。\n\n### 三、并发手势数量限制\n系统对单次手势中包含的笔画（Stroke）数量也有上限：\n\n- 单个手势最多支持 **20 个 Stroke**\n- 超出该数量将无法正常执行\n\n相关系统限制示例：\n\n```java\n/** Gestures may contain no more than this many strokes */\nprivate static final int MAX_STROKE_COUNT = 20;\n\n/**\n * Upper bound on total gesture duration. Nearly all gestures will be much shorter.\n */\nprivate static final long MAX_GESTURE_DURATION_MS = 60 * 1000;\n```\n\n### 四、说明\n上述限制均来自 Android 无障碍服务的系统 API 设计，无法通过应用层绕过或修改。\n不同 Android 版本和厂商 ROM 可能存在细微差异，具体行为以系统实际表现为准。\n\n### 五、参考文档\n更多详细限制说明，请参考 Android 官方文档：\n https://developer.android.com/reference/android/accessibilityservice/GestureDescription"
     }
   ]
 }

@@ -13,7 +13,7 @@
     <string name="language">繁體中文</string>
     <string name="no_language_support">未檢測到可用語言</string>
     <string name="script_list_title">腳本列表</string>
-    <string name="help_script_list_record">錄音腳本</string>
+    <string name="help_script_list_record">錄製腳本</string>
     <string name="help_script_list_run">執行腳本</string>
     <string name="help_script_list_pause">暫停腳本</string>
     <string name="help_script_list_stop">停止腳本</string>
@@ -184,4 +184,8 @@
     <string name="reduce">減少</string>
     <string name="test">測試</string>
     <string name="move_message">長按移動</string>
+    <string name="project_principles">專案原理</string>
+    <string name="issues_submit_message">如有問題，請提交到 GitHub 上</string>
+    <string name="auto_play_on">已啟用自動回放</string>
+    <string name="auto_play_off">已停用自動回放</string>
 </resources>

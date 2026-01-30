@@ -87,6 +87,10 @@ public class SimpleReplay {
      */
     private final Set<ResultListener> callback = new LinkedHashSet<>();
 
+    public void clearCallback() {
+        callback.clear();
+    }
+
     public void addCallback(ResultListener listener) {
         callback.add(listener);
     }
@@ -145,10 +149,10 @@ public class SimpleReplay {
             } else {
                 model.init();
             }
-            //调用时间片任务
-            scheduler.schedule(this::tickProcess, 0, TimeUnit.MILLISECONDS);
             //记录开始时间 加上延迟时间
             startTime.set(System.currentTimeMillis() + model.getDelayStart());
+            //调用时间片任务
+            scheduler.schedule(this::tickProcess, 0, TimeUnit.MILLISECONDS);
             //调用成功回调
             callback.forEach(c -> c.start(ResultListener.SUCCESS, null, null));
         } catch (Exception e) {
@@ -356,13 +360,15 @@ public class SimpleReplay {
                 this.callback.forEach(completedListener -> completedListener.before(status.get(), repeatCount.get()));
                 try {
                     //小于等于0则退出
-                    if (repeatCount.get() == 0) {
+                    boolean out = repeatCount.get() == 0;
+                    if (!out) {
+                        repeatCount.set(repeatCount.get() - 1);
+                        out = repeatCount.get() == 0;
+                    }
+                    if (out) {
                         //进入停止状态,并终止后续任务
                         stop();
                         return;
-                    } else if (repeatCount.get() > 0) {
-                        //重复次数-1
-                        repeatCount.set(repeatCount.get() - 1);
                     }
                     //重置
                     recover();
@@ -446,6 +452,12 @@ public class SimpleReplay {
         action.getCurrent().set(action.getPoints().size());
         //设置存在手势
         hasGesture.set(true);
+    }
+
+    public void clear() {
+        model = null;
+        status.set(STOP);
+        callback.clear();
     }
 
     public interface ResultListener {
