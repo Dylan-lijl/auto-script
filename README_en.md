@@ -11,10 +11,8 @@ It helps users automate repetitive tasks by recording gestures and key events, c
 
 ## 🌐 Project Links
 
-GitHub
-https://github.com/Dylan-lijl/auto-script
-
-Giteehttps://gitee.com/Dylan-lijl/auto-script
+GitHub:[https://github.com/Dylan-lijl/auto-script](https://github.com/Dylan-lijl/auto-script) <br>
+gitee: [https://gitee.com/Dylan-lijl/auto-script](https://gitee.com/Dylan-lijl/auto-script)
 
 > If you encounter any issues, please submit them in GitHub Issues.
 
