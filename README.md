@@ -1,8 +1,20 @@
 # Auto-Script (安卓脚本精灵) 🚀
 
+[English](./README_en.md)|简体中文
+
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/Platform-Android-green.svg)]() [![JDK](https://img.shields.io/badge/JDK-11-blue.svg?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/11/) [![Language](https://img.shields.io/badge/Language-Java-orange.svg)]() [![Platform](https://img.shields.io/badge/Android-8.0%2B-green.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/oreo)
 
+
 **Auto-Script** 是一款基于 Java 开发的安卓端自动化脚本执行工具。它可以帮助用户通过自定义规则实现屏幕自动点击、滑动、任务编排等功能，旨在简化重复性操作，提升使用效率。
+
+---
+
+## 项目地址
+
+GitHub:[https://github.com/Dylan-lijl/auto-script](https://github.com/Dylan-lijl/auto-script)
+gitee: [https://gitee.com/Dylan-lijl/auto-script](https://gitee.com/Dylan-lijl/auto-script)
+
+###### 如果有问题请提交到GitHub的issue
 
 ---
 
