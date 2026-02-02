@@ -13,7 +13,7 @@
 GitHub:[https://github.com/Dylan-lijl/auto-script](https://github.com/Dylan-lijl/auto-script)<br>
 gitee:[https://gitee.com/Dylan-lijl/auto-script](https://gitee.com/Dylan-lijl/auto-script)
 
-###### 如果有问题请提交到GitHub的issue
+>  如果有问题请提交到GitHub的issue
 
 ---
 
