@@ -1,5 +1,7 @@
 package pub.carzy.auto_script.entity;
 
+import android.graphics.Color;
+
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
@@ -18,10 +20,10 @@ public class Style extends BaseObservable {
         DEFAULT_STYLE.setName("null");
         DEFAULT_STYLE.setCurrentVersion(System.currentTimeMillis());
         DEFAULT_STYLE.setStatusBarMode(true);
-        DEFAULT_STYLE.setStatusBarBackgroundColor(R.color.white);
-        DEFAULT_STYLE.setTopBarBackgroundColor(R.color.white);
-        DEFAULT_STYLE.setTopBarTextColor(R.color.black);
-        DEFAULT_STYLE.setTopBarImageColor(R.color.black);
+        DEFAULT_STYLE.setStatusBarBackgroundColor(Color.WHITE);
+        DEFAULT_STYLE.setTopBarBackgroundColor(Color.WHITE);
+        DEFAULT_STYLE.setTopBarTextColor(Color.BLACK);
+        DEFAULT_STYLE.setTopBarImageColor(Color.BLACK);
     }
 
     private long id;

@@ -417,10 +417,12 @@ public class MacroListActivity extends BaseActivity {
             }
         });
     }
+
     @Override
     protected QMUITopBarLayout getTopBar() {
         return binding.topBarLayout.actionBar;
     }
+
     private void initToolbar() {
         initTopBar();
         QMUIAlphaImageButton searchBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.search, QMUIViewHelper.generateViewId());
@@ -433,8 +435,10 @@ public class MacroListActivity extends BaseActivity {
                 binding.topBarLayout.actionBar.removeCenterViewAndTitleView();
                 binding.topBarLayout.actionBar.removeAllLeftViews();
                 initToolbar();
+                updateStyle();
             });
             searchEdit.post(() -> {
+                updateStyle();
                 searchEdit.requestFocus();
                 QMUIKeyboardHelper.showKeyboard(searchEdit, true);
             });
@@ -515,7 +519,7 @@ public class MacroListActivity extends BaseActivity {
                             return;
                         }
                         m.setText(item.getTitle() + "(" + adapter.checkedSize() + ")");
-                    }else if (item.getId()==R.id.record_script){
+                    } else if (item.getId() == R.id.record_script) {
                     }
                     builder.addItem(m);
                 });

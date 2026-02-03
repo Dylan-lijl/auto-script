@@ -268,6 +268,19 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
+    protected void updateStyle() {
+        QMUITopBarLayout topBar = getTopBar();
+        if (topBar == null) {
+            return;
+        }
+        Long globalStyleVersion = BeanFactory.getInstance().get(StaticValues.STYLE_VERSION, false);
+        Style style = BeanFactory.getInstance().get(StaticValues.STYLE_CURRENT, false);
+        if (style == null) {
+            style = Style.DEFAULT_STYLE;
+        }
+        updateStyle(style, topBar, globalStyleVersion);
+    }
+
     protected void updateStyle(Style style, QMUITopBarLayout topBarLayout, Long globalStyleVersion) {
         if (topBarLayout == null) {
             return;
