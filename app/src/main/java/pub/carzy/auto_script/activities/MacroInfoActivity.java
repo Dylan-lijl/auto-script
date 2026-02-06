@@ -91,6 +91,8 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.MyTypeToken;
 
 /**
+ * 脚本详情
+ *
  * @author admin
  */
 public class MacroInfoActivity extends BaseActivity {
@@ -103,7 +105,6 @@ public class MacroInfoActivity extends BaseActivity {
     private ActivityResultLauncher<Intent> addInfoLauncher;
     private AppDatabase db;
     private ObservableBoolean edit;
-    private Runnable runnable;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -114,10 +115,12 @@ public class MacroInfoActivity extends BaseActivity {
         initTopBar();
         initFlowChatLayout();
     }
+
     @Override
     protected QMUITopBarLayout getTopBar() {
         return binding.topBarLayout.actionBar;
     }
+
     private void initFlowChatLayout() {
         // 设置没有数据时显示的文字,,,按照mvvm思想这个属性应该写在xml,但是这个库未提供xml属性
         binding.flowChatLayout.actionBarChart.setNoDataText(getString(R.string.message_no_data));
@@ -200,6 +203,7 @@ public class MacroInfoActivity extends BaseActivity {
         db = BeanFactory.getInstance().get(AppDatabase.class);
         binding = DataBindingUtil.setContentView(this, R.layout.view_macro_info);
         model = new ScriptVoEntityModel();
+        //加载颜色
         for (int c : getResources().getIntArray(R.array.script_info_chat_color)) {
             model.getColorsResource().add(c);
         }
@@ -208,17 +212,22 @@ public class MacroInfoActivity extends BaseActivity {
         binding.setModel(model);
         binding.setRefresh(refresh);
         edit = new ObservableBoolean(false);
+        //只要修改过就标记成未保存
         edit.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
             @Override
             public void onPropertyChanged(Observable sender, int propertyId) {
                 model.setUnsaved(true);
             }
         });
+        //绑定返回逻辑
         bindBackLogic();
     }
 
+    /**
+     * 绑定返回逻辑
+     */
     private void bindBackLogic() {
-        runnable = ActivityUtils.setOnBackPressed(this, r -> {
+        ActivityUtils.setOnBackPressed(this, r -> {
             if (model.getUnsaved()) {
                 new QMUIDialog.MessageDialogBuilder(this)
                         .setTitle("提醒")
@@ -238,6 +247,11 @@ public class MacroInfoActivity extends BaseActivity {
         });
     }
 
+    /**
+     * 添加point详情回调
+     *
+     * @return 回调
+     */
     private ActivityResultCallback<ActivityResult> createProcessAddInfoResult() {
         return result -> {
             if (result.getResultCode() == RESULT_OK) {
@@ -261,7 +275,9 @@ public class MacroInfoActivity extends BaseActivity {
                 entity.setId(idWorker.nextId());
                 entity.setActionId(actionModel.getKey());
                 entity.setScriptId(model.getRoot().getId());
+                //添加
                 model.addPoint(actionModel.getKey(), entity);
+                //更新图标
                 ThreadUtil.runOnUi(() -> {
                     updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
                     updateChartData(binding.flowChatLayout.pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors());
@@ -270,6 +286,11 @@ public class MacroInfoActivity extends BaseActivity {
         };
     }
 
+    /**
+     * 创建action详情回调
+     *
+     * @return /
+     */
     private ActivityResultCallback<ActivityResult> createProcessAddResult() {
         return result -> {
             if (result.getResultCode() == RESULT_OK) {
@@ -293,6 +314,7 @@ public class MacroInfoActivity extends BaseActivity {
                     entity.setDuration(0L);
                 }
                 model.addAction(entity);
+                //更新图标
                 ThreadUtil.runOnUi(() -> {
                     //触发图表更新
                     updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
@@ -301,7 +323,11 @@ public class MacroInfoActivity extends BaseActivity {
         };
     }
 
-
+    /**
+     * 删除弹窗
+     *
+     * @param sheet s
+     */
     private void showDeleteDialog(QMUIBottomSheet sheet) {
         if (refresh.getDelete()) {
             return;
@@ -333,6 +359,9 @@ public class MacroInfoActivity extends BaseActivity {
                 .show();
     }
 
+    /**
+     * 保存数据
+     */
     private void saveData() {
         if (refresh.getSave()) {
             return;
@@ -369,6 +398,9 @@ public class MacroInfoActivity extends BaseActivity {
         });
     }
 
+    /**
+     * 跳转添加Point todo这里需要处理顺序
+     */
     private void addPoint() {
         ScriptVoEntityModel.ScriptActionModel action = model.getLastCheckAction();
         if (action == null || action.getData().getType() != ScriptActionEntity.GESTURE) {
@@ -378,10 +410,12 @@ public class MacroInfoActivity extends BaseActivity {
         Intent intent = new Intent(this, PointAddActivity.class);
         ScriptVoEntityModel.ScriptPointModel point = model.getLastCheckShowPoint();
         List<Long> ids = new ArrayList<>(new LinkedHashSet<>(action.getPointIds()));
-        if (!ids.isEmpty()) {
+        if (!ids.isEmpty() && point != null) {
             int index = ids.indexOf(point.getKey());
-            intent.putExtra("minOrder", model.getPoints().get(ids.get(0)).getOrder());
-            intent.putExtra("maxOrder", model.getPoints().get(ids.get(ids.size() - 1)).getOrder());
+            if (!model.getPoints().isEmpty()) {
+                intent.putExtra("minOrder", model.getPoints().get(ids.get(0)).getOrder());
+                intent.putExtra("maxOrder", model.getPoints().get(ids.get(ids.size() - 1)).getOrder());
+            }
             if (index != -1) {
                 if (index > 0) {
                     intent.putExtra("beforeOrder", calculatedOrder(model.getPoints().get(ids.get(index - 1)).getOrder(), point.getData().getOrder()));
@@ -451,7 +485,9 @@ public class MacroInfoActivity extends BaseActivity {
         return finer.floatValue();
     }
 
-
+    /**
+     * 跳转添加action
+     */
     private void addAction() {
         ScriptActionEntity entity = new ScriptActionEntity();
         entity.setStartTime(0L);
@@ -477,6 +513,9 @@ public class MacroInfoActivity extends BaseActivity {
         addLauncher.launch(intent);
     }
 
+    /**
+     * 显示point详情
+     */
     private void showDetailInfo() {
         if (model.getCheckedPoint().isEmpty()) {
             return;
@@ -490,6 +529,7 @@ public class MacroInfoActivity extends BaseActivity {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         inflate.setWidth(metrics.widthPixels * 1F);
         inflate.setHeight(metrics.heightPixels * 1F);
+        //显示坐标按钮
         ImageButton imageButton = createModifyButton();
         imageButton.setOnClickListener(e -> {
             edit.set(!edit.get());

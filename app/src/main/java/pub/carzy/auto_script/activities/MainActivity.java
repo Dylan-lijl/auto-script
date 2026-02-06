@@ -24,7 +24,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //获取配置
+        //检查是否同意免责声明
         Setting setting = BeanFactory.getInstance().get(Setting.class);
         if (setting.isAccepted()) {
             // 已同意，跳转到列表页面

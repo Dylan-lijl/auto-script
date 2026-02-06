@@ -95,6 +95,7 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.MyTypeToken;
 
 /**
+ * 脚本列表
  * @author admin
  */
 public class MacroListActivity extends BaseActivity {
@@ -104,6 +105,9 @@ public class MacroListActivity extends BaseActivity {
 
     private Adapter adapter;
     private IdGenerator<Long> idWorker;
+    /**
+     * 选择文件回调
+     */
     private final ActivityResultLauncher<Intent> pickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -123,6 +127,10 @@ public class MacroListActivity extends BaseActivity {
                 }
             });
 
+    /**
+     * 处理导入的文件
+     * @param uris 路径
+     */
     private void handleImportFiles(List<Uri> uris) {
         if (uris.isEmpty()) {
             return;
@@ -209,6 +217,7 @@ public class MacroListActivity extends BaseActivity {
                 }
                 m.setSuccess(success.stream().map(item -> item.getRoot().getName() + "(" + item.getRoot().getId() + ")").collect(Collectors.toList()));
                 inflate.setModel(m);
+                //保存按钮
                 ImageButton imageButton = new ImageButton(this);
                 imageButton.setImageResource(R.drawable.save);
                 imageButton.setImageTintList(ContextCompat.getColorStateList(this, R.color.link));
@@ -236,6 +245,7 @@ public class MacroListActivity extends BaseActivity {
                         .setTitle(getString(R.string.dialog_import_title))
                         .addRightButton(imageButton);
                 QMUIBottomSheet build = builder.build();
+                //保存回调
                 imageButton.setOnClickListener((e) -> {
                     List<ScriptVoEntity> dbData = new ArrayList<>(data.size());
                     dbData.addAll(success);
@@ -248,6 +258,7 @@ public class MacroListActivity extends BaseActivity {
                                 if (exportScript == null) {
                                     return;
                                 }
+                                //根据当前设备自动调整x,y
                                 if (m.getSizeAdapted() == R.id.size_auto_adapt) {
                                     if (exportScript.getScreenWidth() != metrics.widthPixels) {
                                         BigDecimal proportion = BigDecimal.valueOf(metrics.widthPixels).divide(BigDecimal.valueOf(exportScript.getScreenWidth()), 4, RoundingMode.HALF_UP);
@@ -273,11 +284,13 @@ public class MacroListActivity extends BaseActivity {
                     //重复数据处理
                     if (exist != null) {
                         exist.stream().map(item -> (ScriptVoEntity) item).forEach(item -> {
+                            //跳过
                             if (m.getExistAdapted() == R.id.exist_skip) {
                                 dbData.remove(item);
                                 return;
                             }
                             Date now = new Date();
+                            //新增
                             if (m.getExistAdapted() == R.id.exist_new) {
                                 ScriptVoEntity entity = new ScriptVoEntity();
                                 ScriptEntity root = BeanHandler.copy(item.getRoot(), ScriptEntity.class);
@@ -322,6 +335,11 @@ public class MacroListActivity extends BaseActivity {
 
     }
 
+    /**
+     * 保存脚本数据
+     * @param voEntities 脚本数据
+     * @param runnable 回调
+     */
     private void saveExportScript(List<ScriptVoEntity> voEntities, Runnable runnable) {
         ThreadUtil.runOnCpu(() -> {
             Set<Long> ids = voEntities.stream().map(item -> item.getRoot().getId()).collect(Collectors.toSet());
@@ -442,14 +460,23 @@ public class MacroListActivity extends BaseActivity {
 
     private void initToolbar() {
         initTopBar();
+        /*//右侧添加一个查询按钮
         QMUIAlphaImageButton searchBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.search, QMUIViewHelper.generateViewId());
+        //创建一个文本输入框(其实这个功能没用到)
         EditText searchEdit = createSearchEditText();
+        //点击查询图标按钮显示返回键和文本输入框
         searchBtn.setOnClickListener(v -> {
+            //删除右边所有组件
             binding.topBarLayout.actionBar.removeAllRightViews();
+            //清空标题
             binding.topBarLayout.actionBar.setTitle(null);
+            //设置中间组件为文本输入框
             binding.topBarLayout.actionBar.setCenterView(searchEdit);
+            //添加返回键,点击时恢复回来
             binding.topBarLayout.actionBar.addLeftBackImageButton().setOnClickListener(e -> {
+                //删除中间组件
                 binding.topBarLayout.actionBar.removeCenterViewAndTitleView();
+                //移除左侧组件
                 binding.topBarLayout.actionBar.removeAllLeftViews();
                 initToolbar();
                 updateStyle();
@@ -459,7 +486,7 @@ public class MacroListActivity extends BaseActivity {
                 searchEdit.requestFocus();
                 QMUIKeyboardHelper.showKeyboard(searchEdit, true);
             });
-        });
+        });*/
         binding.searchInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -473,6 +500,7 @@ public class MacroListActivity extends BaseActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                //文字改变了就重载数据
                 model.reloadData();
             }
         });
@@ -503,6 +531,7 @@ public class MacroListActivity extends BaseActivity {
                         return;
                     }
                     if (id == R.id.delete_script) {
+                        //删除选中的脚本
                         processDeleteItem(adapter.checkedIds, () -> {
                             adapter.checkedIds.clear();
                             List<Integer> indexes = new ArrayList<>();
@@ -519,23 +548,29 @@ public class MacroListActivity extends BaseActivity {
                         return;
                     }
                     if (id == R.id.export_script) {
+                        //导出
                         exportSelectScript();
                     }
                     if (id == R.id.record_script) {
+                        //启动录制脚本服务
                         openService();
                     }
                     if (id == R.id.import_script) {
+                        //导入脚本
                         openImportDialog();
                     }
                     if (id == R.id.select_all) {
+                        //全选
                         adapter.checkedIds.clear();
                         adapter.checkedIds.addAll(model.getData().stream().map(ScriptEntity::getId).collect(Collectors.toSet()));
                     }
                     if (id == R.id.deselect_all) {
+                        //全不选
                         adapter.checkedIds.clear();
                     }
                     dialog.dismiss();
                 });
+        //添加对应菜单列表
         addActionByXml(builder, this, R.xml.actions_macro_list,
                 (b, m, item) -> {
                     if (item.getId() == R.id.delete_script || item.getId() == R.id.export_script) {
@@ -544,11 +579,13 @@ public class MacroListActivity extends BaseActivity {
                         }
                         m.setText(item.getTitle() + "(" + adapter.checkedSize() + ")");
                     } else if (item.getId() == R.id.select_all) {
+                        //多选模式且选中的数量小于数据的数量才显示
                         if (adapter.multiple.get() && adapter.checkedIds.size() < adapter.getData().size()) {
                             builder.addItem(m);
                         }
                         return;
                     } else if (item.getId() == R.id.deselect_all) {
+                        //多选模式且选中的数量大于等于数据的数量才显示
                         if (adapter.multiple.get() && adapter.checkedIds.size() >= adapter.getData().size()) {
                             builder.addItem(m);
                         }
@@ -556,6 +593,7 @@ public class MacroListActivity extends BaseActivity {
                     }
                     builder.addItem(m);
                 });
+        //添加默认菜单
         addDefaultMenu(builder);
         QMUIBottomSheet build = builder.build();
         build.show();
@@ -566,10 +604,13 @@ public class MacroListActivity extends BaseActivity {
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("application/json");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        //打开
+        //打开导入文件
         pickerLauncher.launch(intent);
     }
 
+    /**
+     * 导出json格式选中的脚本
+     */
     private void exportSelectScript() {
         if (!adapter.hasMultipleData()) {
             return;
@@ -599,6 +640,7 @@ public class MacroListActivity extends BaseActivity {
                 }
                 entities.add(new ScriptVoEntity(root, actionEntities, pointEntities));
             }
+            //导出文件
             MixedUtil.exportScript(entities, MacroListActivity.this,
                     (result) -> ThreadUtil.runOnUi(() -> {
                         adapter.checkedIds.clear();
@@ -608,6 +650,11 @@ public class MacroListActivity extends BaseActivity {
         });
     }
 
+    /**
+     * 打开运行脚本服务
+     * @param script 脚本
+     * @param runnable 回调
+     */
     private void runScript(ScriptEntity script, Runnable runnable) {
         ThreadUtil.runOnCpu(() -> {
             //根据id查询action数据和point数据
@@ -616,11 +663,13 @@ public class MacroListActivity extends BaseActivity {
                 return;
             }
             List<ScriptPointEntity> points = db.scriptPointMapper().findByScriptId(script.getId());
+            //创建传递对象
             ReplayModel replayModel = ReplayModel.create(script, actions, points);
             //打开服务
             ThreadUtil.runOnUi(() -> ActivityUtils.checkAccessibilityServicePermission(this, ok -> {
                 MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
                 if (service != null) {
+                    //打开回放
                     service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(replayModel));
                     runnable.run();
                 }
@@ -628,10 +677,16 @@ public class MacroListActivity extends BaseActivity {
         });
     }
 
+    /**
+     * 删除选中的脚本
+     * @param ids 脚本id
+     * @param success 成功回调
+     */
     private void processDeleteItem(Collection<Long> ids, Runnable success) {
         if (ids.isEmpty()) {
             return;
         }
+        //创建删除弹窗
         ActivityUtils.createDeleteMessageDialog(this,
                 (dialog, which) -> ThreadUtil.runOnCpu(() -> {
                     model.getDeleteIds().addAll(ids);
@@ -667,6 +722,9 @@ public class MacroListActivity extends BaseActivity {
                 }).show();
     }
 
+    /**
+     * 打开录制服务
+     */
     private void openService() {
         ActivityUtils.checkAccessibilityServicePermission(this, (ok) -> {
             MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
@@ -679,6 +737,9 @@ public class MacroListActivity extends BaseActivity {
         });
     }
 
+    /**
+     * 销毁时讲过对应的无障碍服务也关闭掉
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -689,8 +750,13 @@ public class MacroListActivity extends BaseActivity {
         service.close(null);
     }
 
+    /**
+     * 跳转到脚本详情界面
+     * @param entity 脚本
+     */
     private void jumpInfo(ScriptEntity entity) {
         ThreadUtil.runOnCpu(() -> {
+            //从数据库查询对应数据
             ScriptVoEntity data = new ScriptVoEntity();
             data.setRoot(entity);
             List<ScriptActionEntity> actions = db.scriptActionMapper().findByScriptId(entity.getId());
@@ -702,23 +768,44 @@ public class MacroListActivity extends BaseActivity {
             ThreadUtil.runOnUi(() -> {
                 Intent intent = new Intent(this, MacroInfoActivity.class);
                 intent.putExtra("data", data);
+                //标志不是新增
                 intent.putExtra("add", false);
                 startActivity(intent);
             });
         });
     }
 
+    /**
+     * 脚本列表适配器
+     */
     class Adapter extends BasicRecyclerViewAdapter<VH, ScriptEntity> {
+        /**
+         * 删除按钮
+         */
         private final QMUISwipeAction deleteAction;
+        /**
+         * 运行按钮
+         */
         private final QMUISwipeAction runAction;
+        /**
+         * 导出按钮
+         */
         private final QMUISwipeAction exportAction;
+        /**
+         * 选中的id集合
+         */
         private final ObservableList<Long> checkedIds = new ObservableArrayList<>();
+        /**
+         * 是否多选模式
+         */
         private final ObservableBoolean multiple = new ObservableBoolean(false);
 
         public Adapter() {
+            //调用父类
             super();
+            //将数据源添加到 adapter
             this.data.addAll(model.getData());
-//            setHasStableIds(true);
+            //添加监听model列表数据一变化就同步变化data
             ObservableList.OnListChangedCallback<ObservableList<ScriptEntity>> callback = new ObservableList.OnListChangedCallback<>() {
                 @Override
                 public void onChanged(ObservableList<ScriptEntity> sender) {
@@ -775,6 +862,7 @@ public class MacroListActivity extends BaseActivity {
                 }
             };
             model.getData().addOnListChangedCallback(callback);
+            //添加行左滑菜单
             QMUISwipeAction.ActionBuilder builder = new QMUISwipeAction.ActionBuilder()
                     .textSize(QMUIDisplayHelper.sp2px(getApplicationContext(), 14))
                     .textColor(Color.WHITE)
@@ -787,6 +875,7 @@ public class MacroListActivity extends BaseActivity {
         @Override
         protected VH onCreateNormalViewHolder(ViewGroup parent) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            //脚本行布局
             ComListItemMacroListBinding b =
                     ComListItemMacroListBinding.inflate(inflater, parent, false);
             b.setMultiple(multiple);
@@ -816,11 +905,6 @@ public class MacroListActivity extends BaseActivity {
             view.setTitleText(getString(R.string.empty_message));
             return new RecyclerView.ViewHolder(view) {
             };
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return data.get(position).getId();
         }
 
         public boolean hasMultipleData() {

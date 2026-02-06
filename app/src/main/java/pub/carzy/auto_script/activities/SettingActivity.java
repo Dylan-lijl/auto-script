@@ -78,8 +78,11 @@ public class SettingActivity extends BaseActivity {
     }
 
     private void initListeners() {
+        //创建新样式
         binding.styleAddBtn.setOnClickListener(e -> editStyle(true));
+        //展示全部样式
         binding.styleBtn.setOnClickListener(this::showAllStyle);
+        //移除样式
         binding.styleRemoveBtn.setOnClickListener((e) -> ActivityUtils.createDeleteViewDialog(this, null, (qmuiDialog, integer) -> {
             qmuiDialog.dismiss();
             Style style = model.getProxy().getCurrentStyle();
@@ -96,9 +99,11 @@ public class SettingActivity extends BaseActivity {
                 });
             });
         }).show());
+        //编辑当前样式
         binding.styleEditBtn.setOnClickListener(e -> {
             editStyle(false);
         });
+        //打开系统栏背景颜色选择器
         binding.statusBarBgcBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getStatusBarBackgroundColor(),
                 color -> {
                     model.getProxy().getCurrentStyle().setStatusBarBackgroundColor(color);
@@ -106,12 +111,14 @@ public class SettingActivity extends BaseActivity {
                     ThreadUtil.runOnCpu(() -> setting.updateStyle(model.getProxy().getCurrentStyle()));
                     updateGlobalStyle(model.getProxy().getCurrentStyle());
                 }));
+        //切换系统栏亮色和暗色
         binding.statusBarModeBtn.setOnClickListener(e -> {
             model.getProxy().getCurrentStyle().setStatusBarMode(!model.getProxy().getCurrentStyle().isStatusBarMode());
             ActivityUtils.setWindowsStatusLight(this, model.getProxy().getCurrentStyle().isStatusBarMode());
             updateGlobalStyle(model.getProxy().getCurrentStyle());
             ThreadUtil.runOnCpu(() -> setting.updateStyle(model.getProxy().getCurrentStyle()));
         });
+        //标题栏背景颜色
         binding.topBarBgcBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarBackgroundColor(),
                 color -> {
                     model.getProxy().getCurrentStyle().setTopBarBackgroundColor(color);
@@ -119,6 +126,7 @@ public class SettingActivity extends BaseActivity {
                     updateGlobalStyle(model.getProxy().getCurrentStyle());
                     ThreadUtil.runOnCpu(() -> setting.updateStyle(model.getProxy().getCurrentStyle()));
                 }));
+        //标题栏文字颜色
         binding.topBarTxtBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarTextColor(),
                 color -> {
                     model.getProxy().getCurrentStyle().setTopBarTextColor(color);
@@ -128,6 +136,7 @@ public class SettingActivity extends BaseActivity {
                     updateGlobalStyle(model.getProxy().getCurrentStyle());
                     ThreadUtil.runOnCpu(() -> setting.updateStyle(model.getProxy().getCurrentStyle()));
                 }));
+        //标题栏图片颜色
         binding.topBarImgBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarImageColor(),
                 color -> {
                     model.getProxy().getCurrentStyle().setTopBarImageColor(color);
@@ -154,6 +163,10 @@ public class SettingActivity extends BaseActivity {
                 }));
     }
 
+    /**
+     * 更新全局样式
+     * @param currentStyle 样式
+     */
     private void updateGlobalStyle(Style currentStyle) {
         long version = System.currentTimeMillis();
         BeanFactory.getInstance().register(StaticValues.STYLE_VERSION, version);
@@ -165,14 +178,19 @@ public class SettingActivity extends BaseActivity {
         updateStyle(currentStyle, getTopBar(), version);
     }
 
+    /**
+     * 展示所有样式
+     * @param e
+     */
     private void showAllStyle(View e) {
         List<SingleSimpleAdapter.Data> data = new ArrayList<>();
+        //设置选择的样式
         Style currentStyle = model.getProxy().getCurrentStyle();
         for (Style style : model.getProxy().getStyles()) {
             data.add(new SingleSimpleAdapter.Data(style.getName(), style == currentStyle));
         }
         QMUIPopup[] popups = new QMUIPopup[]{null};
-
+        //切换回调
         AdapterView.OnItemClickListener onItemClickListener = (adapterView, view, i, l) -> {
             Style style = model.getProxy().getStyles().get(i);
             if (style != null && style != currentStyle) {
@@ -198,6 +216,10 @@ public class SettingActivity extends BaseActivity {
                 .show(e);
     }
 
+    /**
+     * 编辑样式
+     * @param add 是否新增
+     */
     private void editStyle(boolean add) {
         AtomicReference<String> name = new AtomicReference<>(getString(R.string.unknown));
         new QMUIDialog.CustomDialogBuilder(this) {

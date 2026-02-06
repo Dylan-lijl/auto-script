@@ -69,6 +69,7 @@ import pub.carzy.auto_script.utils.StringUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
+ * 关于
  * @author admin
  */
 public class AboutActivity extends BaseActivity {
@@ -132,22 +133,31 @@ public class AboutActivity extends BaseActivity {
     private static final String[] UPDATE_URLS = {"https://api.github.com/repos/Dylan-lijl/auto-script/releases/latest", "https://gitee.com/api/v5/repos/Dylan-lijl/auto-script/releases/latest"};
     private final Call[] calls = new Call[UPDATE_URLS.length];
 
+    /**
+     * 检查版本
+     */
     private void checkVersion() {
         ThreadUtil.runOnCpu(() -> {
+            //60秒
             OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(60 * 1000, TimeUnit.MILLISECONDS).build();
+            //是否已经被处理
             AtomicReference<Boolean> finished = new AtomicReference<>(false);
+            //遍历创建请求
             for (int i = 0; i < UPDATE_URLS.length; i++) {
                 String url = UPDATE_URLS[i];
                 calls[i] = client.newCall(new Request.Builder()
                         .url(url)
                         .build());
             }
+            //回调
             Callback callback = new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    //已经被别人处理就直接返回
                     if (finished.get()) {
                         return;
                     }
+                    //设置当前是自己在处理
                     finished.set(true);
                     //取消其他任务
                     cancelCalls(call);
@@ -169,9 +179,11 @@ public class AboutActivity extends BaseActivity {
 
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                    //已经被别人处理就直接返回
                     if (finished.get()) {
                         return;
                     }
+                    //设置当前是自己在处理
                     finished.set(true);
                     //取消其他任务
                     cancelCalls(call);
@@ -186,6 +198,7 @@ public class AboutActivity extends BaseActivity {
                     }
                     String content = body.string();
                     Gson gson = new Gson();
+                    //解析json
                     CheckVersionResponse res = gson.fromJson(content, CheckVersionResponse.class);
                     if (res.getMessage() != null) {
                         ThreadUtil.runOnUi(() -> {
@@ -200,22 +213,28 @@ public class AboutActivity extends BaseActivity {
                         return;
                     }
                     model.setResponse(res);
+                    //获取当前版本
                     String versionName = ActivityUtils.getVersionName(AboutActivity.this);
 //                    String versionName = "0.0.9";
                     //版本小于tag才显示
                     if (new Semver(versionName).isLowerThan(res.getTagName().replace("v", ""))) {
+                        //展示更新弹窗
                         showUpdateDialog();
                     } else {
                         ThreadUtil.runOnUi(() -> Toast.makeText(AboutActivity.this, R.string.no_new_version, Toast.LENGTH_LONG).show());
                     }
                 }
             };
+            //循环调用
             for (Call c : calls) {
                 c.enqueue(callback);
             }
         });
     }
 
+    /**
+     * 展示更新弹窗
+     */
     private void showUpdateDialog() {
         CheckVersionResponse response = model.getResponse();
         if (response == null) {
@@ -223,6 +242,7 @@ public class AboutActivity extends BaseActivity {
         }
         //这里需要使用布局
         AboutUpdateVersionModel copy = BeanHandler.copy(response, AboutUpdateVersionModel.class);
+        //获取资源信息
         if (response.getAssets() != null) {
             for (CheckVersionResponse.Asset item : response.getAssets()) {
                 //跳过debug安装包和不是安装包的资源
@@ -261,15 +281,16 @@ public class AboutActivity extends BaseActivity {
                 ActivityUtils.openToBrowser(AboutActivity.this, copy.getUrl());
             });
             inflate.updateVersionBtn.setOnClickListener(e -> {
-                //下载文件
+                //下载文件进行更新
                 updateSoftware(copy.getBrowserDownloadUrl(), (file) -> ThreadUtil.runOnUi(() -> {
                     if (build.get() != null) {
                         build.get().dismiss();
                     }
-                    //安装
+                    //安装apk
                     installApk(file);
                 }));
             });
+            //更新内容
             if (!StringUtils.isEmpty(copy.getBody())) {
                 markwon.setMarkdown(inflate.body, copy.getBody());
             }
@@ -340,6 +361,13 @@ public class AboutActivity extends BaseActivity {
         context.startActivity(intent);
     }
 
+    /**
+     * 下载文件
+     * @param url 路径
+     * @param setMaxValue 设置文件最大值回调
+     * @param updateProcess 更新进度回调
+     * @param success 成功回调
+     */
     private void downloadFile(String url, Consumer<Long> setMaxValue, Consumer<Long> updateProcess, Consumer<File> success) {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(url).build();
@@ -353,9 +381,11 @@ public class AboutActivity extends BaseActivity {
                 return;
             }
             if (setMaxValue != null) {
+                //更新文件大小
                 long length = body.contentLength();
                 setMaxValue.accept(length);
             }
+            //创建文件,这里需要跟配置路径一致
             File out = new File(getExternalFilesDir("AppInstaller"), UUID.randomUUID().toString() + ".apk");
             if (out.exists()) {
                 if (!out.delete()) {
@@ -367,16 +397,17 @@ public class AboutActivity extends BaseActivity {
                 Log.d(this.getClass().getName(), "create file failed");
                 return;
             }
+            //读取文件流并写入目标文件中
             try (InputStream is = body.byteStream(); FileOutputStream fos = new FileOutputStream(out)) {
                 byte[] buffer = new byte[4096];
                 long downloaded = 0;
                 int read;
-
                 while ((read = is.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                     fos.write(buffer, 0, read);
                     downloaded += read;
                     final long d = downloaded;
                     if (updateProcess != null) {
+                        //更新进度
                         updateProcess.accept(d);
                     }
                 }
@@ -446,6 +477,7 @@ public class AboutActivity extends BaseActivity {
                     }
                 });
         addActionByXml(builder, this, R.xml.actions_about);
+        //移除关于
         addActionByXml(builder, this, R.xml.actions_common,
                 (b, m, item) -> {
                     if (item.getId() == R.id.menu_about) {

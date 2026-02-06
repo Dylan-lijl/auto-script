@@ -17,5 +17,8 @@ public class StaticValues {
     public static final int DATA_VERSION = DATA_VERSION_1;
     public static final String STYLE_VERSION="style_version";
     public static final String STYLE_CURRENT="style_current";
+    /**
+     * 默认样式版本
+     */
     public static final long EMPTY_DEFAULT_LONG_VALUE =-1L;
 }

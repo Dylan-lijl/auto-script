@@ -162,27 +162,36 @@ public class ActivityUtils {
                 .create();
     }
 
+    /**
+     * 获取本地化映射map,从资源文件夹查找
+     * @param context 上下文
+     * @return map
+     */
     public static Map<String, Locale> getLocaleMap(Context context) {
         if (LOCALE_MAP == null) {
             synchronized (Object.class) {
                 if (LOCALE_MAP == null) {
                     Map<String, Locale> map = new LinkedHashMap<>();
+                    //从上下文获取资源管理器
                     AssetManager assetManager = context.getAssets();
                     try {
+                        //获取可使用的本地化
                         String[] locales = assetManager.getLocales();
                         for (String localeStr : locales) {
                             if (localeStr.isEmpty() || "und".equals(localeStr)) {
                                 continue;
                             }
+                            //根据本地化字符串加载对应本地化对象
                             Locale locale = Locale.forLanguageTag(localeStr);
                             // 创建对应 locale 的 Context
                             Configuration config = new Configuration(context.getResources().getConfiguration());
                             config.setLocale(locale);
                             Context localizedContext = context.createConfigurationContext(config);
-                            // 读取 language 字段显示名称
+                            //读取本地化language字段-->strings.xml-->language
                             int resId = localizedContext.getResources().getIdentifier("language", "string", context.getPackageName());
                             if (resId != 0) {
                                 String name = localizedContext.getString(resId);
+                                //放入map
                                 map.put(name, locale);
                             }
                         }
@@ -196,6 +205,12 @@ public class ActivityUtils {
         return LOCALE_MAP;
     }
 
+    /**
+     * 切换本地化
+     * @param context c
+     * @param locale l
+     * @return 新的上下文
+     */
     public static Context updateLocale(Context context, Locale locale) {
         if (locale == null) {
             return context;
@@ -206,8 +221,17 @@ public class ActivityUtils {
         return context.createConfigurationContext(config);
     }
 
+    /**
+     * 获取本地化
+     * 如果用户有存储则使用,没有则默认英语
+     * @param context 上下文
+     * @param setting 配置类
+     * @return 本地化
+     */
     public static Locale getLocale(Context context, Setting setting) {
+        //从配置中获取
         String language = setting.getLanguage();
+        //
         Map<String, Locale> localeMap = ActivityUtils.getLocaleMap(context);
         // 1. 如果有 language 优先按 key 匹配
         if (language != null && localeMap != null) {

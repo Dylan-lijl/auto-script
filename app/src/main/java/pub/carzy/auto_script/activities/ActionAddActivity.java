@@ -17,14 +17,11 @@ import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.ViewActionAddBinding;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
-import pub.carzy.auto_script.ui.entity.ActionInflater;
-import pub.carzy.auto_script.utils.Option;
 
 /**
  * @author admin
@@ -51,10 +48,12 @@ public class ActionAddActivity extends BaseActivity {
         });
         initListener();
     }
+
     @Override
     protected QMUITopBarLayout getTopBar() {
         return binding.topBarLayout.actionBar;
     }
+
     @Override
     public void initTopBar() {
         binding.topBarLayout.actionBar.setTitle(getActionBarTitle());
@@ -65,7 +64,7 @@ public class ActionAddActivity extends BaseActivity {
     private void initIntent() {
         Intent intent = getIntent();
         if (intent == null) {
-            //抛异常 todo
+            return;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             data = intent.getParcelableExtra("data", ScriptActionEntity.class);
@@ -73,7 +72,7 @@ public class ActionAddActivity extends BaseActivity {
             data = intent.getParcelableExtra("data");
         }
         if (data == null) {
-            //报错 todo
+            return;
         }
         index = (index = intent.getIntExtra("index", -1)) == -1 ? null : index;
         endTime = (endTime = intent.getLongExtra("endTime", -1)) == -1 ? null : endTime;

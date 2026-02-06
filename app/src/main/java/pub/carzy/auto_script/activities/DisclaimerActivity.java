@@ -56,9 +56,6 @@ public class DisclaimerActivity extends BaseActivity {
     @Override
     protected void initTopBar() {
         super.initTopBar();
-        binding.topBarLayout.actionBar.setTitle(getActionBarTitle());
-        QMUIAlphaImageButton manyBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.many_horizontal, QMUIViewHelper.generateViewId());
-        manyBtn.setOnClickListener(e -> openBottomSheet());
     }
 
     @Override
@@ -76,10 +73,11 @@ public class DisclaimerActivity extends BaseActivity {
                         return;
                     }
                 });
-        //这里需要过滤一些
         if (model.isView()) {
+            //如果只是参观模式则不过滤菜单
             addDefaultMenu(builder);
         } else {
+            //否则过滤只保留切换语言功能
             addActionByXml(builder, this, R.xml.actions_common,
                     (b, model, item) -> {
                         //只保留切换语言
@@ -109,8 +107,11 @@ public class DisclaimerActivity extends BaseActivity {
         binding.btnDecline.setOnClickListener(e -> this.decline());
     }
 
+    /**
+     * 启动倒计时,为结束前不能点同意,保证用户查看过内容
+     */
     private void startCountDown() {
-        // 倒计时
+        //倒计时
         ThreadUtil.runOnCpu(() -> {
             Integer tick = MixedUtil.getValueOrDefault(setting.getTick(), AbstractSetting.DefaultValue.TICK);
             ThreadUtil.runOnUi(() -> {
@@ -137,9 +138,11 @@ public class DisclaimerActivity extends BaseActivity {
         }
         model.setAccepting(true);
         ThreadUtil.runOnCpu(() -> {
+            //更新配置
             setting.setAccepted(true);
             ThreadUtil.runOnUi(() -> {
                 model.setAccepting(false);
+                //跳转
                 jump();
             });
         });
@@ -158,8 +161,11 @@ public class DisclaimerActivity extends BaseActivity {
         }, 1000);
     }
 
+    /**
+     * 跳回到主页面
+     */
     private void jump() {
-        Intent intent = new Intent(DisclaimerActivity.this, MacroListActivity.class);
+        Intent intent = new Intent(DisclaimerActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
     }

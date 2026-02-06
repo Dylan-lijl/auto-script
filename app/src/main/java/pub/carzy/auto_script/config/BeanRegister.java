@@ -26,16 +26,25 @@ import pub.carzy.auto_script.utils.statics.StaticValues;
  * @author admin
  */
 public class BeanRegister {
+    /**
+     * 注册必要组件
+     * @param context c
+     */
     public static void run(Application context) {
-        registerSetting(context);
+        registerBeans(context);
         init();
     }
 
+    /**
+     * 初始化检查
+     */
     private static void init() {
         Setting setting = BeanFactory.getInstance().get(Setting.class);
         if (setting.getUUID() == null) {
+            //设置用户标识
             setting.setUUID(UUID.randomUUID().toString().replace("-", ""));
         }
+        //设置QMUI皮肤
         QMUISkinManager manager = BeanFactory.getInstance().get(QMUISkinManager.class);
         manager.addSkin(1, R.style.Theme_Auto_Script);
         //获取样式
@@ -54,6 +63,7 @@ public class BeanRegister {
                     currentStyle = style;
                 }
             }
+            //将最大版本号的样式注册到全局中
             if (currentStyle != null) {
                 BeanFactory.getInstance().register(StaticValues.STYLE_VERSION, System.currentTimeMillis());
                 BeanFactory.getInstance().register(StaticValues.STYLE_CURRENT, currentStyle);
@@ -61,19 +71,30 @@ public class BeanRegister {
         });
     }
 
-    private static void registerSetting(Application context) {
+    /**
+     * 注册组件
+     * @param context c
+     */
+    private static void registerBeans(Application context) {
         BeanFactory register = BeanFactory.getInstance()
+                //Setting
                 .register(new PrefsSetting(context))
+                //ApplicationContext
                 .register(context)
+                //IdGenerator<Long>
                 .register(new MyTypeToken<IdGenerator<Long>>() {
                 }, new SnowflakeGenerator())
+                //QMUISkinManager
                 .register(QMUISkinManager.defaultInstance(context))
+                //AppDatabase
                 .register(AppDatabase.get(context));
-//                .register(new ScriptAccessibilityService());
         //注册markwon解析器
         Markwon markwon = Markwon.builder(context)
+                //链接插件
                 .usePlugin(LinkifyPlugin.create())
+                //图片插件
                 .usePlugin(ImagesPlugin.create())
+                //语法高亮插件
                 .usePlugin(SyntaxHighlightPlugin.create(new Prism4j(new MyGrammarLocator()), Prism4jThemeDefault.create()))
                 .build();
         register.register(markwon);

@@ -12,17 +12,26 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 /**
+ * 基础适配器,管理无数据和有数据切换
  * @author admin
  */
 public abstract class BasicRecyclerViewAdapter<V extends RecyclerView.ViewHolder, D>
         extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
+    /**
+     * 数据集合
+     */
     protected final ObservableList<D> data = new ObservableArrayList<>();
-
+    /**
+     * 无数据
+     */
     private static final int TYPE_EMPTY = -1;
+    /**
+     * 有数据
+     */
     private static final int TYPE_NORMAL = 0;
 
     public BasicRecyclerViewAdapter() {
+        //添加监听器,数据变更通知适配器已经变化
         data.addOnListChangedCallback(new ObservableList.OnListChangedCallback<>() {
             @SuppressLint("NotifyDataSetChanged")
             @Override
@@ -67,18 +76,21 @@ public abstract class BasicRecyclerViewAdapter<V extends RecyclerView.ViewHolder
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == TYPE_EMPTY) {
+            //调用创建空组件
             return onCreateEmptyViewHolder(parent);
         }
+        //调用创建列表行组件
         return onCreateNormalViewHolder(parent);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (getItemViewType(position) == TYPE_EMPTY) {
+            //绑定空组件
             onBindEmpty(holder);
             return;
         }
-
+        //绑定行组件
         onBindNormal((V) holder, data.get(position), position);
     }
 
