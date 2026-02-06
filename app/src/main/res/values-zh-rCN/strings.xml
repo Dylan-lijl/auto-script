@@ -191,4 +191,5 @@
     <string name="accessibility_service_description">应用支持脚本录制与回放。录制过程中会保存用户的手势和按键操作，回放时按照录制时的状态和顺序执行脚本，实现操作的自动复现。</string>
     <string name="select_all">全选</string>
     <string name="deselect_all">全不选</string>
+    <string name="check_version">检查版本</string>
 </resources>

@@ -191,4 +191,5 @@
     <string name="accessibility_service_description">應用支援腳本錄製與回放。錄製過程中會保存使用者的手勢與按鍵操作，回放時依照錄製時的狀態與順序執行腳本，實現操作的自動重現。</string>
     <string name="select_all">全選</string>
     <string name="deselect_all">全不選</string>
+    <string name="check_version">檢查版本</string>
 </resources>

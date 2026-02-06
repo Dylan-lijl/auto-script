@@ -191,4 +191,5 @@
     <string name="accessibility_service_description">The application supports script recording and playback. During recording, the user’s gestures and key operations are saved. During playback, the script is executed according to the state and order at the time of recording, enabling automatic reproduction of operations.</string>
     <string name="select_all">Select All</string>
     <string name="deselect_all">Deselect All</string>
+    <string name="check_version">Check version</string>
 </resources>

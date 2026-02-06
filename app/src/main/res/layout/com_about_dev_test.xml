@@ -22,61 +22,100 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="5dp"
-                android:clickable="@{model.count>0}"
-                android:contentDescription="@string/reduce"
-                android:onClick="@{e->model.setCount(model.count+-1)}"
-                android:src="@drawable/reduce"
-                android:tint="@{model.count>0?@color/link:@color/disabled}"
-                tools:ignore="UseAppTint" />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:autofillHints="false"
-                android:background="@drawable/bg_round_border"
-                android:backgroundTint="@color/white"
-                android:inputType="number"
-                android:minWidth="73dp"
-                android:text="@={model.countString}"
-                tools:ignore="LabelFor" />
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginStart="5dp"
-                android:contentDescription="@string/reduce"
-                android:onClick="@{e->model.setCount(model.count+1)}"
-                app:tint="@color/link"
-                android:src="@drawable/add" />
-
-            <Button
-                android:id="@+id/confirm_btn"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:text="@string/confirm" />
+                android:gravity="center_horizontal"
+                android:orientation="horizontal">
 
-            <ImageButton
-                android:id="@+id/reset_btn"
-                android:layout_width="wrap_content"
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="5dp"
+                    android:clickable="@{model.count>0}"
+                    android:contentDescription="@string/reduce"
+                    android:onClick="@{e->model.setCount(model.count+-1)}"
+                    android:src="@drawable/reduce"
+                    android:tint="@{model.count>0?@color/link:@color/disabled}"
+                    tools:ignore="UseAppTint" />
+
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:autofillHints="false"
+                    android:background="@drawable/bg_round_border"
+                    android:backgroundTint="@color/white"
+                    android:inputType="number"
+                    android:minWidth="73dp"
+                    android:text="@={model.countString}"
+                    tools:ignore="LabelFor" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="5dp"
+                    android:contentDescription="@string/reduce"
+                    android:onClick="@{e->model.setCount(model.count+1)}"
+                    android:src="@drawable/add"
+                    app:tint="@color/link" />
+
+                <Button
+                    android:id="@+id/confirm_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:text="@string/confirm" />
+
+                <ImageButton
+                    android:id="@+id/reset_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:contentDescription="@string/test"
+                    android:src="@drawable/reset"
+                    android:tint="@color/link"
+                    tools:ignore="UseAppTint" />
+
+                <Button
+                    android:id="@+id/test_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="测试" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="@string/test"
-                android:src="@drawable/reset"
-                android:tint="@color/link"
-                tools:ignore="UseAppTint" />
-            <Button
-                android:id="@+id/test_btn"
-                android:text="测试"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:orientation="vertical">
+
+                <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:max="@{model.max}"
+                    android:progress="@{model.process}"
+                    android:progressDrawable="@drawable/bg_round_progress" />
+
+                <TextView
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@{model.process+`/`+model.max}" />
+            </FrameLayout>
+
+                <Button
+                    android:id="@+id/begin_process"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/test" />
+            </LinearLayout>
         </LinearLayout>
 
         <ImageButton

@@ -1,0 +1,8 @@
+<actions xmlns:android="http://schemas.android.com/apk/res/android">
+    <action
+        android:id="@+id/check_version"
+        android:title="@string/check_version"
+        android:icon="@drawable/check"
+        android:tint="@color/safe"
+        />
+</actions>

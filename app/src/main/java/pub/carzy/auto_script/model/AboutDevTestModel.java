@@ -14,6 +14,28 @@ public class AboutDevTestModel extends BaseObservable {
     private Integer count = 32;
     private boolean dragging = false;
     private Consumer<Integer> consumer;
+    private int process=0;
+    private int max=1;
+
+    @Bindable
+    public int getProcess() {
+        return process;
+    }
+
+    public void setProcess(int process) {
+        this.process = process;
+        notifyPropertyChanged(BR.process);
+    }
+
+    @Bindable
+    public int getMax() {
+        return max;
+    }
+
+    public void setMax(int max) {
+        this.max = max;
+        notifyPropertyChanged(BR.max);
+    }
 
     public void setListener(Consumer<Integer> consumer) {
         this.consumer = consumer;

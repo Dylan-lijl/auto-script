@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.noties.markwon.Markwon;
 import pub.carzy.auto_script.R;
@@ -462,9 +463,31 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
                 binding.resetBtn.setOnClickListener(e -> {
                     m.reset();
                 });
-                binding.testBtn.setOnClickListener(e->createTestListener());
+                binding.testBtn.setOnClickListener(e -> createTestListener());
+                m.setMax(1000);
+                AtomicReference<Thread> ref = new AtomicReference<>(null);
+                binding.beginProcess.setOnClickListener((e) -> {
+                    if (ref.get() != null) {
+                        ref.get().interrupt();
+                        m.setProcess(0);
+                        m.setMax(1000);
+                        ref.set(null);
+                    } else {
+                        ref.set(new Thread(() -> {
+                            while (m.getProcess() < m.getMax()) {
+                                ThreadUtil.runOnUi(() -> m.setProcess(m.getProcess() + 10));
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException exception) {
+                                }
+                            }
+                        }));
+                        ref.get().start();
+                    }
+                });
             }
         }
+
         private void createTestListener() {
         }
     }
