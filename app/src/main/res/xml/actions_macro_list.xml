@@ -1,26 +1,32 @@
 <actions xmlns:android="http://schemas.android.com/apk/res/android">
     <action
         android:id="@+id/record_script"
-        android:title="@string/help_script_list_record"
         android:icon="@drawable/record"
         android:tint="@color/danger"
-        />
+        android:title="@string/help_script_list_record" />
+    <action
+        android:id="@+id/select_all"
+        android:icon="@drawable/checked"
+        android:tint="@color/safe"
+        android:title="@string/select_all" />
+    <action
+        android:id="@+id/deselect_all"
+        android:icon="@drawable/checked"
+        android:tint="@color/disabled"
+        android:title="@string/deselect_all" />
     <action
         android:id="@+id/delete_script"
-        android:title="@string/delete"
         android:icon="@drawable/delete"
         android:tint="@color/danger"
-        />
+        android:title="@string/delete" />
     <action
         android:id="@+id/export_script"
-        android:title="@string/export"
         android:icon="@drawable/export"
         android:tint="@color/link"
-        />
+        android:title="@string/export" />
     <action
         android:id="@+id/import_script"
-        android:title="@string/import_message"
         android:icon="@drawable/import_icon"
         android:tint="@color/black"
-        />
+        android:title="@string/import_message" />
 </actions>

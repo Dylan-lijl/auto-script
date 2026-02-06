@@ -18,14 +18,14 @@
             type="androidx.databinding.ObservableBoolean" />
 
         <variable
-            name="ids"
-            type="androidx.databinding.ObservableList&lt;Long>" />
+            name="checkedIds"
+            type="androidx.databinding.ObservableList" />
     </data>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@{ids.contains(item.id)?@color/selected_blue : @color/transparent}"
+        android:background="@{ checkedIds.contains(item.id)?@color/selected_blue : @color/transparent}"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="12dp">
@@ -34,9 +34,8 @@
             android:id="@+id/checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="@{ids.contains(item.id)}"
-            android:onCheckedChanged="@{(v,checked) -> checked ? ids.add(item.id) : ids.remove(item.id)}"
-            android:onClick="@{(e) -> true}"
+            android:onClick="@{()->checkedIds.contains(item.id)?checkedIds.remove(item.id):checkedIds.add(item.id)}"
+            android:checked="@{ checkedIds.contains(item.id)}"
             android:visibility="@{multiple?View.VISIBLE:View.GONE}" />
 
         <LinearLayout

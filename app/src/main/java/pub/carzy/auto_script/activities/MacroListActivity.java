@@ -10,10 +10,12 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -31,6 +33,7 @@ import androidx.databinding.ObservableBoolean;
 import androidx.databinding.ObservableList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.google.gson.Gson;
 import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
@@ -40,6 +43,7 @@ import com.qmuiteam.qmui.recyclerView.QMUISwipeViewHolder;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.util.QMUIKeyboardHelper;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
+import com.qmuiteam.qmui.widget.QMUIEmptyView;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout;
@@ -62,6 +66,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import pub.carzy.auto_script.R;
+import pub.carzy.auto_script.adapter.BasicRecyclerViewAdapter;
+import pub.carzy.auto_script.adapter.BasicSwipeActionCallback;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.databinding.DialogScriptImportBinding;
@@ -176,8 +182,13 @@ public class MacroListActivity extends BaseActivity {
         //没解析到数据直接提示
         if (data.isEmpty()) {
             Toast.makeText(this, getString(R.string.no_data_to_import), Toast.LENGTH_SHORT).show();
-        } else if (failed.isEmpty() && warning.isEmpty()) {
-            saveExportScript(data.values().stream().map(ExportScriptEntity::getData).flatMap(Collection::stream).collect(Collectors.toList()), null);
+            return;
+        }
+        if (failed.isEmpty() && warning.isEmpty()) {
+            saveExportScript(data.values().stream().map(ExportScriptEntity::getData).flatMap(Collection::stream).collect(Collectors.toList()), () -> {
+                //刷新列表
+                model.reloadData();
+            });
         } else {
             ThreadUtil.runOnUi(() -> {
                 DialogScriptImportBinding inflate = DialogScriptImportBinding.inflate(LayoutInflater.from(this));
@@ -349,7 +360,6 @@ public class MacroListActivity extends BaseActivity {
         initPullLayout();
         initDataList();
         model.reloadData();
-//        binding.recycler.post(() -> model.reloadData());
     }
 
     private void initBase() {
@@ -363,7 +373,9 @@ public class MacroListActivity extends BaseActivity {
 
     private void initDataList() {
         binding.dataList.setAdapter(adapter = new Adapter());
-        QMUIRVItemSwipeAction action = new QMUIRVItemSwipeAction(true, new QMUIRVItemSwipeAction.Callback() {
+        //关闭动画
+        binding.dataList.setItemAnimator(null);
+        QMUIRVItemSwipeAction action = new QMUIRVItemSwipeAction(true, new BasicSwipeActionCallback() {
 
             @Override
             public int getSwipeDirection(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
@@ -372,14 +384,15 @@ public class MacroListActivity extends BaseActivity {
 
             @Override
             public void onClickAction(QMUIRVItemSwipeAction swipeAction, RecyclerView.ViewHolder selected, QMUISwipeAction action) {
-                ScriptEntity script = adapter.data.get(selected.getAdapterPosition());
+                ScriptEntity script = adapter.getData().get(selected.getAdapterPosition());
                 if (script == null) {
+                    swipeAction.clear();
                     return;
                 }
                 if (action == adapter.deleteAction) {
-                    processDeleteItem(Collections.singleton(script.getId()), null);
+                    processDeleteItem(Collections.singleton(script.getId()), swipeAction::clear);
                 } else if (action == adapter.runAction) {
-                    runScript(script);
+                    runScript(script, swipeAction::clear);
                 } else if (action == adapter.exportAction) {
                     Toast.makeText(MacroListActivity.this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
                     ThreadUtil.runOnCpu(() -> {
@@ -387,9 +400,13 @@ public class MacroListActivity extends BaseActivity {
                         List<ScriptPointEntity> points = db.scriptPointMapper().findByScriptId(script.getId());
                         //将脚本保存为json文件
                         MixedUtil.exportScript(Collections.singletonList(new ScriptVoEntity(script, actions, points)), MacroListActivity.this,
-                                (result) -> ThreadUtil.runOnUi(() ->
-                                        Toast.makeText(MacroListActivity.this, getString(R.string.message_saved_successfully_ph, result)
-                                                , Toast.LENGTH_LONG).show()));
+                                (result) -> ThreadUtil.runOnUi(
+                                        () -> {
+                                            swipeAction.clear();
+                                            Toast.makeText(MacroListActivity.this, getString(R.string.message_saved_successfully_ph, result)
+                                                    , Toast.LENGTH_LONG).show();
+                                        }
+                                ));
                     });
                 }
             }
@@ -510,6 +527,13 @@ public class MacroListActivity extends BaseActivity {
                     if (id == R.id.import_script) {
                         openImportDialog();
                     }
+                    if (id == R.id.select_all) {
+                        adapter.checkedIds.clear();
+                        adapter.checkedIds.addAll(model.getData().stream().map(ScriptEntity::getId).collect(Collectors.toSet()));
+                    }
+                    if (id == R.id.deselect_all) {
+                        adapter.checkedIds.clear();
+                    }
                     dialog.dismiss();
                 });
         addActionByXml(builder, this, R.xml.actions_macro_list,
@@ -519,7 +543,16 @@ public class MacroListActivity extends BaseActivity {
                             return;
                         }
                         m.setText(item.getTitle() + "(" + adapter.checkedSize() + ")");
-                    } else if (item.getId() == R.id.record_script) {
+                    } else if (item.getId() == R.id.select_all) {
+                        if (adapter.multiple.get() && adapter.checkedIds.size() < adapter.getData().size()) {
+                            builder.addItem(m);
+                        }
+                        return;
+                    } else if (item.getId() == R.id.deselect_all) {
+                        if (adapter.multiple.get() && adapter.checkedIds.size() >= adapter.getData().size()) {
+                            builder.addItem(m);
+                        }
+                        return;
                     }
                     builder.addItem(m);
                 });
@@ -575,7 +608,7 @@ public class MacroListActivity extends BaseActivity {
         });
     }
 
-    private void runScript(ScriptEntity script) {
+    private void runScript(ScriptEntity script, Runnable runnable) {
         ThreadUtil.runOnCpu(() -> {
             //根据id查询action数据和point数据
             List<ScriptActionEntity> actions = db.scriptActionMapper().findByScriptId(script.getId());
@@ -589,6 +622,7 @@ public class MacroListActivity extends BaseActivity {
                 MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
                 if (service != null) {
                     service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(replayModel));
+                    runnable.run();
                 }
             }));
         });
@@ -610,18 +644,23 @@ public class MacroListActivity extends BaseActivity {
                         });
                         //在移除对应的数据
                         ThreadUtil.runOnUi(() -> {
-                            //移除id对应的数据
-                            for (ScriptEntity script : model.getData().stream()
-                                    .filter(item -> ids.contains(item.getId())).collect(Collectors.toList())) {
-                                model.getData().remove(script);
-                            }
+                            //移除id对应的数据 adapter会感知到
+//                            model.getData().removeIf(item -> ids.contains(item.getId()));
+                            model.getData().stream().filter(item -> ids.contains(item.getId())).collect(Collectors.toList())
+                                    .forEach(item -> {
+                                        model.getData().remove(item);
+                                    });
                             dialog.dismiss();
+                            if (success != null) {
+                                success.run();
+                            }
                         });
-                        if (success != null) {
-                            success.run();
-                        }
                     } finally {
-                        ThreadUtil.runOnUi(() -> ids.forEach(model.getDeleteIds()::remove));
+                        //移除删除id和多选中的id
+                        ThreadUtil.runOnUi(() -> ids.forEach(id -> {
+                            model.getDeleteIds().remove(id);
+                            adapter.checkedIds.remove(id);
+                        }));
                     }
                 }), (dialog, i) -> {
                     dialog.dismiss();
@@ -669,8 +708,7 @@ public class MacroListActivity extends BaseActivity {
         });
     }
 
-    class Adapter extends RecyclerView.Adapter<VH> {
-        private final ObservableList<ScriptEntity> data;
+    class Adapter extends BasicRecyclerViewAdapter<VH, ScriptEntity> {
         private final QMUISwipeAction deleteAction;
         private final QMUISwipeAction runAction;
         private final QMUISwipeAction exportAction;
@@ -678,55 +716,65 @@ public class MacroListActivity extends BaseActivity {
         private final ObservableBoolean multiple = new ObservableBoolean(false);
 
         public Adapter() {
-            this.data = model.getData();
-            setHasStableIds(true);
+            super();
+            this.data.addAll(model.getData());
+//            setHasStableIds(true);
             ObservableList.OnListChangedCallback<ObservableList<ScriptEntity>> callback = new ObservableList.OnListChangedCallback<>() {
-                @SuppressLint("NotifyDataSetChanged")
                 @Override
                 public void onChanged(ObservableList<ScriptEntity> sender) {
+                    // 1. 同步数据源
+                    data.clear();
+                    data.addAll(sender);
+                    // 2. 通知刷新
                     notifyDataSetChanged();
                 }
 
                 @Override
-                public void onItemRangeInserted(
-                        ObservableList<ScriptEntity> sender,
-                        int positionStart,
-                        int itemCount
-                ) {
+                public void onItemRangeInserted(ObservableList<ScriptEntity> sender, int positionStart, int itemCount) {
+                    // 1. 将 model 新增的数据搬运到 adapter 的 data 中
+                    for (int i = 0; i < itemCount; i++) {
+                        data.add(positionStart + i, sender.get(positionStart + i));
+                    }
+                    // 2. 动画通知
                     notifyItemRangeInserted(positionStart, itemCount);
                 }
 
                 @Override
-                public void onItemRangeRemoved(
-                        ObservableList<ScriptEntity> sender,
-                        int positionStart,
-                        int itemCount
-                ) {
+                public void onItemRangeRemoved(ObservableList<ScriptEntity> sender, int positionStart, int itemCount) {
+                    // 1. 关键！必须先从 adapter 的 data 中删除，否则 RecyclerView 渲染时会发现数据没少
+                    for (int i = 0; i < itemCount; i++) {
+                        data.remove(positionStart);
+                    }
+                    // 2. 动画通知
                     notifyItemRangeRemoved(positionStart, itemCount);
+
+                    // 3. 补充通知：更新受影响项的 position 索引（防止点击错位）
+                    if (positionStart < data.size()) {
+                        notifyItemRangeChanged(positionStart, data.size() - positionStart);
+                    }
                 }
 
                 @Override
-                public void onItemRangeChanged(
-                        ObservableList<ScriptEntity> sender,
-                        int positionStart,
-                        int itemCount
-                ) {
+                public void onItemRangeChanged(ObservableList<ScriptEntity> sender, int positionStart, int itemCount) {
+                    // 1. 同步对应位置的数据对象
+                    for (int i = 0; i < itemCount; i++) {
+                        data.set(positionStart + i, sender.get(positionStart + i));
+                    }
+                    // 2. 通知改变
                     notifyItemRangeChanged(positionStart, itemCount);
                 }
 
                 @Override
-                public void onItemRangeMoved(
-                        ObservableList<ScriptEntity> sender,
-                        int fromPosition,
-                        int toPosition,
-                        int itemCount
-                ) {
+                public void onItemRangeMoved(ObservableList<ScriptEntity> sender, int fromPosition, int toPosition, int itemCount) {
+                    // 同步移动逻辑（略复杂，建议简单处理或 notifyDataSetChanged）
                     for (int i = 0; i < itemCount; i++) {
-                        notifyItemMoved(fromPosition + i, toPosition + i);
+                        ScriptEntity item = data.remove(fromPosition);
+                        data.add(toPosition, item);
+                        notifyItemMoved(fromPosition, toPosition);
                     }
                 }
             };
-            data.addOnListChangedCallback(callback);
+            model.getData().addOnListChangedCallback(callback);
             QMUISwipeAction.ActionBuilder builder = new QMUISwipeAction.ActionBuilder()
                     .textSize(QMUIDisplayHelper.sp2px(getApplicationContext(), 14))
                     .textColor(Color.WHITE)
@@ -736,43 +784,43 @@ public class MacroListActivity extends BaseActivity {
             exportAction = builder.text(getString(R.string.export)).backgroundColor(Color.GRAY).build();
         }
 
-        public void reset() {
-            data.clear();
-            checkedIds.clear();
-            multiple.set(false);
-        }
-
-        @NonNull
         @Override
-        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        protected VH onCreateNormalViewHolder(ViewGroup parent) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-            ComListItemMacroListBinding binding =
+            ComListItemMacroListBinding b =
                     ComListItemMacroListBinding.inflate(inflater, parent, false);
-            binding.setMultiple(multiple);
-            binding.setIds(checkedIds);
-            binding.getRoot().setOnLongClickListener(e -> {
+            b.setMultiple(multiple);
+            b.getRoot().setOnLongClickListener(e -> {
                 multiple.set(!multiple.get());
                 return true;
             });
-            final VH vh = new VH(binding);
+            b.setCheckedIds(checkedIds);
+            final VH vh = new VH(b);
             vh.addSwipeAction(deleteAction);
             vh.addSwipeAction(exportAction);
             vh.addSwipeAction(runAction);
-            //点击跳转到详情
-            binding.getRoot().setOnClickListener(e -> jumpInfo(data.get(vh.getAdapterPosition())));
             return vh;
         }
 
-
         @Override
-        public void onBindViewHolder(@NonNull VH holder, int position) {
+        protected void onBindNormal(VH holder, ScriptEntity item, int position) {
             holder.binding.setItem(data.get(position));
+            //点击跳转到详情
+            holder.binding.getRoot().setOnClickListener(e -> jumpInfo(holder.binding.getItem()));
         }
 
+        @Override
+        protected RecyclerView.ViewHolder onCreateEmptyViewHolder(ViewGroup parent) {
+            QMUIEmptyView view = new QMUIEmptyView(parent.getContext());
+            view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            view.setTitleText(getString(R.string.empty_message));
+            return new RecyclerView.ViewHolder(view) {
+            };
+        }
 
         @Override
-        public int getItemCount() {
-            return data == null ? 0 : data.size();
+        public long getItemId(int position) {
+            return data.get(position).getId();
         }
 
         public boolean hasMultipleData() {

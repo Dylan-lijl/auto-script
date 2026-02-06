@@ -189,4 +189,6 @@
     <string name="auto_play_on">自動再生が有効になりました</string>
     <string name="auto_play_off">自動再生が無効になりました</string>
     <string name="accessibility_service_description">本アプリはスクリプトの録画と再生に対応しています。録画中はユーザーのジェスチャーやキー操作が保存され、再生時には録画時の状態と順序に従ってスクリプトが実行され、操作を自動的に再現します。</string>
+    <string name="select_all">すべて選択</string>
+    <string name="deselect_all">すべて解除</string>
 </resources>

@@ -189,4 +189,6 @@
     <string name="auto_play_on">자동 재생이 활성화되었습니다</string>
     <string name="auto_play_off">자동 재생이 비활성화되었습니다</string>
     <string name="accessibility_service_description">이 애플리케이션은 스크립트 녹화 및 재생을 지원합니다. 녹화 과정에서 사용자의 제스처와 키 입력이 저장되며, 재생 시에는 녹화 당시의 상태와 순서에 따라 스크립트가 실행되어 작업을 자동으로 재현합니다.</string>
+    <string name="select_all">전체 선택</string>
+    <string name="deselect_all">전체 해제</string>
 </resources>

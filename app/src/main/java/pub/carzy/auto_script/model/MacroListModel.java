@@ -55,7 +55,7 @@ public class MacroListModel extends BaseObservable {
 
     private final AtomicReference<Date> lastTime = new AtomicReference<>();
     private final AtomicReference<Long> lastId = new AtomicReference<>(null);
-    private final AtomicInteger limit = new AtomicInteger(10);
+    private final AtomicInteger limit = new AtomicInteger(20);
 
     @Bindable
     public int getLimit() {

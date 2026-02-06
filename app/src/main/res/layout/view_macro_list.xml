@@ -45,25 +45,12 @@
                     android:layout_height="wrap_content"
                     app:qmui_pull_edge="top" />
 
-                <FrameLayout
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/dataList"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    app:qmui_is_target="true">
-
-                    <com.qmuiteam.qmui.widget.QMUIEmptyView
-                        android:id="@+id/empty"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@color/qmui_config_color_white"
-                        android:visibility="@{model.data.empty ? View.VISIBLE : View.GONE}"
-                        app:qmui_title_text="@string/empty_message" />
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/dataList"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-                </FrameLayout>
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:qmui_is_target="true" />
 
                 <com.qmuiteam.qmui.widget.pullLayout.QMUIPullLoadMoreView
                     android:layout_width="match_parent"
