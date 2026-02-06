@@ -208,6 +208,9 @@ public class RecordScriptAction extends BasicAction {
             Intent intent = new Intent(service, MacroInfoActivity.class);
             // **重要:** 从非 Activity 上下文 (Service) 启动 Activity 必须添加此 Flag
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //转换之前需要先将临时的添加到全局
+            finalMotions.addAll(motionList);
+            finalKeyList.addAll(keyList);
             // 3. 传递 motionList
             intent.putExtra("data", transformData(millis, 0, finalMotions, finalKeyList));
             intent.putExtra("add", true);
