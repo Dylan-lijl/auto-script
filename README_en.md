@@ -17,7 +17,11 @@ gitee: [https://gitee.com/Dylan-lijl/auto-script](https://gitee.com/Dylan-lijl/a
 > If you encounter any issues, please submit them in GitHub Issues.
 
 ---
+## ⬇️ Download
 
+- GitHub: [https://github.com/Dylan-lijl/auto-script/releases](https://github.com/Dylan-lijl/auto-script/releases)
+- gitee: [https://gitee.com/Dylan-lijl/auto-script/releases](https://gitee.com/Dylan-lijl/auto-script/releases)
+---
 ## 📺 Demo
 
 A quick demonstration of script recording and playback:
@@ -25,10 +29,7 @@ A quick demonstration of script recording and playback:
 **Watch demo video:**
 [doc/demo.mp4](doc/demo.mp4)
 
-<p align="center">
-  <img src="doc/record.gif" width="300"/>
-  <img src="doc/replay.gif" width="300"/>
-</p>
+![record](doc/record.gif)   ![replay](doc/replay.gif)
 
 ---
 

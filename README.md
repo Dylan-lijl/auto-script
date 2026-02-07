@@ -8,13 +8,19 @@
 
 ---
 
-## 项目地址
+## 🌐 项目地址
 
-GitHub:[https://github.com/Dylan-lijl/auto-script](https://github.com/Dylan-lijl/auto-script)<br>
-gitee:[https://gitee.com/Dylan-lijl/auto-script](https://gitee.com/Dylan-lijl/auto-script)
+- GitHub:[https://github.com/Dylan-lijl/auto-script](https://github.com/Dylan-lijl/auto-script)
+- gitee:[https://gitee.com/Dylan-lijl/auto-script](https://gitee.com/Dylan-lijl/auto-script)
 
 >  如果有问题请提交到GitHub的issue
 
+---
+
+## ⬇️ 下载地址
+
+- GitHub: [https://github.com/Dylan-lijl/auto-script/releases](https://github.com/Dylan-lijl/auto-script/releases)
+- gitee: [https://gitee.com/Dylan-lijl/auto-script/releases](https://gitee.com/Dylan-lijl/auto-script/releases)
 ---
 
 ## 📺 效果演示
@@ -23,8 +29,7 @@ gitee:[https://gitee.com/Dylan-lijl/auto-script](https://gitee.com/Dylan-lijl/au
 
 > **查看演示视频**：[点击播放 doc/demo.mp4](doc/demo.mp4)
 
-<img src="doc/record.gif" width="300" />
-<img src="doc/replay.gif" width="300" />
+![录制](doc/record.gif)   ![回放](doc/replay.gif)
 
 ---
 
