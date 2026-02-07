@@ -58,7 +58,7 @@ auto-script/
 1. **克隆仓库**
    
    ```bash
-   git clone [https://github.com/Dylan-lijl/auto-script.git](https://github.com/Dylan-lijl/auto-script.git)
+   git clone https://github.com/Dylan-lijl/auto-script.git
    ```
 2. **环境要求**
    
