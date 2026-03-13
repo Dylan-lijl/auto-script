@@ -3,7 +3,6 @@ package pub.carzy.auto_script.activities.about.child;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -21,6 +20,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.viewpager.widget.PagerAdapter;
 
+import com.google.gson.Gson;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUIProgressBar;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
@@ -31,12 +31,25 @@ import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 import com.qmuiteam.qmui.widget.tab.QMUITabBuilder;
 import com.qmuiteam.qmui.widget.tab.QMUITabSegment;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import io.noties.markwon.Markwon;
 import pub.carzy.auto_script.R;
@@ -48,14 +61,25 @@ import pub.carzy.auto_script.databinding.ComAboutDevelopmentProcessBinding;
 import pub.carzy.auto_script.databinding.ComAboutDialogueProcessBinding;
 import pub.carzy.auto_script.databinding.ComAboutFuturePlansBinding;
 import pub.carzy.auto_script.entity.DevelopmentProcessItem;
+import pub.carzy.auto_script.entity.EventDevice;
 import pub.carzy.auto_script.entity.FuturePlanEntity;
+import pub.carzy.auto_script.entity.MotionEntity;
+import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.entity.WrapperEntity;
+import pub.carzy.auto_script.ex.DeviceNotRootedException;
+import pub.carzy.auto_script.ex.ProcessReadOrWriteIOException;
+import pub.carzy.auto_script.ex.UnauthorizedRootAccessException;
 import pub.carzy.auto_script.model.AboutDevTestModel;
 import pub.carzy.auto_script.model.AboutDevelopmentProcessModel;
 import pub.carzy.auto_script.ui.GridBackgroundView;
 import pub.carzy.auto_script.ui_components.components.CollapseView;
 import pub.carzy.auto_script.utils.ActivityUtils;
+import pub.carzy.auto_script.utils.EventDeviceUtil;
+import pub.carzy.auto_script.utils.GestureRecorder;
+import pub.carzy.auto_script.utils.InputConstants;
 import pub.carzy.auto_script.utils.MixedUtil;
+import pub.carzy.auto_script.utils.Shell;
+import pub.carzy.auto_script.utils.Stopwatch;
 import pub.carzy.auto_script.utils.StringUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -378,6 +402,7 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
     }
 
     static class TestCallback extends TabCallback<ComAboutDevTestBinding> {
+        private ExecutorService executor = Executors.newSingleThreadExecutor();
 
         @Override
         public String getTabName() {
@@ -484,6 +509,43 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
                         }));
                         ref.get().start();
                     }
+                });
+                GestureRecorder recorder = new GestureRecorder();
+                binding.rootBtn.setOnClickListener(v -> {
+                    ThreadUtil.runOnCpu(() -> {
+                        try {
+                            Process process = Shell.getRootProcess();
+                            String listStr = Shell.getEventList(process);
+                            List<EventDevice> devices = EventDeviceUtil.parse(listStr);
+                            EventDevice target = EventDeviceUtil.findGestureActuator(devices);
+
+                            if (target != null) {
+                                ThreadUtil.runOnUi(() -> {
+                                    Toast.makeText(context, "开始录制: " + target.getName(), Toast.LENGTH_SHORT).show();
+                                    binding.stopBtn.setVisibility(View.VISIBLE);
+                                });
+
+                                recorder.start(target.getPath(), new GestureRecorder.OnRecordListener() {
+                                    @Override
+                                    public void onDeviceFound(String info) {}
+
+                                    @Override
+                                    public void onMotionCaptured(MotionEntity entity) {
+                                        Log.d("CAPTURE", "捕获到一段轨迹，点数: " + entity.getPoints().size());
+                                    }
+                                });
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                });
+
+                binding.stopBtn.setOnClickListener(v -> {
+                    recorder.stop();
+                    binding.stopBtn.setVisibility(View.GONE);
+                    String json = new Gson().toJson(recorder.getResultData());
+                    Log.d("FINAL_DATA", json);
                 });
             }
         }
