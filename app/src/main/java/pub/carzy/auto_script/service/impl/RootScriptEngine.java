@@ -5,6 +5,7 @@ import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.ex.DeviceNotRootedException;
 import pub.carzy.auto_script.ex.ProcessReadOrWriteIOException;
 import pub.carzy.auto_script.service.AbstractScriptEngine;
+import pub.carzy.auto_script.service.ScriptEngine;
 import pub.carzy.auto_script.utils.Shell;
 
 /**
@@ -17,10 +18,15 @@ public abstract class RootScriptEngine extends AbstractScriptEngine {
     public void init(ResultCallback callback) {
         try {
             cmdProcess = Shell.getRootProcess();
+            doSubInit(callback);
             super.init(callback);
         } catch (DeviceNotRootedException | ProcessReadOrWriteIOException e) {
             callback.onFail(ResultCallback.EXCEPTION, e);
         }
+    }
+
+    private void doSubInit(ResultCallback callback) {
+
     }
 
     @Override

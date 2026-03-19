@@ -1,10 +1,18 @@
 package pub.carzy.auto_script.service.impl;
 
-import android.content.DialogInterface;
+import android.accessibilityservice.AccessibilityService;
+import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.WindowMetrics;
 
 import androidx.appcompat.app.AlertDialog;
 
@@ -19,7 +27,29 @@ import pub.carzy.auto_script.utils.ThreadUtil;
  * @author admin
  */
 public abstract class AccScriptEngine extends AbstractScriptEngine {
+    protected AccessibilityService service;
+    protected volatile boolean initialized;
 
+    public void setAccessibilityService(AccessibilityService service) {
+        this.service = service;
+    }
+
+    @Override
+    public Context getContext() {
+        return this.service;
+    }
+    @Override
+    public int[] getScreenSize() {
+        WindowManager manager = (WindowManager) service.getSystemService(AccessibilityService.WINDOW_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowMetrics metrics = manager.getCurrentWindowMetrics();
+            return new int[]{metrics.getBounds().width(), metrics.getBounds().height()};
+        } else {
+            DisplayMetrics dm = new DisplayMetrics();
+            manager.getDefaultDisplay().getMetrics(dm);
+            return new int[]{dm.widthPixels,dm.heightPixels};
+        }
+    }
     @Override
     public void init(ResultCallback callback) {
         boolean enabled = false;
@@ -80,5 +110,130 @@ public abstract class AccScriptEngine extends AbstractScriptEngine {
                     callback.onFail(ResultCallback.CANCEL);
                 })
                 .show());
+    }
+
+    public static Integer getAction(Integer action) {
+        if (action == null) {
+            return null;
+        }
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                return MotionEvent.ACTION_DOWN;
+            case MotionEvent.ACTION_UP:
+                return MotionEvent.ACTION_UP;
+            case MotionEvent.ACTION_CANCEL:
+                return MotionEvent.ACTION_CANCEL;
+            case MotionEvent.ACTION_OUTSIDE:
+                return MotionEvent.ACTION_OUTSIDE;
+            case MotionEvent.ACTION_MOVE:
+                return MotionEvent.ACTION_MOVE;
+            case MotionEvent.ACTION_HOVER_MOVE:
+                return MotionEvent.ACTION_HOVER_MOVE;
+            case MotionEvent.ACTION_SCROLL:
+                return MotionEvent.ACTION_SCROLL;
+            case MotionEvent.ACTION_HOVER_ENTER:
+                return MotionEvent.ACTION_HOVER_ENTER;
+            case MotionEvent.ACTION_HOVER_EXIT:
+                return MotionEvent.ACTION_HOVER_EXIT;
+            case MotionEvent.ACTION_BUTTON_PRESS:
+                return MotionEvent.ACTION_BUTTON_PRESS;
+            case MotionEvent.ACTION_BUTTON_RELEASE:
+                return MotionEvent.ACTION_BUTTON_RELEASE;
+        }
+        return action & MotionEvent.ACTION_MASK;
+    }
+
+    protected Float getEventRawY(MotionEvent event) {
+        return getEventRawY(event, -1);
+    }
+
+    /**
+     * 获取绝对y的坐标
+     *
+     * @param event 事件
+     * @param index 索引
+     * @return y的绝对坐标
+     */
+    protected Float getEventRawY(MotionEvent event, int index) {
+        if (index < 0) {
+            return event.getRawY();
+        }
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? event.getRawY(index) : event.getY(index) + event.getRawY() - event.getY();
+    }
+
+    protected Float getEventRawX(MotionEvent event) {
+        return getEventRawX(event, -1);
+    }
+
+    /**
+     * 获取绝对x的坐标
+     *
+     * @param event 事件
+     * @param index 索引
+     * @return x的绝对坐标
+     */
+    protected Float getEventRawX(MotionEvent event, int index) {
+        if (index < 0) {
+            return event.getRawX();
+        }
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? event.getRawX(index) : event.getX(index) + event.getRawX() - event.getX();
+    }
+
+    protected int getPointIndex(Integer action) {
+        return action == MotionEvent.ACTION_DOWN ? 0 : ((action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT);
+    }
+
+    protected void addViewTouch(View.OnTouchListener listener, View... views) {
+        for (View view : views) {
+            view.setOnTouchListener(listener);
+        }
+    }
+
+    protected View.OnTouchListener createMoveListener(View view, WindowManager.LayoutParams params) {
+        final int dragThreshold = 10;
+        WindowManager windowManager = (WindowManager) getContext().getSystemService(AccessibilityService.WINDOW_SERVICE);
+        return new View.OnTouchListener() {
+            private int lastX, lastY;
+            private float startX, startY;
+            private boolean isDragging;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startX = event.getRawX();
+                        startY = event.getRawY();
+                        lastX = params.x;
+                        lastY = params.y;
+                        isDragging = false;
+                        return true;
+
+                    case MotionEvent.ACTION_MOVE:
+                        float dx = event.getRawX() - startX;
+                        float dy = event.getRawY() - startY;
+
+                        if (!isDragging) {
+                            if (Math.sqrt(dx * dx + dy * dy) > dragThreshold) {
+                                isDragging = true; // 超过阈值才认为是拖动
+                            }
+                        }
+
+                        if (isDragging) {
+                            params.x = lastX + (int) dx;
+                            params.y = lastY + (int) dy;
+                            windowManager.updateViewLayout(view, params);
+                        }
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        if (!isDragging) {
+                            // 手指未移动超过阈值，触发点击事件
+                            v.performClick();
+                        }
+                        return true;
+                }
+                return false;
+            }
+        };
     }
 }

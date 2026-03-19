@@ -54,6 +54,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -81,11 +82,15 @@ import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.entity.ExportScriptEntity;
 import pub.carzy.auto_script.model.DialogScriptImportModel;
 import pub.carzy.auto_script.model.MacroListModel;
+import pub.carzy.auto_script.service.GlobalSingletonScriptEngineController;
 import pub.carzy.auto_script.service.MyAccessibilityService;
+import pub.carzy.auto_script.service.ScriptEngine;
 import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.RecordScriptAction;
 import pub.carzy.auto_script.service.impl.ReplayScriptAction;
+import pub.carzy.auto_script.service.impl.engines.RecordAccScriptEngine;
+import pub.carzy.auto_script.service.impl.engines.ReplayAccScriptEngine;
 import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
@@ -96,6 +101,7 @@ import pub.carzy.auto_script.utils.MyTypeToken;
 
 /**
  * 脚本列表
+ *
  * @author admin
  */
 public class MacroListActivity extends BaseActivity {
@@ -129,6 +135,7 @@ public class MacroListActivity extends BaseActivity {
 
     /**
      * 处理导入的文件
+     *
      * @param uris 路径
      */
     private void handleImportFiles(List<Uri> uris) {
@@ -337,8 +344,9 @@ public class MacroListActivity extends BaseActivity {
 
     /**
      * 保存脚本数据
+     *
      * @param voEntities 脚本数据
-     * @param runnable 回调
+     * @param runnable   回调
      */
     private void saveExportScript(List<ScriptVoEntity> voEntities, Runnable runnable) {
         ThreadUtil.runOnCpu(() -> {
@@ -650,9 +658,12 @@ public class MacroListActivity extends BaseActivity {
         });
     }
 
+    ReplayAccScriptEngine replayAccScriptEngine;
+
     /**
      * 打开运行脚本服务
-     * @param script 脚本
+     *
+     * @param script   脚本
      * @param runnable 回调
      */
     private void runScript(ScriptEntity script, Runnable runnable) {
@@ -666,20 +677,31 @@ public class MacroListActivity extends BaseActivity {
             //创建传递对象
             ReplayModel replayModel = ReplayModel.create(script, actions, points);
             //打开服务
-            ThreadUtil.runOnUi(() -> ActivityUtils.checkAccessibilityServicePermission(this, ok -> {
-                MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
-                if (service != null) {
-                    //打开回放
-                    service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(replayModel));
-                    runnable.run();
+            ThreadUtil.runOnUi(() -> {
+                if (replayAccScriptEngine == null) {
+                    recordAccScriptEngine = new RecordAccScriptEngine();
                 }
-            }));
+                GlobalSingletonScriptEngineController.getInstance().open(recordAccScriptEngine, new ScriptEngine.ResultCallback() {
+                    @Override
+                    public void onFail(int code, Object... args) {
+
+                    }
+
+                    @Override
+                    public void onSuccess() {
+                        replayAccScriptEngine.setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                        replayAccScriptEngine.start(replayModel);
+                        runnable.run();
+                    }
+                });
+            });
         });
     }
 
     /**
      * 删除选中的脚本
-     * @param ids 脚本id
+     *
+     * @param ids     脚本id
      * @param success 成功回调
      */
     private void processDeleteItem(Collection<Long> ids, Runnable success) {
@@ -722,11 +744,32 @@ public class MacroListActivity extends BaseActivity {
                 }).show();
     }
 
+    private RecordAccScriptEngine recordAccScriptEngine;
+
     /**
      * 打开录制服务
      */
     private void openService() {
-        ActivityUtils.checkAccessibilityServicePermission(this, (ok) -> {
+        if (recordAccScriptEngine == null) {
+            recordAccScriptEngine = new RecordAccScriptEngine();
+        }
+        GlobalSingletonScriptEngineController.getInstance().open(recordAccScriptEngine, new ScriptEngine.ResultCallback() {
+            @Override
+            public void onFail(int code, Object... args) {
+                Log.e("pub.carzy.auto_script.activities.MacroListActivity.openService", code + Arrays.toString(args));
+                ThreadUtil.runOnUi(() -> {
+                    Toast.makeText(MacroListActivity.this, "打开失败!", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onSuccess() {
+                recordAccScriptEngine.setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                //打开
+                recordAccScriptEngine.start();
+            }
+        });
+        /*ActivityUtils.checkAccessibilityServicePermission(this, (ok) -> {
             MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
             if (service == null) {
                 return;
@@ -734,7 +777,7 @@ public class MacroListActivity extends BaseActivity {
             if (!service.open(RecordScriptAction.ACTION_KEY, null)) {
                 Toast.makeText(this, "打开失败!", Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
     }
 
     /**
@@ -752,6 +795,7 @@ public class MacroListActivity extends BaseActivity {
 
     /**
      * 跳转到脚本详情界面
+     *
      * @param entity 脚本
      */
     private void jumpInfo(ScriptEntity entity) {

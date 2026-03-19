@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import lombok.Setter;
 import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
@@ -44,7 +45,8 @@ public class MyAccessibilityService extends AccessibilityService {
     private final AtomicBoolean initing;
     private Locale locale;
     private Setting setting;
-
+    @Setter
+    private EventCallback callback;
     private final BroadcastReceiver screenReceiver;
 
     public MyAccessibilityService() {
@@ -67,15 +69,9 @@ public class MyAccessibilityService extends AccessibilityService {
         screenReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                //传递到已开启的组件
-                opens.forEach((k, v) -> {
-                    try {
-                        v.screenChanged(action);
-                    } catch (Exception e) {
-                        Log.e(this.getClass().getCanonicalName(), "screenChanged", e);
-                    }
-                });
+                if (callback != null) {
+                    callback.onActionEvent(intent.getAction());
+                }
             }
         };
     }
@@ -88,13 +84,9 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        opens.forEach((k, v) -> v.onAccessibilityEvent(event));
-    }
-
-    @Override
-    public void onMotionEvent(@NonNull MotionEvent event) {
-        Log.d(this.getClass().getCanonicalName(), "onMotionEvent: " + event);
-        super.onMotionEvent(event);
+        if (callback != null) {
+            callback.onAccessibilityEvent(event);
+        }
     }
 
     @Override
@@ -138,7 +130,9 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
-        opens.forEach((k, v) -> v.onKeyEvent(event));
+        if (callback != null) {
+            callback.onKeyEvent(event);
+        }
         return super.onKeyEvent(event);
     }
 
@@ -211,6 +205,20 @@ public class MyAccessibilityService extends AccessibilityService {
             Log.e("update", "update error", e);
         }
         return false;
+    }
+
+    public interface EventCallback {
+        default void onActionEvent(String action) {
+
+        }
+
+        default void onKeyEvent(KeyEvent event) {
+
+        }
+
+        default void onAccessibilityEvent(AccessibilityEvent event) {
+
+        }
     }
 
 }

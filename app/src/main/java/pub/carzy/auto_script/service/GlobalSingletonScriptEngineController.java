@@ -12,7 +12,7 @@ public class GlobalSingletonScriptEngineController {
     private GlobalSingletonScriptEngineController() {
     }
 
-    public GlobalSingletonScriptEngineController getInstance() {
+    public static GlobalSingletonScriptEngineController getInstance() {
         return INSTANCE;
     }
 

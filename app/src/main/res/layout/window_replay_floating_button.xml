@@ -34,9 +34,7 @@
             android:layout_width="32dp"
             android:layout_height="wrap_content"
             android:text="@{count&lt;0?`∞`:count+``}"
-            android:textColor="@color/warning">
-
-        </Button>
+            android:textColor="@color/warning" />
 
         <ImageButton
             android:id="@+id/btn_more"
@@ -47,17 +45,6 @@
             android:onClick="@{e->status.setSelected(!status.selected)}"
             android:src="@{context.getDrawable(status.selected?R.drawable.arrow_down:R.drawable.arrow_up)}"
             android:tint="@color/frosted_glass" />
-
-        <ImageButton
-            android:id="@+id/btn_simulate"
-            style="@style/TransparentButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:contentDescription="@{context.getString(status.simulate?R.string.message_close_mask:R.string.message_open_mask)}"
-            android:onClick="@{e->status.setSimulate(!status.simulate)}"
-            android:src="@{context.getDrawable(status.simulate?R.drawable.has_mask:R.drawable.not_mask)}"
-            android:tint="@{context.getColor(status.simulate?R.color.link:R.color.disabled)}"
-            android:visibility="@{status.status!=PreviewFloatingStatus.RUN?View.VISIBLE:View.GONE}" />
 
         <ImageButton
             android:id="@+id/btn_close"

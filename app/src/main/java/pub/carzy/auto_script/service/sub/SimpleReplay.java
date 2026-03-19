@@ -37,7 +37,7 @@ public class SimpleReplay {
     /**
      * 无障碍
      */
-    private final MyAccessibilityService service;
+    private final AccessibilityService service;
     /**
      * 播放状态
      */
@@ -124,7 +124,7 @@ public class SimpleReplay {
         }
     };
 
-    public SimpleReplay(MyAccessibilityService service) {
+    public SimpleReplay(AccessibilityService service) {
         this.service = service;
         //单线程池
         scheduler = Executors.newSingleThreadScheduledExecutor();

@@ -7,6 +7,11 @@ package pub.carzy.auto_script.utils;
  */
 public class Stopwatch {
 
+    public void resetAndStart() {
+        reset();
+        start();
+    }
+
     private enum State { STOPPED, RUNNING, PAUSED }
 
     private long startTimeMillis = 0;
