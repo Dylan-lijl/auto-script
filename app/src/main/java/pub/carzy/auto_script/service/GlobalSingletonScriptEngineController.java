@@ -18,7 +18,7 @@ public class GlobalSingletonScriptEngineController {
 
     public synchronized void open(ScriptEngine engine, ScriptEngine.ResultCallback callback) {
         if (this.engine != null && this.engine != engine) {
-            engine.close();
+            this.engine.close();
         }
         if (this.engine == engine) {
             engine.reset();

@@ -7,7 +7,6 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -86,7 +85,7 @@ public class RecordAccScriptEngine extends AccScriptEngine {
     }
 
     private void setUpAccessibleCallback() {
-        ((MyAccessibilityService)service).setCallback(new MyAccessibilityService.EventCallback() {
+        ((MyAccessibilityService) service).setCallback(new MyAccessibilityService.EventCallback() {
             @Override
             public void onActionEvent(String action) {
                 //这里暂时不处理
@@ -140,6 +139,7 @@ public class RecordAccScriptEngine extends AccScriptEngine {
             }
             dataWrapper.watcher.stop();
             viewWrapper.removeMaskView();
+            viewWrapper.removeControlView();
         });
     }
 
@@ -152,17 +152,8 @@ public class RecordAccScriptEngine extends AccScriptEngine {
             dataWrapper.watcher.stop();
             viewWrapper.binding.getRecordState().setState(RecordStateModel.STATE_IDLE);
             viewWrapper.removeMaskView();
-            //这里需要打开MacroListActivity将motionList传递过去,然后清空数据
-            Intent intent = new Intent(service, MacroInfoActivity.class);
-            // **重要:** 从非 Activity 上下文 (Service) 启动 Activity 必须添加此 Flag
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            //转换之前需要先将临时的添加到全局
             dataWrapper.saveData();
-            // 3. 传递 motionList
-            intent.putExtra("data", transformData(dataWrapper.idWorker, millis, 0, dataWrapper.finalMotions, dataWrapper.finalKeyList));
-            intent.putExtra("add", true);
-            // 4. 启动 Activity
-            service.startActivity(intent);
+            jumpToInfo(transformData(dataWrapper.idWorker, millis, 0, dataWrapper.finalMotions, dataWrapper.finalKeyList));
         });
     }
 

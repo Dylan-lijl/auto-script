@@ -362,7 +362,9 @@ public class SimpleReplay {
                     //小于等于0则退出
                     boolean out = repeatCount.get() == 0;
                     if (!out) {
-                        repeatCount.set(repeatCount.get() - 1);
+                        if (repeatCount.get()>0){
+                            repeatCount.set(repeatCount.get() - 1);
+                        }
                         out = repeatCount.get() == 0;
                     }
                     if (out) {

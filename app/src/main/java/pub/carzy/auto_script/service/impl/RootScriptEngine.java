@@ -13,7 +13,6 @@ import pub.carzy.auto_script.utils.Shell;
  */
 public abstract class RootScriptEngine extends AbstractScriptEngine {
     protected Process cmdProcess;
-
     @Override
     public void init(ResultCallback callback) {
         try {
@@ -21,11 +20,11 @@ public abstract class RootScriptEngine extends AbstractScriptEngine {
             doSubInit(callback);
             super.init(callback);
         } catch (DeviceNotRootedException | ProcessReadOrWriteIOException e) {
-            callback.onFail(ResultCallback.EXCEPTION, e);
+            callback.onFail(ResultCallback.EXCEPTION | ResultCallback.ROOT, e);
         }
     }
 
-    private void doSubInit(ResultCallback callback) {
+    protected void doSubInit(ResultCallback callback) {
 
     }
 

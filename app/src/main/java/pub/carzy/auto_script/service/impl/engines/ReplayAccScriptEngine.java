@@ -12,6 +12,7 @@ import androidx.databinding.ObservableInt;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.WindowReplayFloatingButtonBinding;
 import pub.carzy.auto_script.model.PreviewFloatingStatus;
+import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.service.impl.AccScriptEngine;
 import pub.carzy.auto_script.service.sub.SimpleReplay;
 import pub.carzy.auto_script.utils.OverlayInputDialog;
@@ -33,6 +34,11 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
             synchronized (this) {
                 if (!this.initialized) {
                     dataWrapper = new DataWrapper(service);
+                    for (Object arg : args) {
+                        if (arg instanceof ReplayModel) {
+                            dataWrapper.replay.setModel((ReplayModel) arg);
+                        }
+                    }
                     WindowReplayFloatingButtonBinding binding = DataBindingUtil.inflate(
                             LayoutInflater.from(service),
                             R.layout.window_replay_floating_button,
@@ -129,6 +135,7 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
         binding.btnRestart.setOnClickListener(v -> dataWrapper.replay.start());
         binding.btnClose.setOnClickListener(v -> {
             dataWrapper.replay.stop();
+            close();
         });
         binding.btnCount.setOnClickListener(v -> {
             if (viewWrapper.dialog.isShowing()) {

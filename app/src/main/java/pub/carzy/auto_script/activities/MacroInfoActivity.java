@@ -78,10 +78,14 @@ import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
+import pub.carzy.auto_script.service.GlobalSingletonScriptEngineController;
 import pub.carzy.auto_script.service.MyAccessibilityService;
+import pub.carzy.auto_script.service.ScriptEngine;
 import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.service.dto.OpenParam;
 import pub.carzy.auto_script.service.impl.ReplayScriptAction;
+import pub.carzy.auto_script.service.impl.engines.RecordAccScriptEngine;
+import pub.carzy.auto_script.service.impl.engines.ReplayAccScriptEngine;
 import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
@@ -185,16 +189,27 @@ public class MacroInfoActivity extends BaseActivity {
         build.show();
     }
 
+    private ReplayAccScriptEngine replayAccScriptEngine;
+
     private void changeRunService() {
-        ActivityUtils.checkAccessibilityServicePermission(this, ok ->
-                ThreadUtil.runOnCpu(() -> {
-                    MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class, false);
-                    if (service != null) {
-                        //重放这里需要剔除无用字段来节省内存
-                        ReplayModel replayModel = ReplayModel.create(model.getRoot(), model.getActionData(), model.getPointData());
-                        ThreadUtil.runOnUi(() -> service.open(ReplayScriptAction.ACTION_KEY, new OpenParam(replayModel)));
-                    }
-                }));
+        ThreadUtil.runOnUi(() -> {
+            if (replayAccScriptEngine == null) {
+                replayAccScriptEngine = new ReplayAccScriptEngine();
+            }
+            GlobalSingletonScriptEngineController.getInstance().open(replayAccScriptEngine, new ScriptEngine.ResultCallback() {
+                @Override
+                public void onFail(int code, Object... args) {
+
+                }
+
+                @Override
+                public void onSuccess() {
+                    replayAccScriptEngine.setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                    ReplayModel replayModel = ReplayModel.create(model.getRoot(), model.getActionData(), model.getPointData());
+                    replayAccScriptEngine.start(replayModel);
+                }
+            });
+        });
     }
 
     private void init() {

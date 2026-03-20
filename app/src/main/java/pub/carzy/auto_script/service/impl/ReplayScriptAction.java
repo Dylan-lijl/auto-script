@@ -201,7 +201,7 @@ public class ReplayScriptAction extends BasicAction {
         addViewTouch(createMoveListener(binding.getRoot(), bindingParams),
                 binding.btnRun, binding.btnStop,
                 binding.btnPause, binding.btnRestart,
-                binding.btnClose, binding.btnMore, binding.btnSimulate, binding.btnCount);
+                binding.btnClose, binding.btnMore, binding.btnCount);
     }
 
     private WindowManager.LayoutParams createMaskLayoutParams() {

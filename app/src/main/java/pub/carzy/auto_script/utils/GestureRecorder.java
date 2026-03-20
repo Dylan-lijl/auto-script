@@ -30,6 +30,7 @@ public class GestureRecorder {
     private final Map<Integer, MotionEntity> motionMap = new HashMap<>();
     private final Map<Integer, PointEntity> activeStateMap = new HashMap<>();
     private final Set<Integer> dirtySlots = new HashSet<>();
+    private Runnable runnable;
 
     public interface OnRecordListener {
         void onDeviceFound(String info);
@@ -52,14 +53,27 @@ public class GestureRecorder {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
                 // 启动 getevent
-                os.write(("getevent -t " + devicePath + "\n").getBytes());
+                os.write(("getevent -t " + devicePath + "&\n").getBytes());
                 os.flush();
-
+                runnable = () -> {
+                    try {
+                        Thread.sleep(5);
+                        os.write("echo __END__\n".getBytes());
+                        os.flush();
+                    } catch (Exception e) {
+                        Log.d(TAG, "写ctrl c命令失败!", e);
+                    }
+                };
                 AtomicInteger currentSlot = new AtomicInteger(0);
                 stopwatch.start();
+                List<String> t = new ArrayList<>();
                 String line;
                 while (isRunning.get() && (line = reader.readLine()) != null) {
                     line = line.trim();
+                    t.add(line);
+                    if (line.contains("__END__")) {
+                        break;
+                    }
                     if (!line.contains("]")) continue;
 
                     // 解析标准格式: [ timestamp] type code value
@@ -73,6 +87,7 @@ public class GestureRecorder {
 
                     handleEvent(currentSlot, type, code, value, stopwatch.getElapsedMillis(), listener);
                 }
+                Log.d(TAG, "正常结束......");
             } catch (Exception e) {
                 Log.e(TAG, "Read Error: " + e.getMessage());
             } finally {
@@ -150,6 +165,9 @@ public class GestureRecorder {
 
     public void stop() {
         isRunning.set(false);
+        if (runnable != null) {
+            ThreadUtil.runOnCpu(runnable);
+        }
     }
 
     public void pause() {

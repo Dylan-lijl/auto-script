@@ -206,4 +206,8 @@ public class EventDeviceUtil {
         }
         return null;
     }
+
+    public static EventDevice findKeyActuator(List<EventDevice> list) {
+        return null;
+    }
 }

@@ -756,9 +756,14 @@ public class MacroListActivity extends BaseActivity {
         GlobalSingletonScriptEngineController.getInstance().open(recordAccScriptEngine, new ScriptEngine.ResultCallback() {
             @Override
             public void onFail(int code, Object... args) {
-                Log.e("pub.carzy.auto_script.activities.MacroListActivity.openService", code + Arrays.toString(args));
                 ThreadUtil.runOnUi(() -> {
-                    Toast.makeText(MacroListActivity.this, "打开失败!", Toast.LENGTH_SHORT).show();
+                    if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.ACCESSIBLE, ScriptEngine.ResultCallback.JUMP)) {
+                        Toast.makeText(MacroListActivity.this, "已跳转到无障碍设置!", Toast.LENGTH_SHORT).show();
+                    } else if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.JUMP, ScriptEngine.ResultCallback.FLOATING)) {
+                        Toast.makeText(MacroListActivity.this, "已跳转到悬浮窗设置!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MacroListActivity.this, "打开失败!", Toast.LENGTH_SHORT).show();
+                    }
                 });
             }
 
@@ -769,15 +774,6 @@ public class MacroListActivity extends BaseActivity {
                 recordAccScriptEngine.start();
             }
         });
-        /*ActivityUtils.checkAccessibilityServicePermission(this, (ok) -> {
-            MyAccessibilityService service = BeanFactory.getInstance().get(MyAccessibilityService.class);
-            if (service == null) {
-                return;
-            }
-            if (!service.open(RecordScriptAction.ACTION_KEY, null)) {
-                Toast.makeText(this, "打开失败!", Toast.LENGTH_SHORT).show();
-            }
-        });*/
     }
 
     /**
@@ -786,11 +782,12 @@ public class MacroListActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        RecordScriptAction service = BeanFactory.getInstance().get(RecordScriptAction.class, false);
-        if (service == null) {
-            return;
+        if (recordAccScriptEngine != null) {
+            recordAccScriptEngine.close();
         }
-        service.close(null);
+        if (replayAccScriptEngine != null) {
+            replayAccScriptEngine.close();
+        }
     }
 
     /**

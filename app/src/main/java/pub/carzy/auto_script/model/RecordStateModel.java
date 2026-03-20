@@ -15,6 +15,7 @@ public class RecordStateModel extends BaseObservable {
 
     private int state = STATE_IDLE;
     private boolean autoReplay;
+    private boolean isRoot = false;
 
     @Bindable
     public boolean isAutoReplay() {
@@ -34,5 +35,15 @@ public class RecordStateModel extends BaseObservable {
     public void setState(int state) {
         this.state = state;
         notifyPropertyChanged(BR.state);
+    }
+
+    @Bindable
+    public boolean isRoot() {
+        return isRoot;
+    }
+
+    public void setRoot(boolean root) {
+        isRoot = root;
+        notifyPropertyChanged(BR.root);
     }
 }

@@ -1,6 +1,7 @@
 package pub.carzy.auto_script.service;
 
 
+import android.accessibilityservice.AccessibilityService;
 import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,6 +12,8 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
 
@@ -23,6 +26,7 @@ import java.util.List;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
+import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.Setting;
@@ -41,6 +45,7 @@ import pub.carzy.auto_script.utils.ThreadUtil;
  * @author admin
  */
 public abstract class AbstractScriptEngine implements ScriptEngine {
+    protected volatile boolean initialized;
     @Override
     public void start(Object... args) {
 
@@ -62,7 +67,7 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
     protected void authorizeFloating(ResultCallback callback) {
         //全局不可用
         if (Startup.CURRENT == null || Startup.CURRENT.isDestroyed() || Startup.CURRENT.isFinishing()) {
-            callback.onFail(ResultCallback.UNKNOWN);
+            callback.onFail(ResultCallback.UNKNOWN | ResultCallback.FLOATING);
             return;
         }
         ThreadUtil.runOnUi(() -> new AlertDialog.Builder(Startup.CURRENT)
@@ -70,13 +75,13 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
                 .setMessage(R.string.permission_content)
                 .setPositiveButton(R.string.go_to_open, (dialog, which) -> {
                     dialog.dismiss();
-                    Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                     Startup.CURRENT.startActivity(intent);
-                    callback.onFail(ResultCallback.JUMP);
+                    callback.onFail(ResultCallback.JUMP | ResultCallback.FLOATING);
                 })
                 .setNegativeButton(R.string.cancel, (dialog, which) -> {
                     dialog.dismiss();
-                    callback.onFail(ResultCallback.CANCEL);
+                    callback.onFail(ResultCallback.CANCEL | ResultCallback.FLOATING);
                 })
                 .show());
     }
@@ -193,5 +198,71 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
         root.setDelayEnd(Math.max(millis - maxTime, 0));
         entity.getRoot().setTotalDuration(maxTime);
         return entity;
+    }
+    public void jumpToInfo(ScriptVoEntity entity){
+        Context context = getContext();
+        //这里需要打开MacroListActivity将motionList传递过去,然后清空数据
+        Intent intent = new Intent(context, MacroInfoActivity.class);
+        // **重要:** 从非 Activity 上下文 (Service) 启动 Activity 必须添加此 Flag
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //转换之前需要先将临时的添加到全局
+        // 3. 传递 motionList
+        intent.putExtra("data", entity);
+        intent.putExtra("add", true);
+        // 4. 启动 Activity
+        context.startActivity(intent);
+    }
+    protected void addViewTouch(View.OnTouchListener listener, View... views) {
+        for (View view : views) {
+            view.setOnTouchListener(listener);
+        }
+    }
+
+    protected View.OnTouchListener createMoveListener(View view, WindowManager.LayoutParams params) {
+        final int dragThreshold = 10;
+        WindowManager windowManager = (WindowManager) getContext().getSystemService(AccessibilityService.WINDOW_SERVICE);
+        return new View.OnTouchListener() {
+            private int lastX, lastY;
+            private float startX, startY;
+            private boolean isDragging;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startX = event.getRawX();
+                        startY = event.getRawY();
+                        lastX = params.x;
+                        lastY = params.y;
+                        isDragging = false;
+                        return true;
+
+                    case MotionEvent.ACTION_MOVE:
+                        float dx = event.getRawX() - startX;
+                        float dy = event.getRawY() - startY;
+
+                        if (!isDragging) {
+                            if (Math.sqrt(dx * dx + dy * dy) > dragThreshold) {
+                                isDragging = true; // 超过阈值才认为是拖动
+                            }
+                        }
+
+                        if (isDragging) {
+                            params.x = lastX + (int) dx;
+                            params.y = lastY + (int) dy;
+                            windowManager.updateViewLayout(view, params);
+                        }
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        if (!isDragging) {
+                            // 手指未移动超过阈值，触发点击事件
+                            v.performClick();
+                        }
+                        return true;
+                }
+                return false;
+            }
+        };
     }
 }
