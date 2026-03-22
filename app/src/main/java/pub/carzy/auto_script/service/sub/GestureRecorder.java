@@ -1,14 +1,12 @@
-package pub.carzy.auto_script.utils;
+package pub.carzy.auto_script.service.sub;
 
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,35 +14,43 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
+import pub.carzy.auto_script.utils.InputConstants;
+import pub.carzy.auto_script.utils.Shell;
+import pub.carzy.auto_script.utils.Stopwatch;
+import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
  * @author admin
  */
-public class GestureRecorder {
+public class GestureRecorder implements RecorderLifeCycle<MotionEntity>{
     private static final String TAG = "GestureRecorder";
-    private final AtomicBoolean isRunning = new AtomicBoolean(false);
-    private final AtomicBoolean isPaused = new AtomicBoolean(false);
-    private final List<MotionEntity> resultData = new ArrayList<>();
-    private final Stopwatch stopwatch = new Stopwatch();
+    private final AtomicBoolean isRunning;
+    private final AtomicBoolean isPaused;
     // 状态追踪变量
-    private final Map<Integer, MotionEntity> motionMap = new HashMap<>();
-    private final Map<Integer, PointEntity> activeStateMap = new HashMap<>();
-    private final Set<Integer> dirtySlots = new HashSet<>();
+    private final Map<Integer, MotionEntity> motionMap;
+    private final Map<Integer, PointEntity> activeStateMap;
+    private final Set<Integer> dirtySlots;
     private Runnable runnable;
+    private final Stopwatch stopwatch;
 
-    public interface OnRecordListener {
-        void onDeviceFound(String info);
-
-        void onMotionCaptured(MotionEntity entity);
+    public GestureRecorder(Stopwatch stopwatch) {
+        this.stopwatch = stopwatch;
+        isRunning = new AtomicBoolean(false);
+        isPaused = new AtomicBoolean(false);
+        motionMap = new HashMap<>();
+        activeStateMap = new HashMap<>();
+        dirtySlots = new HashSet<>();
     }
 
-    public void start(String devicePath, OnRecordListener listener) {
+    @Override
+    public void start(String devicePath, OnRecordListener<MotionEntity> listener) {
+        if (isRunning.get()){
+            return;
+        }
         isRunning.set(true);
-        resultData.clear();
         motionMap.clear();
         activeStateMap.clear();
         dirtySlots.clear();
-        stopwatch.reset();
         ThreadUtil.runOnCpu(() -> {
             Process process = null;
             try {
@@ -53,28 +59,31 @@ public class GestureRecorder {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
                 // 启动 getevent
-                os.write(("getevent -t " + devicePath + "&\n").getBytes());
+                os.write(("getevent -t " + devicePath + "& echo "+START_CONTENT+"\n").getBytes());
                 os.flush();
                 runnable = () -> {
                     try {
                         Thread.sleep(5);
-                        os.write("echo __END__\n".getBytes());
+                        os.write(("echo "+END_CONTENT+"\n").getBytes());
                         os.flush();
                     } catch (Exception e) {
                         Log.d(TAG, "写ctrl c命令失败!", e);
                     }
                 };
                 AtomicInteger currentSlot = new AtomicInteger(0);
-                stopwatch.start();
-                List<String> t = new ArrayList<>();
                 String line;
+                boolean started = false;
                 while (isRunning.get() && (line = reader.readLine()) != null) {
                     line = line.trim();
-                    t.add(line);
-                    if (line.contains("__END__")) {
+                    if (line.contains(START_CONTENT)) {
+                        started = true;
+                        continue;
+                    }
+                    if (line.contains(END_CONTENT)) {
                         break;
                     }
-                    if (!line.contains("]")) continue;
+                    //过滤不是数据行,暂停状态以及未解析到开始符
+                    if (!line.contains("]") || isPaused.get() || !started) continue;
 
                     // 解析标准格式: [ timestamp] type code value
                     String[] parts = line.substring(line.indexOf("]") + 1).trim().split("\\s+");
@@ -96,7 +105,7 @@ public class GestureRecorder {
         });
     }
 
-    private void handleEvent(AtomicInteger c, int type, int code, int value, long elapsed, OnRecordListener listener) {
+    private void handleEvent(AtomicInteger c, int type, int code, int value, long elapsed, OnRecordListener<MotionEntity> listener) {
         // 1. 处理 Slot 切换 (EV_ABS: 0003, ABS_MT_SLOT: 002f)
         if (type == InputConstants.EV_ABS && code == InputConstants.ABS_MT_SLOT) {
             c.set(value);
@@ -117,8 +126,7 @@ public class GestureRecorder {
                 commitPoint(currentSlot, elapsed);
                 MotionEntity motion = motionMap.remove(currentSlot);
                 if (motion != null) {
-                    resultData.add(motion);
-                    if (listener != null) listener.onMotionCaptured(motion);
+                    if (listener != null) listener.onCaptured(motion);
                 }
                 activeStateMap.remove(currentSlot);
                 dirtySlots.remove(currentSlot);
@@ -162,28 +170,29 @@ public class GestureRecorder {
             motion.getPoints().add(snapshot);
         }
     }
-
+    @Override
     public void stop() {
         isRunning.set(false);
         if (runnable != null) {
             ThreadUtil.runOnCpu(runnable);
         }
     }
-
+    @Override
     public void pause() {
         isPaused.set(true);
-        stopwatch.pause();
     }
 
     /**
      * 恢复录制
      */
+    @Override
     public void resume() {
         isPaused.set(false);
-        stopwatch.resume();
     }
 
-    public List<MotionEntity> getResultData() {
-        return resultData;
+    @Override
+    public void destroy() {
+
     }
+
 }

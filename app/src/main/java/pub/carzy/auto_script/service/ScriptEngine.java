@@ -32,6 +32,7 @@ public interface ScriptEngine {
         int ACCESSIBLE = 0b1_0000;
         int ROOT = 0b10_0000;
         int FLOATING = 0b100_0000;
+        int MISSING = 0b1000_0000;
 
         void onFail(int code, Object... args);
 

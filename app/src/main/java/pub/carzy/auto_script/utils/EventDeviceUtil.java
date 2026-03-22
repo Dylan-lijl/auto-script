@@ -208,6 +208,32 @@ public class EventDeviceUtil {
     }
 
     public static EventDevice findKeyActuator(List<EventDevice> list) {
+        for (EventDevice device : list) {
+            List<EventContent> events = device.getEvents();
+            if (events == null || events.isEmpty()) {
+                continue;
+            }
+            boolean hasOther = false;
+            boolean isReal = false;
+            for (EventContent content : events) {
+                if (!(content instanceof KeyEventContent)) {
+                    hasOther = true;
+                } else {
+                    List<String> codes = ((KeyEventContent) content).getCodes();
+                    isReal = codes != null &&
+                            (codes.contains("KEY_VOLUMEUP")
+                                    || codes.contains("KEY_VOLUMEDOWN")
+                                    || (codes.contains("KEY_POWER") &&
+                                    device.getName().contains("kpd")));
+                }
+            }
+            if (hasOther) {
+                continue;
+            }
+            if (isReal) {
+                return device;
+            }
+        }
         return null;
     }
 }

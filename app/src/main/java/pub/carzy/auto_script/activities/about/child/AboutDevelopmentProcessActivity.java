@@ -31,25 +31,12 @@ import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 import com.qmuiteam.qmui.widget.tab.QMUITabBuilder;
 import com.qmuiteam.qmui.widget.tab.QMUITabSegment;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import io.noties.markwon.Markwon;
 import pub.carzy.auto_script.R;
@@ -63,20 +50,18 @@ import pub.carzy.auto_script.databinding.ComAboutFuturePlansBinding;
 import pub.carzy.auto_script.entity.DevelopmentProcessItem;
 import pub.carzy.auto_script.entity.EventDevice;
 import pub.carzy.auto_script.entity.FuturePlanEntity;
+import pub.carzy.auto_script.entity.KeyEntity;
 import pub.carzy.auto_script.entity.MotionEntity;
-import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.entity.WrapperEntity;
-import pub.carzy.auto_script.ex.DeviceNotRootedException;
-import pub.carzy.auto_script.ex.ProcessReadOrWriteIOException;
-import pub.carzy.auto_script.ex.UnauthorizedRootAccessException;
 import pub.carzy.auto_script.model.AboutDevTestModel;
 import pub.carzy.auto_script.model.AboutDevelopmentProcessModel;
+import pub.carzy.auto_script.service.sub.KeyRecorder;
+import pub.carzy.auto_script.service.sub.RecorderLifeCycle;
 import pub.carzy.auto_script.ui.GridBackgroundView;
 import pub.carzy.auto_script.ui_components.components.CollapseView;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.EventDeviceUtil;
-import pub.carzy.auto_script.utils.GestureRecorder;
-import pub.carzy.auto_script.utils.InputConstants;
+import pub.carzy.auto_script.service.sub.GestureRecorder;
 import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.Shell;
 import pub.carzy.auto_script.utils.Stopwatch;
@@ -510,29 +495,25 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
                         ref.get().start();
                     }
                 });
-                GestureRecorder recorder = new GestureRecorder();
+                Stopwatch stopwatch = new Stopwatch();
+                KeyRecorder recorder = new KeyRecorder(stopwatch);
+                List<KeyEntity> data = new ArrayList<>();
                 binding.rootBtn.setOnClickListener(v -> {
                     ThreadUtil.runOnCpu(() -> {
                         try {
                             Process process = Shell.getRootProcess();
                             String listStr = Shell.getEventList(process);
                             List<EventDevice> devices = EventDeviceUtil.parse(listStr);
-                            EventDevice target = EventDeviceUtil.findGestureActuator(devices);
+                            EventDevice target = EventDeviceUtil.findKeyActuator(devices);
 
                             if (target != null) {
                                 ThreadUtil.runOnUi(() -> {
                                     Toast.makeText(context, "开始录制: " + target.getName(), Toast.LENGTH_SHORT).show();
                                     binding.stopBtn.setVisibility(View.VISIBLE);
                                 });
-
-                                recorder.start(target.getPath(), new GestureRecorder.OnRecordListener() {
-                                    @Override
-                                    public void onDeviceFound(String info) {}
-
-                                    @Override
-                                    public void onMotionCaptured(MotionEntity entity) {
-                                        Log.d("CAPTURE", "捕获到一段轨迹，点数: " + entity.getPoints().size());
-                                    }
+                                stopwatch.start();
+                                recorder.start(target.getPath(), data1 -> {
+                                    data.add(data1);
                                 });
                             }
                         } catch (Exception e) {
@@ -544,7 +525,7 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
                 binding.stopBtn.setOnClickListener(v -> {
                     recorder.stop();
                     binding.stopBtn.setVisibility(View.GONE);
-                    String json = new Gson().toJson(recorder.getResultData());
+                    String json = new Gson().toJson(data);
                     Log.d("FINAL_DATA", json);
                 });
             }

@@ -7,7 +7,6 @@ import androidx.databinding.DataBindingUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicLong;
 
 import pub.carzy.auto_script.R;
@@ -21,8 +20,10 @@ import pub.carzy.auto_script.ex.DeviceNotRootedException;
 import pub.carzy.auto_script.ex.ProcessReadOrWriteIOException;
 import pub.carzy.auto_script.model.RecordStateModel;
 import pub.carzy.auto_script.service.impl.RootScriptEngine;
-import pub.carzy.auto_script.service.sub.SimpleReplay;
+import pub.carzy.auto_script.service.sub.RecorderLifeCycle;
 import pub.carzy.auto_script.utils.EventDeviceUtil;
+import pub.carzy.auto_script.service.sub.GestureRecorder;
+import pub.carzy.auto_script.service.sub.KeyRecorder;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.Shell;
 import pub.carzy.auto_script.utils.Stopwatch;
@@ -47,6 +48,9 @@ public class RecordRootScriptEngine extends RootScriptEngine {
             gestureDevice = EventDeviceUtil.findGestureActuator(list);
             //按键设备
             keyDevice = EventDeviceUtil.findKeyActuator(list);
+            if (gestureDevice == null && keyDevice == null) {
+                callback.onFail(ResultCallback.ROOT | ResultCallback.MISSING, 0);
+            }
         } catch (DeviceNotRootedException | ProcessReadOrWriteIOException e) {
             callback.onFail(ResultCallback.EXCEPTION | ResultCallback.ROOT, e);
         }
@@ -84,31 +88,95 @@ public class RecordRootScriptEngine extends RootScriptEngine {
                 binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop);
         binding.btnFloatingRecord.setOnClickListener((e) -> {
             binding.getRecordState().setState(RecordStateModel.STATE_RECORDING);
-            //这里开始申请两个专用道 需要解决如何停止监听数据线程.
             dataWrapper.clear();
             dataWrapper.watcher.resetAndStart();
+            dataWrapper.cycle = createLifeCycle();
+            dataWrapper.cycle.start(null, null);
             //重置开始时间
             dataWrapper.startTime.set(dataWrapper.watcher.getElapsedMillis());
         });
         binding.btnFloatingPause.setOnClickListener(e -> {
             binding.getRecordState().setState(RecordStateModel.STATE_PAUSED);
             dataWrapper.watcher.pause();
+            dataWrapper.cycle.pause();
         });
         binding.btnFloatingRun.setOnClickListener(v -> {
             viewWrapper.binding.getRecordState().setState(RecordStateModel.STATE_RECORDING);
             dataWrapper.watcher.resume();
             dataWrapper.startTime.set(dataWrapper.watcher.getElapsedMillis());
+            dataWrapper.cycle.resume();
         });
         binding.btnFloatingClose.setOnClickListener(v -> {
             dataWrapper.watcher.stop();
+            dataWrapper.cycle.stop();
             close();
         });
         binding.btnFloatingStop.setOnClickListener(v -> {
-            long millis = dataWrapper.watcher.getElapsedMillis();
             dataWrapper.watcher.stop();
+            dataWrapper.cycle.stop();
             viewWrapper.binding.getRecordState().setState(RecordStateModel.STATE_IDLE);
-            jumpToInfo(transformData(dataWrapper.idWorker, millis, 0, dataWrapper.motions, dataWrapper.keys));
+            jumpToInfo(transformData(dataWrapper.idWorker, dataWrapper.watcher.getElapsedMillis(),
+                    0, dataWrapper.motions, dataWrapper.keys));
         });
+    }
+
+    private RecorderLifeCycle<Void> createLifeCycle() {
+        return new RecorderLifeCycle<Void>() {
+            GestureRecorder gestureRecorder;
+            KeyRecorder keyRecorder;
+
+            @Override
+            public void start(String devicePath, OnRecordListener<Void> listener) {
+                if (gestureDevice != null) {
+                    gestureRecorder = new GestureRecorder(dataWrapper.watcher);
+                    gestureRecorder.start(gestureDevice.getPath(), e -> dataWrapper.motions.add(e));
+                }
+                if (keyDevice != null) {
+                    keyRecorder = new KeyRecorder(dataWrapper.watcher);
+                    //todo
+                }
+            }
+
+            @Override
+            public void stop() {
+                if (gestureRecorder != null) {
+                    gestureRecorder.stop();
+                }
+                if (keyRecorder != null) {
+                    keyRecorder.stop();
+                }
+            }
+
+            @Override
+            public void pause() {
+                if (gestureRecorder != null) {
+                    gestureRecorder.pause();
+                }
+                if (keyRecorder != null) {
+                    keyRecorder.pause();
+                }
+            }
+
+            @Override
+            public void resume() {
+                if (gestureRecorder != null) {
+                    gestureRecorder.resume();
+                }
+                if (keyRecorder != null) {
+                    keyRecorder.resume();
+                }
+            }
+
+            @Override
+            public void destroy() {
+                if (gestureRecorder != null) {
+                    gestureRecorder.destroy();
+                }
+                if (keyRecorder != null) {
+                    keyRecorder.destroy();
+                }
+            }
+        };
     }
 
     @Override
@@ -127,6 +195,8 @@ public class RecordRootScriptEngine extends RootScriptEngine {
         final Stopwatch watcher;
         final AtomicLong startTime;
         final IdGenerator<Long> idWorker;
+        RecorderLifeCycle<Void> cycle;
+
         public DataWrapper(IdGenerator<Long> idWorker) {
             motions = new ArrayList<>();
             keys = new ArrayList<>();
