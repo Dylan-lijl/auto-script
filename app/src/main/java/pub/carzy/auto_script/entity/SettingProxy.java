@@ -15,7 +15,33 @@ import pub.carzy.auto_script.BR;
  * @author admin
  */
 public class SettingProxy extends BaseObservable {
+    public static final int AUTO = 0;
+    public static final int ACCESSIBILITY = 1;
+    public static final int ROOT = 2;
     private ObservableList<Style> styles = new ObservableArrayList<>();
+
+    private Integer type = AUTO;
+    private Boolean autoPlay = true;
+    private Integer tick = 10;
+    @Bindable
+    public Boolean getAutoPlay() {
+        return autoPlay;
+    }
+
+    @Bindable
+    public Integer getTick() {
+        return tick;
+    }
+
+    public void setTick(Integer tick) {
+        this.tick = tick;
+        notifyPropertyChanged(BR.tick);
+    }
+
+    public void setAutoPlay(Boolean autoPlay) {
+        this.autoPlay = autoPlay;
+        notifyPropertyChanged(BR.autoReplay);
+    }
 
     public SettingProxy() {
         styles.addOnListChangedCallback(new ObservableList.OnListChangedCallback<>() {
@@ -50,9 +76,11 @@ public class SettingProxy extends BaseObservable {
     public ObservableList<Style> getStyles() {
         return styles;
     }
-    public void updateCurrentStyle(){
+
+    public void updateCurrentStyle() {
         notifyPropertyChanged(BR.currentStyle);
     }
+
     public void setStyles(List<Style> styles) {
         this.styles.clear();
         this.styles.addAll(styles);
@@ -97,5 +125,15 @@ public class SettingProxy extends BaseObservable {
     public void setFloatPoint(FloatPoint floatPoint) {
         this.floatPoint = floatPoint;
         notifyPropertyChanged(BR.floatPoint);
+    }
+
+    @Bindable
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+        notifyPropertyChanged(BR.type);
     }
 }

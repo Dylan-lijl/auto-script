@@ -53,6 +53,7 @@ public class GlobalSingletonScriptEngineController {
     public synchronized void close() {
         if (engine != null) {
             engine.close();
+            engine = null;
         }
     }
 }

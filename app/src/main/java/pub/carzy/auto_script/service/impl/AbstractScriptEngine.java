@@ -1,10 +1,9 @@
-package pub.carzy.auto_script.service;
+package pub.carzy.auto_script.service.impl;
 
 
 import android.accessibilityservice.AccessibilityService;
 import android.app.Application;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
@@ -30,6 +29,7 @@ import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
@@ -38,6 +38,7 @@ import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.entity.KeyEntity;
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
+import pub.carzy.auto_script.service.ScriptEngine;
 import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -46,15 +47,31 @@ import pub.carzy.auto_script.utils.ThreadUtil;
  */
 public abstract class AbstractScriptEngine implements ScriptEngine {
     protected volatile boolean initialized;
+    protected Runnable closeBack;
+
     @Override
     public void start(Object... args) {
 
     }
 
+    @Override
+    public void setCloseBack(Runnable runnable) {
+        closeBack = runnable;
+    }
+
+    @Override
+    public void close() {
+        if (closeBack != null) {
+            closeBack.run();
+        }
+    }
+
     protected boolean hasFloating() {
         return Settings.canDrawOverlays(BeanFactory.getInstance().get(Startup.class));
     }
-
+    protected int getOverlayFlag(){
+        return WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+    }
     @Override
     public void init(ResultCallback callback) {
         if (hasFloating()) {
@@ -99,41 +116,11 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
     }
 
     public Context getContext() {
-        return BeanFactory.getInstance().get(Startup.class);
+        return BeanFactory.getInstance().get(Startup.class).getApplicationContext();
     }
 
     public WindowManager getWindowManager() {
         return (WindowManager) getContext().getSystemService(Application.WINDOW_SERVICE);
-    }
-
-    protected WindowManager.LayoutParams createBindingParams(ViewDataBinding binding) {
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                PixelFormat.TRANSLUCENT
-        );
-        params.gravity = Gravity.START | Gravity.TOP;
-        int[] screenSize = getScreenSize();
-        params.x = screenSize[0] - binding.getRoot().getWidth() - QMUIDisplayHelper.dp2px(getContext(), 56);
-        params.y = screenSize[1] - binding.getRoot().getHeight() - QMUIDisplayHelper.dp2px(getContext(), 56);
-        //如果设置里面有位置则设置
-        Setting setting = BeanFactory.getInstance().get(Setting.class);
-        if (setting != null) {
-            ThreadUtil.runOnCpu(() -> {
-                try {
-                    FloatPoint point = setting.getPoint();
-                    if (point != null) {
-                        params.x = point.getX();
-                        params.y = point.getY();
-                    }
-                } catch (Exception e) {
-                    Log.w("Setting", "获取point失败:" + e.getMessage());
-                }
-            });
-        }
-        return params;
     }
 
     protected ScriptVoEntity transformData(IdGenerator<Long> idWorker, long millis, long align, List<MotionEntity> motions, List<KeyEntity> keys) {
@@ -199,7 +186,8 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
         entity.getRoot().setTotalDuration(maxTime);
         return entity;
     }
-    public void jumpToInfo(ScriptVoEntity entity){
+
+    public void jumpToInfo(ScriptVoEntity entity) {
         Context context = getContext();
         //这里需要打开MacroListActivity将motionList传递过去,然后清空数据
         Intent intent = new Intent(context, MacroInfoActivity.class);
@@ -212,6 +200,7 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
         // 4. 启动 Activity
         context.startActivity(intent);
     }
+
     protected void addViewTouch(View.OnTouchListener listener, View... views) {
         for (View view : views) {
             view.setOnTouchListener(listener);

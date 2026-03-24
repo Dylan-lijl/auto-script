@@ -60,6 +60,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -67,6 +68,7 @@ import lombok.Getter;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.DialogActionInfoBinding;
 import pub.carzy.auto_script.databinding.DialogScriptInfoBinding;
 import pub.carzy.auto_script.databinding.ViewMacroInfoBinding;
@@ -76,16 +78,18 @@ import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
+import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
 import pub.carzy.auto_script.service.GlobalSingletonScriptEngineController;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.ScriptEngine;
 import pub.carzy.auto_script.service.data.ReplayModel;
-import pub.carzy.auto_script.service.dto.OpenParam;
-import pub.carzy.auto_script.service.impl.ReplayScriptAction;
+import pub.carzy.auto_script.service.impl.ReplayScriptEngine;
 import pub.carzy.auto_script.service.impl.engines.RecordAccScriptEngine;
+import pub.carzy.auto_script.service.impl.engines.RecordRootScriptEngine;
 import pub.carzy.auto_script.service.impl.engines.ReplayAccScriptEngine;
+import pub.carzy.auto_script.service.impl.engines.ReplayRootScriptEngine;
 import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
@@ -189,24 +193,31 @@ public class MacroInfoActivity extends BaseActivity {
         build.show();
     }
 
-    private ReplayAccScriptEngine replayAccScriptEngine;
+    private ReplayScriptEngine replayScriptEngine;
 
     private void changeRunService() {
         ThreadUtil.runOnUi(() -> {
-            if (replayAccScriptEngine == null) {
-                replayAccScriptEngine = new ReplayAccScriptEngine();
+            Integer type = setting.read(SettingKey.TYPE, null);
+            if (replayScriptEngine == null) {
+                replayScriptEngine = type == SettingProxy.AUTO || type == SettingProxy.ROOT ? new ReplayRootScriptEngine() : new ReplayAccScriptEngine();
             }
-            GlobalSingletonScriptEngineController.getInstance().open(replayAccScriptEngine, new ScriptEngine.ResultCallback() {
+            AtomicReference<ScriptEngine.ResultCallback> reference = new AtomicReference<>(null);
+            GlobalSingletonScriptEngineController.getInstance().open(replayScriptEngine, new ScriptEngine.ResultCallback() {
                 @Override
                 public void onFail(int code, Object... args) {
-
+                    ActivityUtils.onOpenFail(MacroInfoActivity.this, type, code, () -> {
+                        replayScriptEngine = new ReplayAccScriptEngine();
+                        ThreadUtil.runOnCpu(() -> GlobalSingletonScriptEngineController.getInstance().open(replayScriptEngine, reference.get()));
+                    }, args);
                 }
 
                 @Override
                 public void onSuccess() {
-                    replayAccScriptEngine.setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                    if (replayScriptEngine instanceof ReplayAccScriptEngine) {
+                        ((ReplayAccScriptEngine) replayScriptEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                    }
                     ReplayModel replayModel = ReplayModel.create(model.getRoot(), model.getActionData(), model.getPointData());
-                    replayAccScriptEngine.start(replayModel);
+                    replayScriptEngine.start(replayModel);
                 }
             });
         });

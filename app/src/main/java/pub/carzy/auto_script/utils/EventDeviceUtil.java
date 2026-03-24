@@ -23,21 +23,21 @@ import pub.carzy.auto_script.entity.events.SwEventContent;
  */
 public class EventDeviceUtil {
     // Event types
-    private static final int EV_SYN = 0x00;
-    private static final int EV_KEY = 0x01;
-    private static final int EV_ABS = 0x03;
+    public static final int EV_SYN = 0x00;
+    public static final int EV_KEY = 0x01;
+    public static final int EV_ABS = 0x03;
 
     // ABS codes
-    private static final int ABS_MT_SLOT = 0x2f;
-    private static final int ABS_MT_TRACKING_ID = 0x39;
-    private static final int ABS_MT_POSITION_X = 0x35;
-    private static final int ABS_MT_POSITION_Y = 0x36;
-    private static final int ABS_MT_TOUCH_MAJOR = 0x30;
+    public static final int ABS_MT_SLOT = 0x2f;
+    public static final int ABS_MT_TRACKING_ID = 0x39;
+    public static final int ABS_MT_POSITION_X = 0x35;
+    public static final int ABS_MT_POSITION_Y = 0x36;
+    public static final int ABS_MT_TOUCH_MAJOR = 0x30;
 
     // KEY codes
-    private static final int BTN_TOUCH = 330;
-    private static final int KEY_PRESS = 1;
-    private static final int KEY_RELEASE = 0;
+    public static final int BTN_TOUCH = 330;
+    public static final int KEY_PRESS = 1;
+    public static final int KEY_RELEASE = 0;
     public static final Pattern EVENT_LINE = Pattern.compile("(\\w+)\\s*\\((\\p{XDigit}+?)\\)\\s*:\\s*(.*)");
     public static final Pattern ABS_PROP = Pattern.compile("\\d+");
     public static final Map<String, Function<String, List<EventContent>>> EVENT_MAP;

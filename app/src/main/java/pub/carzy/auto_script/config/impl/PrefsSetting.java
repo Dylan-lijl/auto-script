@@ -2,7 +2,6 @@ package pub.carzy.auto_script.config.impl;
 
 import static android.content.ContentValues.TAG;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -11,10 +10,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import pub.carzy.auto_script.config.AbstractSetting;
+import pub.carzy.auto_script.config.pojo.SettingKey;
+import pub.carzy.auto_script.entity.Style;
+import pub.carzy.auto_script.utils.MixedUtil;
 
 /**
  * @author admin
@@ -34,14 +35,14 @@ public class PrefsSetting extends AbstractSetting {
         return new ArrayList<>(prefs.getAll().keySet());
     }
 
-    @SuppressLint("CommitPrefEdits")
     @Override
     public void reset() {
-        prefs.edit().clear();
+        prefs.edit().clear().apply();
     }
 
     @Override
-    protected <T> void write(String key, T value) {
+    public <T> void write(SettingKey<T> settingKey, T value) {
+        String key = settingKey.getKey();
         SharedPreferences.Editor editor = prefs.edit();
         if (value == null) {
             editor.remove(key);
@@ -67,22 +68,24 @@ public class PrefsSetting extends AbstractSetting {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <T> T read(String key, T defaultValue, Class<T> clazz) {
+    public <T> T read(SettingKey<T> settingKey, T defaultValue) {
+        String key = settingKey.getKey();
+        Class<T> clazz = settingKey.getType();
         if (!prefs.contains(key)) {
-            return defaultValue;
+            return defaultValue == null ? settingKey.getDefaultValue() : defaultValue;
         }
         if (clazz == Integer.class) {
-            return (T) Integer.valueOf(prefs.getInt(key, (Integer) defaultValue));
+            return (T) Integer.valueOf(prefs.getInt(key, -1));
         } else if (clazz == Long.class) {
-            return (T) Long.valueOf(prefs.getLong(key, (Long) defaultValue));
+            return (T) Long.valueOf(prefs.getLong(key, -1));
         } else if (clazz == Boolean.class) {
-            return (T) Boolean.valueOf(prefs.getBoolean(key, (Boolean) defaultValue));
+            return (T) Boolean.valueOf(prefs.getBoolean(key, false));
         } else if (clazz == Float.class) {
-            return (T) Float.valueOf(prefs.getFloat(key, (Float) defaultValue));
+            return (T) Float.valueOf(prefs.getFloat(key, -1));
         } else if (clazz == Double.class) {
-            return (T) Double.valueOf(prefs.getFloat(key, ((Number) defaultValue).floatValue()));
+            return (T) Double.valueOf(prefs.getFloat(key,-1));
         } else if (clazz == String.class) {
-            return (T) prefs.getString(key, defaultValue != null ? (String) defaultValue : null);
+            return (T) prefs.getString(key,"");
         } else {
             String json = prefs.getString(key, null);
             if (json == null) return defaultValue;
@@ -93,6 +96,17 @@ public class PrefsSetting extends AbstractSetting {
                 return defaultValue;
             }
         }
+    }
+
+    @Override
+    public <T> void remove(SettingKey<T> settingKey) {
+        prefs.edit().remove(settingKey.getKey()).apply();
+    }
+
+    @Override
+    public <T> void update(SettingKey<T> settingKey, T changed) {
+        remove(settingKey);
+        write(settingKey, changed);
     }
 
 }

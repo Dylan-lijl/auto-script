@@ -22,7 +22,7 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 /**
  * @author admin
  */
-public class GestureRecorder implements RecorderLifeCycle<MotionEntity>{
+public class GestureRecorder implements RecorderLifeCycle<MotionEntity> {
     private static final String TAG = "GestureRecorder";
     private final AtomicBoolean isRunning;
     private final AtomicBoolean isPaused;
@@ -32,6 +32,7 @@ public class GestureRecorder implements RecorderLifeCycle<MotionEntity>{
     private final Set<Integer> dirtySlots;
     private Runnable runnable;
     private final Stopwatch stopwatch;
+    private Process process;
 
     public GestureRecorder(Stopwatch stopwatch) {
         this.stopwatch = stopwatch;
@@ -44,65 +45,64 @@ public class GestureRecorder implements RecorderLifeCycle<MotionEntity>{
 
     @Override
     public void start(String devicePath, OnRecordListener<MotionEntity> listener) {
-        if (isRunning.get()){
+        if (isRunning.get()) {
             return;
         }
         isRunning.set(true);
+        clear();
+        try {
+            process = Shell.getRootProcess();
+            OutputStream os = process.getOutputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            // 启动 getevent
+            os.write(("getevent -t " + devicePath + "& echo " + START_CONTENT + "\n").getBytes());
+            os.flush();
+            runnable = () -> {
+                try {
+                    Thread.sleep(5);
+                    os.write(("echo " + END_CONTENT + "\n").getBytes());
+                    os.flush();
+                } catch (Exception e) {
+                    Log.d(TAG, "写ctrl c命令失败!", e);
+                }
+            };
+            AtomicInteger currentSlot = new AtomicInteger(0);
+            String line;
+            boolean started = false;
+            while (isRunning.get() && (line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.contains(START_CONTENT)) {
+                    started = true;
+                    continue;
+                }
+                if (line.contains(END_CONTENT)) {
+                    break;
+                }
+                //过滤不是数据行,暂停状态以及未解析到开始符
+                if (!line.contains("]") || isPaused.get() || !started) continue;
+
+                // 解析标准格式: [ timestamp] type code value
+                String[] parts = line.substring(line.indexOf("]") + 1).trim().split("\\s+");
+                if (parts.length < 3) continue;
+
+                int type = Integer.parseInt(parts[0], 16);
+                int code = Integer.parseInt(parts[1], 16);
+                // 使用Long解析防止十六进制符号位溢出
+                int value = (int) Long.parseLong(parts[2], 16);
+
+                handleEvent(currentSlot, type, code, value, stopwatch.getElapsedMillis(), listener);
+            }
+            Log.d(TAG, "正常结束......");
+        } catch (Exception e) {
+            Log.e(TAG, "Read Error: " + e.getMessage());
+        }
+    }
+
+    private void clear() {
         motionMap.clear();
         activeStateMap.clear();
         dirtySlots.clear();
-        ThreadUtil.runOnCpu(() -> {
-            Process process = null;
-            try {
-                process = Shell.getRootProcess();
-                OutputStream os = process.getOutputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-                // 启动 getevent
-                os.write(("getevent -t " + devicePath + "& echo "+START_CONTENT+"\n").getBytes());
-                os.flush();
-                runnable = () -> {
-                    try {
-                        Thread.sleep(5);
-                        os.write(("echo "+END_CONTENT+"\n").getBytes());
-                        os.flush();
-                    } catch (Exception e) {
-                        Log.d(TAG, "写ctrl c命令失败!", e);
-                    }
-                };
-                AtomicInteger currentSlot = new AtomicInteger(0);
-                String line;
-                boolean started = false;
-                while (isRunning.get() && (line = reader.readLine()) != null) {
-                    line = line.trim();
-                    if (line.contains(START_CONTENT)) {
-                        started = true;
-                        continue;
-                    }
-                    if (line.contains(END_CONTENT)) {
-                        break;
-                    }
-                    //过滤不是数据行,暂停状态以及未解析到开始符
-                    if (!line.contains("]") || isPaused.get() || !started) continue;
-
-                    // 解析标准格式: [ timestamp] type code value
-                    String[] parts = line.substring(line.indexOf("]") + 1).trim().split("\\s+");
-                    if (parts.length < 3) continue;
-
-                    int type = Integer.parseInt(parts[0], 16);
-                    int code = Integer.parseInt(parts[1], 16);
-                    // 使用Long解析防止十六进制符号位溢出
-                    int value = (int) Long.parseLong(parts[2], 16);
-
-                    handleEvent(currentSlot, type, code, value, stopwatch.getElapsedMillis(), listener);
-                }
-                Log.d(TAG, "正常结束......");
-            } catch (Exception e) {
-                Log.e(TAG, "Read Error: " + e.getMessage());
-            } finally {
-                if (process != null) process.destroy();
-            }
-        });
     }
 
     private void handleEvent(AtomicInteger c, int type, int code, int value, long elapsed, OnRecordListener<MotionEntity> listener) {
@@ -170,13 +170,15 @@ public class GestureRecorder implements RecorderLifeCycle<MotionEntity>{
             motion.getPoints().add(snapshot);
         }
     }
+
     @Override
     public void stop() {
         isRunning.set(false);
         if (runnable != null) {
-            ThreadUtil.runOnCpu(runnable);
+            ThreadUtil.runOnCpu(() -> runnable.run());
         }
     }
+
     @Override
     public void pause() {
         isPaused.set(true);
@@ -192,7 +194,8 @@ public class GestureRecorder implements RecorderLifeCycle<MotionEntity>{
 
     @Override
     public void destroy() {
-
+        isRunning.set(false);
+        process.destroy();
     }
 
 }

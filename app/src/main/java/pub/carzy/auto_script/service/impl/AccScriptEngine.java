@@ -1,25 +1,30 @@
 package pub.carzy.auto_script.service.impl;
 
 import android.accessibilityservice.AccessibilityService;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PixelFormat;
 import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.databinding.ViewDataBinding;
+
+import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.config.BeanFactory;
-import pub.carzy.auto_script.service.AbstractScriptEngine;
+import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.config.pojo.SettingKey;
+import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -62,7 +67,7 @@ public abstract class AccScriptEngine extends AbstractScriptEngine {
                 accessibilityEnabled = Settings.Secure.getInt(context.getContentResolver(),
                         Settings.Secure.ACCESSIBILITY_ENABLED);
             } catch (Settings.SettingNotFoundException e) {
-                Log.e(RecordScriptAction.class.getCanonicalName(), "Error finding setting, default accessibility to not found", e);
+                Log.e("accessibility", "Error finding setting, default accessibility to not found", e);
                 throw e;
             }
 
@@ -182,5 +187,40 @@ public abstract class AccScriptEngine extends AbstractScriptEngine {
 
     protected int getPointIndex(Integer action) {
         return action == MotionEvent.ACTION_DOWN ? 0 : ((action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT);
+    }
+
+    @Override
+    protected int getOverlayFlag() {
+        return WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
+    }
+
+    protected WindowManager.LayoutParams createBindingParams(ViewDataBinding binding) {
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                getOverlayFlag(),
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                PixelFormat.TRANSLUCENT
+        );
+        params.gravity = Gravity.START | Gravity.TOP;
+        int[] screenSize = getScreenSize();
+        params.x = screenSize[0] - binding.getRoot().getWidth() - QMUIDisplayHelper.dp2px(getContext(), 56);
+        params.y = screenSize[1] - binding.getRoot().getHeight() - QMUIDisplayHelper.dp2px(getContext(), 56);
+        //如果设置里面有位置则设置
+        Setting setting = BeanFactory.getInstance().get(Setting.class);
+        if (setting != null) {
+            ThreadUtil.runOnCpu(() -> {
+                try {
+                    FloatPoint point = setting.read(SettingKey.FLOAT_POINT, null);
+                    if (point != null) {
+                        params.x = point.getX();
+                        params.y = point.getY();
+                    }
+                } catch (Exception e) {
+                    Log.w("Setting", "获取point失败:" + e.getMessage());
+                }
+            });
+        }
+        return params;
     }
 }

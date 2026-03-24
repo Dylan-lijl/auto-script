@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -39,6 +40,7 @@ import pub.carzy.auto_script.adapter.SingleSimpleAdapter;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.CommonColorSelectorBinding;
 import pub.carzy.auto_script.databinding.ViewSettingBinding;
 import pub.carzy.auto_script.entity.FloatPoint;
@@ -90,7 +92,7 @@ public class SettingActivity extends BaseActivity {
                 return;
             }
             ThreadUtil.runOnCpu(() -> {
-                setting.removeStyle(style.getId());
+                setting.remove(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null));
                 //选择其他样式
                 ThreadUtil.runOnUi(() -> {
                     model.getProxy().getStyles().remove(style);
@@ -108,7 +110,8 @@ public class SettingActivity extends BaseActivity {
                 color -> {
                     model.getProxy().getCurrentStyle().setStatusBarBackgroundColor(color);
                     ActivityUtils.setWindowsStatusBarColor(this, color);
-                    ThreadUtil.runOnCpu(() -> setting.updateStyle(model.getProxy().getCurrentStyle()));
+                    Style style = model.getProxy().getCurrentStyle();
+                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
                     updateGlobalStyle(model.getProxy().getCurrentStyle());
                 }));
         //切换系统栏亮色和暗色
@@ -116,7 +119,8 @@ public class SettingActivity extends BaseActivity {
             model.getProxy().getCurrentStyle().setStatusBarMode(!model.getProxy().getCurrentStyle().isStatusBarMode());
             ActivityUtils.setWindowsStatusLight(this, model.getProxy().getCurrentStyle().isStatusBarMode());
             updateGlobalStyle(model.getProxy().getCurrentStyle());
-            ThreadUtil.runOnCpu(() -> setting.updateStyle(model.getProxy().getCurrentStyle()));
+            Style style = model.getProxy().getCurrentStyle();
+            ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
         });
         //标题栏背景颜色
         binding.topBarBgcBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarBackgroundColor(),
@@ -124,7 +128,8 @@ public class SettingActivity extends BaseActivity {
                     model.getProxy().getCurrentStyle().setTopBarBackgroundColor(color);
                     binding.topBarLayout.actionBar.setBackgroundColor(color);
                     updateGlobalStyle(model.getProxy().getCurrentStyle());
-                    ThreadUtil.runOnCpu(() -> setting.updateStyle(model.getProxy().getCurrentStyle()));
+                    Style style = model.getProxy().getCurrentStyle();
+                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
                 }));
         //标题栏文字颜色
         binding.topBarTxtBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarTextColor(),
@@ -134,7 +139,8 @@ public class SettingActivity extends BaseActivity {
                         binding.topBarLayout.actionBar.getTitleView().setTextColor(color);
                     }
                     updateGlobalStyle(model.getProxy().getCurrentStyle());
-                    ThreadUtil.runOnCpu(() -> setting.updateStyle(model.getProxy().getCurrentStyle()));
+                    Style style = model.getProxy().getCurrentStyle();
+                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
                 }));
         //标题栏图片颜色
         binding.topBarImgBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarImageColor(),
@@ -159,12 +165,26 @@ public class SettingActivity extends BaseActivity {
                         }
                     }
                     updateGlobalStyle(model.getProxy().getCurrentStyle());
-                    ThreadUtil.runOnCpu(() -> setting.updateStyle(model.getProxy().getCurrentStyle()));
+                    Style style = model.getProxy().getCurrentStyle();
+                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
                 }));
+        //模式切换
+        binding.typeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.auto_btn) {
+                model.getProxy().setType(SettingProxy.AUTO);
+            } else if (checkedId == R.id.accessibility_btn) {
+                model.getProxy().setType(SettingProxy.ACCESSIBILITY);
+            } else if (checkedId == R.id.root_btn) {
+                model.getProxy().setType(SettingProxy.ROOT);
+            }
+            setting.write(SettingKey.TYPE, model.getProxy().getType());
+        });
+        binding.autoPlayBtn.setOnCheckedChangeListener((buttonView, isChecked) -> setting.write(SettingKey.AUTO_PLAY, isChecked));
     }
 
     /**
      * 更新全局样式
+     *
      * @param currentStyle 样式
      */
     private void updateGlobalStyle(Style currentStyle) {
@@ -180,6 +200,7 @@ public class SettingActivity extends BaseActivity {
 
     /**
      * 展示所有样式
+     *
      * @param e
      */
     private void showAllStyle(View e) {
@@ -197,7 +218,7 @@ public class SettingActivity extends BaseActivity {
                 style.setCurrentVersion(System.currentTimeMillis());
                 model.getProxy().updateCurrentStyle();
                 updateGlobalStyle(style);
-                ThreadUtil.runOnCpu(() -> setting.updateStyle(style));
+                ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
             }
             if (popups[0] != null) {
                 popups[0].dismiss();
@@ -218,6 +239,7 @@ public class SettingActivity extends BaseActivity {
 
     /**
      * 编辑样式
+     *
      * @param add 是否新增
      */
     private void editStyle(boolean add) {
@@ -298,9 +320,7 @@ public class SettingActivity extends BaseActivity {
                             return;
                         }
                     }
-                    ThreadUtil.runOnCpu(() -> {
-                        setting.updateStyle(style);
-                    });
+                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
                 })
                 .create().show();
     }
@@ -334,10 +354,13 @@ public class SettingActivity extends BaseActivity {
     private void readConfig() {
         ThreadUtil.runOnCpu(() -> {
             SettingProxy proxy = new SettingProxy();
-            FloatPoint floatPoint = setting.getPoint();
+            FloatPoint floatPoint = setting.read(SettingKey.FLOAT_POINT, null);
             proxy.setFloatPoint(Objects.requireNonNullElseGet(floatPoint, () -> new FloatPoint(200, 200)));
-            List<Style> list = setting.getAllStyle();
-            proxy.setStyles(list);
+            proxy.setStyles(new ArrayList<>(setting.getAll(SettingKey.STYLE).values()));
+            Integer i = setting.read(SettingKey.TYPE, null);
+            proxy.setType(i);
+            proxy.setAutoPlay(setting.read(SettingKey.AUTO_PLAY, null));
+            proxy.setTick(setting.read(SettingKey.TICK, null));
             model.setProxy(proxy);
         });
     }

@@ -48,8 +48,10 @@ public class ReplayModel {
         private Integer pointCount;
         private Integer type;
         private Integer code;
+        private Integer index;
         private List<ReplayPointModel> points = new ArrayList<>();
         //----------运行数据------------
+        private Integer trackingId;
         //如果时间相同,则形成链表
         private ReplayActionModel last;
         //当前运行到哪一步,手势类型可以用的到
@@ -62,6 +64,7 @@ public class ReplayModel {
          */
         public void reset() {
             current.set(0);
+            trackingId = null;
             remainingTime.set(duration);
             if (type == ScriptActionEntity.GESTURE) {
                 //防止出错,直接遍历追加

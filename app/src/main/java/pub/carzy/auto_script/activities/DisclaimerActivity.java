@@ -16,6 +16,7 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.AbstractSetting;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.ViewDisclaimerBinding;
 import pub.carzy.auto_script.model.DisclaimerModel;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
@@ -49,10 +50,12 @@ public class DisclaimerActivity extends BaseActivity {
         initTopBar();
         init();
     }
+
     @Override
     protected QMUITopBarLayout getTopBar() {
         return binding.topBarLayout.actionBar;
     }
+
     @Override
     protected void initTopBar() {
         super.initTopBar();
@@ -93,7 +96,7 @@ public class DisclaimerActivity extends BaseActivity {
 
     private void init() {
         ThreadUtil.runOnCpu(() -> {
-            boolean accepted = setting.isAccepted();
+            boolean accepted = setting.read(SettingKey.ACCEPTED, false);
             ThreadUtil.runOnUi(() -> {
                 //如果已经是同意状态下切换观看模式
                 model.setView(accepted);
@@ -113,7 +116,7 @@ public class DisclaimerActivity extends BaseActivity {
     private void startCountDown() {
         //倒计时
         ThreadUtil.runOnCpu(() -> {
-            Integer tick = MixedUtil.getValueOrDefault(setting.getTick(), AbstractSetting.DefaultValue.TICK);
+            Integer tick = setting.read(SettingKey.TICK, null);
             ThreadUtil.runOnUi(() -> {
                 model.setTick(tick);
                 timer = new CountDownTimer(tick * 1000, 1000) {
@@ -139,7 +142,7 @@ public class DisclaimerActivity extends BaseActivity {
         model.setAccepting(true);
         ThreadUtil.runOnCpu(() -> {
             //更新配置
-            setting.setAccepted(true);
+            setting.write(SettingKey.ACCEPTED, true);
             ThreadUtil.runOnUi(() -> {
                 model.setAccepting(false);
                 //跳转

@@ -1,8 +1,5 @@
 package pub.carzy.auto_script.service.sub;
 
-import android.accessibilityservice.AccessibilityService;
-import android.accessibilityservice.GestureDescription;
-import android.graphics.Path;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -24,7 +21,6 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
-import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -33,11 +29,7 @@ import pub.carzy.auto_script.utils.ThreadUtil;
  *
  * @author admin
  */
-public class SimpleReplay {
-    /**
-     * 无障碍
-     */
-    private final AccessibilityService service;
+public abstract class SimpleReplay<T extends Replay.Payload, D extends Replay.Payload> implements Replay {
     /**
      * 播放状态
      */
@@ -69,7 +61,7 @@ public class SimpleReplay {
      */
     @Getter
     @Setter
-    private AtomicLong tick = new AtomicLong(10);
+    protected AtomicLong tick = new AtomicLong(10);
     /**
      * 开始时间,开始时这个时间等于当前时间,,恢复时startTime += 当前时间-暂停时间
      */
@@ -87,22 +79,27 @@ public class SimpleReplay {
      */
     private final Set<ResultListener> callback = new LinkedHashSet<>();
 
+    @Override
     public void clearCallback() {
         callback.clear();
     }
 
+    @Override
     public void addCallback(ResultListener listener) {
         callback.add(listener);
     }
 
+    @Override
     public void removeCallback(ResultListener listener) {
         callback.remove(listener);
     }
 
+    @Override
     public void setRepeatCount(int repeatCount) {
         this.repeatCount.set(repeatCount);
     }
 
+    @Override
     public int getRepeatCount() {
         return repeatCount.get();
     }
@@ -110,22 +107,8 @@ public class SimpleReplay {
     /**
      * 手势回调,记录手势执行或被取消,打印日志
      */
-    private final AccessibilityService.GestureResultCallback gestureCallback = new AccessibilityService.GestureResultCallback() {
-        @Override
-        public void onCompleted(GestureDescription gestureDescription) {
-            super.onCompleted(gestureDescription);
-            Log.d(SimpleReplay.this.getClass().getCanonicalName(), "GestureResultCallback#onCompleted: ");
-        }
 
-        @Override
-        public void onCancelled(GestureDescription gestureDescription) {
-            super.onCancelled(gestureDescription);
-            Log.d(SimpleReplay.this.getClass().getCanonicalName(), "GestureResultCallback#onCancelled: ");
-        }
-    };
-
-    public SimpleReplay(AccessibilityService service) {
-        this.service = service;
+    public SimpleReplay() {
         //单线程池
         scheduler = Executors.newSingleThreadScheduledExecutor();
     }
@@ -133,6 +116,7 @@ public class SimpleReplay {
     /**
      * 启动播放
      */
+    @Override
     public void start() {
         //如果重复次数小于等于0则退出
         if (repeatCount.get() == 0) {
@@ -161,6 +145,7 @@ public class SimpleReplay {
         }
     }
 
+    @Override
     public int getStatus() {
         return status.get();
     }
@@ -168,6 +153,7 @@ public class SimpleReplay {
     /**
      * 停止
      */
+    @Override
     public void stop() {
         try {
             if (status.get() == STOP) {
@@ -186,6 +172,7 @@ public class SimpleReplay {
         }
     }
 
+    @Override
     public void pause() {
         try {
             if (status.get() != RUNNING) {
@@ -225,10 +212,10 @@ public class SimpleReplay {
                         if (r >= value.getDuration() && r <= 0) {
                             continue;
                         }
-                        //释放
-                        if (!service.performGlobalAction(value.getCode())) {
+                        //释放 todo 这里已经计算出哪些key要被抬起
+                       /* if (!performGlobalAction(value.getCode())) {
                             Log.w(SimpleReplay.class.getCanonicalName(), "pause#performGlobalAction: failure");
-                        }
+                        }*/
                     }
                     //递归处理
                     value = value.getLast();
@@ -240,6 +227,7 @@ public class SimpleReplay {
     /**
      * 恢复
      */
+    @Override
     public void resume() {
         try {
             if (status.get() != PAUSE) {
@@ -273,11 +261,9 @@ public class SimpleReplay {
         }
         if (!headWaitMap.isEmpty()) {
             //手势构造器
-            GestureDescription.Builder builder = new GestureDescription.Builder();
-            //由于builder没有方法可以判断是否有手势操作,所以需要一个状态位来标识
-            AtomicBoolean hasGesture = new AtomicBoolean(false);
+            T gesturePayload = createGesturePayload();
+            D eventPayload = createKeyEventPayload();
             //按键时间
-            List<KeyEvent> keyEvents = new ArrayList<>();
             //是否完成,递归判断,只有存在一个未完成就不能从wait中移除
             AtomicBoolean unfinished = new AtomicBoolean(false);
             //由于要递归处理,所以使用回调方式
@@ -285,14 +271,14 @@ public class SimpleReplay {
                 if (replayActionModel.getType() == ScriptActionEntity.GESTURE) {
                     try {
                         //处理手势
-                        processGestureAction(builder, replayActionModel, unfinished, hasGesture);
+                        processGestureAction(gesturePayload, replayActionModel, unfinished);
                     } catch (Exception e) {
                         Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
                     }
                 } else if (replayActionModel.getType() == ScriptActionEntity.KEY_EVENT) {
                     try {
                         //处理键类型
-                        processCodeAction(replayActionModel, keyEvents, unfinished);
+                        processCodeAction(eventPayload, replayActionModel, unfinished);
                     } catch (Exception e) {
                         Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
                     }
@@ -326,23 +312,21 @@ public class SimpleReplay {
             }
             //将指定的id移到删除map
             model.removeToDeleteMap(ids);
-            //发送手势
-            if (hasGesture.get()) {
+            if (!gesturePayload.isEmpty()) {
+                //发送手势
                 ThreadUtil.runOnUi(() -> {
-                    if (service.dispatchGesture(builder.build(), gestureCallback, null)) {
+                    if (dispatchGesture(gesturePayload)) {
                         Log.d(this.getClass().getCanonicalName(), "dispatchGesture success");
                     } else {
                         Log.d(this.getClass().getCanonicalName(), "dispatchGesture fail");
                     }
                 });
             }
-            //发送键事件
-            if (!keyEvents.isEmpty()) {
+            if (!eventPayload.isEmpty()) {
+                //发送键事件
                 ThreadUtil.runOnUi(() -> {
-                    for (KeyEvent item : keyEvents) {
-                        if (!service.performGlobalAction(item.getKeyCode())) {
-                            Log.w(this.getClass().getCanonicalName(), "performGlobalAction failure");
-                        }
+                    if (!performGlobalAction(eventPayload)) {
+                        Log.w(this.getClass().getCanonicalName(), "performGlobalAction failure");
                     }
                 });
             }
@@ -362,7 +346,7 @@ public class SimpleReplay {
                     //小于等于0则退出
                     boolean out = repeatCount.get() == 0;
                     if (!out) {
-                        if (repeatCount.get()>0){
+                        if (repeatCount.get() > 0) {
                             repeatCount.set(repeatCount.get() - 1);
                         }
                         out = repeatCount.get() == 0;
@@ -384,6 +368,16 @@ public class SimpleReplay {
         scheduler.schedule(this::tickProcess, tick.get(), TimeUnit.MILLISECONDS);
     }
 
+    protected abstract D createKeyEventPayload();
+
+    protected abstract boolean performGlobalAction(D item);
+
+    protected abstract boolean dispatchGesture(T payload);
+
+    protected abstract void processGestureAction(T payload, ReplayModel.ReplayActionModel replayActionModel, AtomicBoolean unfinished);
+
+    protected abstract T createGesturePayload();
+
     private void recover() {
         //重置
         model.recover();
@@ -398,97 +392,13 @@ public class SimpleReplay {
      * @param keyEvents  事件集合容器
      * @param unfinished 是否完成
      */
-    private void processCodeAction(ReplayModel.ReplayActionModel model, List<KeyEvent> keyEvents, AtomicBoolean unfinished) {
-        if (model == null || model.getCode() == null || model.getRemainingTime().get() <= 0) {
-            return;
-        }
-        //如果剩余时间等于时长说明未开始,则需要准备按下事件
-        if (model.getRemainingTime().get() == model.getDuration()) {
-            keyEvents.add(new KeyEvent(KeyEvent.ACTION_DOWN, model.getCode()));
-        }
-        //扣除剩余时间
-        model.getRemainingTime().set(model.getRemainingTime().get() - tick.get());
-        //剩余时间等于小于0说明时间片用完了,可以发送抬起事件
-        if (model.getRemainingTime().get() <= 0) {
-            keyEvents.add(new KeyEvent(KeyEvent.ACTION_UP, model.getCode()));
-        } else {
-            //还有剩余时间就标记成未完成,防止被移除
-            unfinished.set(true);
-        }
-    }
+    protected abstract void processCodeAction(D keyEvents, ReplayModel.ReplayActionModel model, AtomicBoolean unfinished);
 
-    /**
-     * 处理手势action
-     *
-     * @param builder    手势构造器
-     * @param action     action
-     * @param unfinished 未完成
-     * @param hasGesture 是否存在手势
-     */
-    private void processGestureAction(GestureDescription.Builder builder, ReplayModel.ReplayActionModel action, AtomicBoolean unfinished, AtomicBoolean hasGesture) {
-        if (action == null) {
-            return;
-        }
-        //查看索引位
-        int current = action.getCurrent().get();
-        //已处理
-        if (current >= action.getPoints().size()) {
-            return;
-        }
-        //构建path
-        Path path = new Path();
-        //遍历点
-        for (int i = current; i < action.getPoints().size(); i++) {
-            ReplayModel.ReplayPointModel point = action.getPoints().get(i);
-            //第一次调用moveTo
-            if (i == current) {
-                path.moveTo(point.getX(), point.getY());
-                continue;
-            }
-            //后续通通调用lineTo
-            path.lineTo(point.getX(), point.getY());
-        }
-        //由于无障碍模拟手势无法将按下,移动,抬起分开,所以直接构建全部,也就是说忽略时间片限制,同时无障碍手势只允许15秒内,所以大于15秒可能会执行异常
-        builder.addStroke(new GestureDescription.StrokeDescription(path, 0, Math.max(1, action.getDuration())));
-        //将current设置为size来标记当前已被处理
-        action.getCurrent().set(action.getPoints().size());
-        //设置存在手势
-        hasGesture.set(true);
-    }
-
+    @Override
     public void clear() {
+        stop();
         model = null;
-        status.set(STOP);
         callback.clear();
     }
 
-    public interface ResultListener {
-        int SUCCESS = 0;
-        int FAIL = -1;
-        int EXCEPTION = -2;
-
-        default void stop(int code, String message, Exception e) {
-
-        }
-
-        default void pause(int code, String message, Exception e) {
-
-        }
-
-        default void resume(int code, String message, Exception e) {
-
-        }
-
-        default void start(int code, String message, Exception e) {
-
-        }
-
-        default void before(int status, int count) {
-
-        }
-
-        default void after(int status, int count) {
-
-        }
-    }
 }

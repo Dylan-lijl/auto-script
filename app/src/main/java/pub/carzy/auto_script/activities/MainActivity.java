@@ -14,6 +14,7 @@ import android.widget.Toast;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 
 /**
  * 主页面
@@ -26,7 +27,7 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         //检查是否同意免责声明
         Setting setting = BeanFactory.getInstance().get(Setting.class);
-        if (setting.isAccepted()) {
+        if (setting.read(SettingKey.ACCEPTED,null)) {
             // 已同意，跳转到列表页面
             startActivity(new Intent(this, MacroListActivity.class));
         } else {

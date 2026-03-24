@@ -23,6 +23,7 @@ import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.WindowMaskViewBinding;
 import pub.carzy.auto_script.databinding.WindowRecordFloatingButtonBinding;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
@@ -33,6 +34,9 @@ import pub.carzy.auto_script.model.RecordStateModel;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.service.impl.AccScriptEngine;
+import pub.carzy.auto_script.service.impl.RecordScriptEngine;
+import pub.carzy.auto_script.service.sub.AccessibilityReplay;
+import pub.carzy.auto_script.service.sub.Replay;
 import pub.carzy.auto_script.service.sub.SimpleReplay;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.Stopwatch;
@@ -42,7 +46,7 @@ import pub.carzy.auto_script.utils.Stopwatch;
  *
  * @author admin
  */
-public class RecordAccScriptEngine extends AccScriptEngine {
+public class RecordAccScriptEngine extends AccScriptEngine implements RecordScriptEngine {
     private DataWrapper dataWrapper;
     private ViewWrapper viewWrapper;
 
@@ -73,7 +77,7 @@ public class RecordAccScriptEngine extends AccScriptEngine {
                                     false
                             ));
                     Setting setting = BeanFactory.getInstance().get(Setting.class);
-                    binding.getRecordState().setAutoReplay(setting.getAutoPlay());
+                    binding.getRecordState().setAutoReplay(setting.read(SettingKey.AUTO_PLAY, null));
                     addListenerByView();
                     setUpAccessibleCallback();
                     this.initialized = true;
@@ -133,14 +137,7 @@ public class RecordAccScriptEngine extends AccScriptEngine {
     }
 
     private void listenCloseBtn() {
-        viewWrapper.binding.btnFloatingClose.setOnClickListener(v -> {
-            if (dataWrapper.replay.getStatus() == SimpleReplay.RUNNING) {
-                dataWrapper.replay.stop();
-            }
-            dataWrapper.watcher.stop();
-            viewWrapper.removeMaskView();
-            viewWrapper.removeControlView();
-        });
+        viewWrapper.binding.btnFloatingClose.setOnClickListener(v -> close());
     }
 
     private void listenStopBtn() {
@@ -191,10 +188,10 @@ public class RecordAccScriptEngine extends AccScriptEngine {
                     dataWrapper.replay.setModel(model);
                     dataWrapper.replay.setRepeatCount(1);
                     dataWrapper.replay.clearCallback();
-                    dataWrapper.replay.addCallback(new SimpleReplay.ResultListener() {
+                    dataWrapper.replay.addCallback(new Replay.ResultListener() {
                         @Override
                         public void stop(int code, String message, Exception e) {
-                            if (code == SimpleReplay.ResultListener.SUCCESS) {
+                            if (code == Replay.ResultListener.SUCCESS) {
                                 //清空数据
                                 dataWrapper.replay.clear();
                             }
@@ -277,13 +274,21 @@ public class RecordAccScriptEngine extends AccScriptEngine {
     @Override
     public void close() {
         reset();
-        viewWrapper.removeControlView();
+        if (viewWrapper != null) {
+            viewWrapper.removeControlView();
+            viewWrapper.removeMaskView();
+        }
+        super.close();
     }
 
     @Override
     public void reset() {
-        dataWrapper.reset();
-        viewWrapper.reset();
+        if (dataWrapper != null) {
+            dataWrapper.reset();
+        }
+        if (viewWrapper != null) {
+            viewWrapper.reset();
+        }
     }
 
     private static class DataWrapper {
@@ -295,7 +300,7 @@ public class RecordAccScriptEngine extends AccScriptEngine {
         final Map<Integer, KeyEntity> keyMap;
         final IdGenerator<Long> idWorker;
         final Stopwatch watcher;
-        final SimpleReplay replay;
+        final Replay replay;
         final AtomicLong startTime;
 
         public DataWrapper(IdGenerator<Long> idWorker, AccessibilityService service) {
@@ -308,7 +313,7 @@ public class RecordAccScriptEngine extends AccScriptEngine {
             keyMap = new HashMap<>();
             watcher = new Stopwatch();
             startTime = new AtomicLong(-1);
-            replay = new SimpleReplay(service);
+            replay = new AccessibilityReplay(service);
         }
 
         public void clear() {
@@ -340,7 +345,7 @@ public class RecordAccScriptEngine extends AccScriptEngine {
         }
     }
 
-    private static class ViewWrapper {
+    private class ViewWrapper {
         final WindowRecordFloatingButtonBinding binding;
         final WindowManager.LayoutParams bindingParams;
         final WindowMaskViewBinding maskViewBinding;
@@ -399,10 +404,10 @@ public class RecordAccScriptEngine extends AccScriptEngine {
         }
     }
 
-    private static WindowManager.LayoutParams createMaskLayoutParams() {
+    private WindowManager.LayoutParams createMaskLayoutParams() {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                getOverlayFlag(),
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         // 默认居中

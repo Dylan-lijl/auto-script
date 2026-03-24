@@ -71,6 +71,7 @@ import pub.carzy.auto_script.adapter.BasicRecyclerViewAdapter;
 import pub.carzy.auto_script.adapter.BasicSwipeActionCallback;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.DialogScriptImportBinding;
 import pub.carzy.auto_script.databinding.ViewMacroListBinding;
 import pub.carzy.auto_script.databinding.ComListItemMacroListBinding;
@@ -80,17 +81,22 @@ import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.entity.ExportScriptEntity;
+import pub.carzy.auto_script.entity.SettingProxy;
+import pub.carzy.auto_script.ex.DeviceNotRootedException;
+import pub.carzy.auto_script.ex.UnauthorizedRootAccessException;
 import pub.carzy.auto_script.model.DialogScriptImportModel;
 import pub.carzy.auto_script.model.MacroListModel;
 import pub.carzy.auto_script.service.GlobalSingletonScriptEngineController;
 import pub.carzy.auto_script.service.MyAccessibilityService;
 import pub.carzy.auto_script.service.ScriptEngine;
 import pub.carzy.auto_script.service.data.ReplayModel;
-import pub.carzy.auto_script.service.dto.OpenParam;
-import pub.carzy.auto_script.service.impl.RecordScriptAction;
-import pub.carzy.auto_script.service.impl.ReplayScriptAction;
+import pub.carzy.auto_script.service.impl.AccScriptEngine;
+import pub.carzy.auto_script.service.impl.RecordScriptEngine;
+import pub.carzy.auto_script.service.impl.ReplayScriptEngine;
 import pub.carzy.auto_script.service.impl.engines.RecordAccScriptEngine;
+import pub.carzy.auto_script.service.impl.engines.RecordRootScriptEngine;
 import pub.carzy.auto_script.service.impl.engines.ReplayAccScriptEngine;
+import pub.carzy.auto_script.service.impl.engines.ReplayRootScriptEngine;
 import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
@@ -658,7 +664,7 @@ public class MacroListActivity extends BaseActivity {
         });
     }
 
-    ReplayAccScriptEngine replayAccScriptEngine;
+    ReplayScriptEngine replayEngine;
 
     /**
      * 打开运行脚本服务
@@ -678,22 +684,30 @@ public class MacroListActivity extends BaseActivity {
             ReplayModel replayModel = ReplayModel.create(script, actions, points);
             //打开服务
             ThreadUtil.runOnUi(() -> {
-                if (replayAccScriptEngine == null) {
-                    recordAccScriptEngine = new RecordAccScriptEngine();
-                }
-                GlobalSingletonScriptEngineController.getInstance().open(recordAccScriptEngine, new ScriptEngine.ResultCallback() {
+                Integer type = setting.read(SettingKey.TYPE, null);
+                replayEngine = type == SettingProxy.AUTO || type == SettingProxy.ROOT ? new ReplayRootScriptEngine() : new ReplayAccScriptEngine();
+                AtomicReference<ScriptEngine.ResultCallback> reference = new AtomicReference<>(null);
+                reference.set(new ScriptEngine.ResultCallback() {
                     @Override
                     public void onFail(int code, Object... args) {
-
+                        ActivityUtils.onOpenFail(MacroListActivity.this, type, code, () -> {
+                            replayEngine = new ReplayRootScriptEngine();
+                            ThreadUtil.runOnCpu(() -> {
+                                GlobalSingletonScriptEngineController.getInstance().open(replayEngine, reference.get());
+                            });
+                        }, args);
                     }
 
                     @Override
                     public void onSuccess() {
-                        replayAccScriptEngine.setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
-                        replayAccScriptEngine.start(replayModel);
+                        if (replayEngine instanceof AccScriptEngine) {
+                            ((AccScriptEngine) replayEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                        }
+                        replayEngine.start(replayModel);
                         runnable.run();
                     }
                 });
+                GlobalSingletonScriptEngineController.getInstance().open(replayEngine, reference.get());
             });
         });
     }
@@ -744,36 +758,35 @@ public class MacroListActivity extends BaseActivity {
                 }).show();
     }
 
-    private RecordAccScriptEngine recordAccScriptEngine;
+    private RecordScriptEngine recordEngine;
 
     /**
      * 打开录制服务
      */
     private void openService() {
-        if (recordAccScriptEngine == null) {
-            recordAccScriptEngine = new RecordAccScriptEngine();
-        }
-        GlobalSingletonScriptEngineController.getInstance().open(recordAccScriptEngine, new ScriptEngine.ResultCallback() {
+        Integer type = setting.read(SettingKey.TYPE, null);
+        recordEngine = type == SettingProxy.AUTO || type == SettingProxy.ROOT ? new RecordRootScriptEngine() : new RecordAccScriptEngine();
+        AtomicReference<ScriptEngine.ResultCallback> reference = new AtomicReference<>(null);
+        reference.set(new ScriptEngine.ResultCallback() {
             @Override
             public void onFail(int code, Object... args) {
-                ThreadUtil.runOnUi(() -> {
-                    if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.ACCESSIBLE, ScriptEngine.ResultCallback.JUMP)) {
-                        Toast.makeText(MacroListActivity.this, "已跳转到无障碍设置!", Toast.LENGTH_SHORT).show();
-                    } else if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.JUMP, ScriptEngine.ResultCallback.FLOATING)) {
-                        Toast.makeText(MacroListActivity.this, "已跳转到悬浮窗设置!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(MacroListActivity.this, "打开失败!", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                ActivityUtils.onOpenFail(MacroListActivity.this, type, code, () -> {
+                    recordEngine = new RecordAccScriptEngine();
+                    ThreadUtil.runOnCpu(() -> GlobalSingletonScriptEngineController.getInstance().open(recordEngine, reference.get()));
+                }, args);
             }
 
             @Override
             public void onSuccess() {
-                recordAccScriptEngine.setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                if (recordEngine instanceof RecordAccScriptEngine) {
+                    ((RecordAccScriptEngine) recordEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                }
+//                recordEngine.setCloseBack(() -> recordEngine = null);
                 //打开
-                recordAccScriptEngine.start();
+                recordEngine.start();
             }
         });
+        GlobalSingletonScriptEngineController.getInstance().open(recordEngine, reference.get());
     }
 
     /**
@@ -782,11 +795,11 @@ public class MacroListActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (recordAccScriptEngine != null) {
-            recordAccScriptEngine.close();
+        if (recordEngine != null) {
+            recordEngine.close();
         }
-        if (replayAccScriptEngine != null) {
-            replayAccScriptEngine.close();
+        if (replayEngine != null) {
+            replayEngine.close();
         }
     }
 

@@ -7,6 +7,9 @@ import androidx.databinding.DataBindingUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import pub.carzy.auto_script.R;
@@ -19,6 +22,7 @@ import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.ex.DeviceNotRootedException;
 import pub.carzy.auto_script.ex.ProcessReadOrWriteIOException;
 import pub.carzy.auto_script.model.RecordStateModel;
+import pub.carzy.auto_script.service.impl.RecordScriptEngine;
 import pub.carzy.auto_script.service.impl.RootScriptEngine;
 import pub.carzy.auto_script.service.sub.RecorderLifeCycle;
 import pub.carzy.auto_script.utils.EventDeviceUtil;
@@ -31,7 +35,7 @@ import pub.carzy.auto_script.utils.Stopwatch;
 /**
  * @author admin
  */
-public class RecordRootScriptEngine extends RootScriptEngine {
+public class RecordRootScriptEngine extends RootScriptEngine implements RecordScriptEngine {
 
     private EventDevice gestureDevice;
     private EventDevice keyDevice;
@@ -107,8 +111,6 @@ public class RecordRootScriptEngine extends RootScriptEngine {
             dataWrapper.cycle.resume();
         });
         binding.btnFloatingClose.setOnClickListener(v -> {
-            dataWrapper.watcher.stop();
-            dataWrapper.cycle.stop();
             close();
         });
         binding.btnFloatingStop.setOnClickListener(v -> {
@@ -121,19 +123,23 @@ public class RecordRootScriptEngine extends RootScriptEngine {
     }
 
     private RecorderLifeCycle<Void> createLifeCycle() {
-        return new RecorderLifeCycle<Void>() {
+        return new RecorderLifeCycle<>() {
             GestureRecorder gestureRecorder;
             KeyRecorder keyRecorder;
 
+            final ThreadPoolExecutor executor = new ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+
             @Override
             public void start(String devicePath, OnRecordListener<Void> listener) {
+                //手势
                 if (gestureDevice != null) {
                     gestureRecorder = new GestureRecorder(dataWrapper.watcher);
-                    gestureRecorder.start(gestureDevice.getPath(), e -> dataWrapper.motions.add(e));
+                    executor.submit(() -> gestureRecorder.start(gestureDevice.getPath(), e -> dataWrapper.motions.add(e)));
                 }
+                //按键
                 if (keyDevice != null) {
                     keyRecorder = new KeyRecorder(dataWrapper.watcher);
-                    //todo
+                    executor.submit(() -> keyRecorder.start(keyDevice.getPath(), e -> dataWrapper.keys.add(e)));
                 }
             }
 
@@ -175,18 +181,28 @@ public class RecordRootScriptEngine extends RootScriptEngine {
                 if (keyRecorder != null) {
                     keyRecorder.destroy();
                 }
+                executor.shutdown();
             }
         };
     }
 
     @Override
     public void close() {
-
+        reset();
+        if (viewWrapper != null) {
+            viewWrapper.removeView();
+        }
+        super.close();
     }
 
     @Override
     public void reset() {
-
+        if (dataWrapper != null) {
+            dataWrapper.reset();
+        }
+        if (viewWrapper != null) {
+            viewWrapper.reset();
+        }
     }
 
     static class DataWrapper {
@@ -208,6 +224,14 @@ public class RecordRootScriptEngine extends RootScriptEngine {
         public void clear() {
             motions.clear();
             keys.clear();
+        }
+
+        public void reset() {
+            clear();
+            watcher.stop();
+            if (cycle != null) {
+                cycle.stop();
+            }
         }
     }
 
@@ -232,6 +256,10 @@ public class RecordRootScriptEngine extends RootScriptEngine {
             if (binding.getRoot().isAttachedToWindow()) {
                 windowManager.removeView(binding.getRoot());
             }
+        }
+
+        public void reset() {
+            removeView();
         }
     }
 }

@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import io.noties.prism4j.Prism4j;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.impl.PrefsSetting;
 import pub.carzy.auto_script.config.impl.SnowflakeGenerator;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.db.AppDatabase;
 import pub.carzy.auto_script.entity.Style;
 import pub.carzy.auto_script.utils.ThreadUtil;
@@ -40,16 +42,16 @@ public class BeanRegister {
      */
     private static void init() {
         Setting setting = BeanFactory.getInstance().get(Setting.class);
-        if (setting.getUUID() == null) {
+        if (setting.read(SettingKey.UUID, null) == null) {
             //设置用户标识
-            setting.setUUID(UUID.randomUUID().toString().replace("-", ""));
+            setting.write(SettingKey.UUID,UUID.randomUUID().toString().replace("-", ""));
         }
         //设置QMUI皮肤
         QMUISkinManager manager = BeanFactory.getInstance().get(QMUISkinManager.class);
         manager.addSkin(1, R.style.Theme_Auto_Script);
         //获取样式
         ThreadUtil.runOnCpu(() -> {
-            List<Style> styles = setting.getAllStyle();
+            List<Style> styles = new ArrayList<>(setting.getAll(SettingKey.STYLE).values());
             if (styles.isEmpty()) {
                 return;
             }

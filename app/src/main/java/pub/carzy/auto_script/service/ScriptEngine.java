@@ -12,6 +12,8 @@ public interface ScriptEngine {
 
     void reset();
 
+    void setCloseBack(Runnable runnable);
+
     interface ResultCallback {
         /**
          * 异常导致

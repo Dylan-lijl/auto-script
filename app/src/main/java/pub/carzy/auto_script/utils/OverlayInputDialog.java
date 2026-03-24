@@ -21,10 +21,9 @@ public class OverlayInputDialog {
 
     private final WindowManager wm;
     private final WindowDialogEditCountBinding view;
-    @Getter
-    private boolean isShowing;
+    private int overlayFlag;
 
-    public OverlayInputDialog(Context context) {
+    public OverlayInputDialog(Context context, int overlayFlag) {
         wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         view = WindowDialogEditCountBinding.inflate(LayoutInflater.from(context));
         view.setCount(new ObservableInt(-1));
@@ -35,15 +34,17 @@ public class OverlayInputDialog {
                             .getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(view.countInput, InputMethodManager.SHOW_IMPLICIT);
         });
-
+        this.overlayFlag = overlayFlag;
     }
 
     public void show(int value, Consumer<Integer> onConfirm) {
-        if (isShowing) return;
+        if (view.getRoot().isAttachedToWindow()) {
+            return;
+        }
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                overlayFlag,
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.TRANSLUCENT
         );
@@ -55,14 +56,16 @@ public class OverlayInputDialog {
         });
         view.btnCancel.setOnClickListener(v -> dismiss());
         wm.addView(ActivityUtils.reinstatedView(view.getRoot()), lp);
-        isShowing = true;
     }
 
     public void dismiss() {
-        if (isShowing) {
+        if (view.getRoot().isAttachedToWindow()) {
             wm.removeViewImmediate(ActivityUtils.reinstatedView(view.getRoot()));
-            isShowing = false;
         }
+    }
+
+    public boolean isShowing() {
+        return view.getRoot().isAttachedToWindow();
     }
 }
 

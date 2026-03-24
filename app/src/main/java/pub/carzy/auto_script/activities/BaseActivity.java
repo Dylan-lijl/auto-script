@@ -28,6 +28,7 @@ import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.entity.Style;
 import pub.carzy.auto_script.entity.SupportLocaleResult;
 import pub.carzy.auto_script.ui.QMUIBottomSheetListItemModelExt;
@@ -182,7 +183,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     return;
                 }
                 //获取已配置的语言
-                String language = setting.getLanguage();
+                String language = setting.read(SettingKey.LANGUAGE, null);
                 if (language == null) {
                     //没有配置就尝试使用系统地区
                     Configuration config = new Configuration(getResources().getConfiguration());
@@ -326,7 +327,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     public void changeLanguage(ControllerCallback<Void> callback, String language) {
         ThreadUtil.runOnCpu(() -> {
-            setting.setLanguage(language);
+            setting.write(SettingKey.LANGUAGE,language);
             try {
                 ThreadUtil.runOnUi(() -> callback.complete(null));
             } catch (Exception e) {
@@ -378,8 +379,9 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     /**
      * 更新样式
-     * @param style 样式
-     * @param topBarLayout 标题栏
+     *
+     * @param style         样式
+     * @param topBarLayout  标题栏
      * @param updateVersion 样式id
      */
     protected void updateStyle(Style style, QMUITopBarLayout topBarLayout, Long updateVersion) {
@@ -422,6 +424,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     /**
      * 子类重写
+     *
      * @return 标题栏
      */
     protected QMUITopBarLayout getTopBar() {

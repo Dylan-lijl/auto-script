@@ -14,6 +14,9 @@ import pub.carzy.auto_script.databinding.WindowReplayFloatingButtonBinding;
 import pub.carzy.auto_script.model.PreviewFloatingStatus;
 import pub.carzy.auto_script.service.data.ReplayModel;
 import pub.carzy.auto_script.service.impl.AccScriptEngine;
+import pub.carzy.auto_script.service.impl.ReplayScriptEngine;
+import pub.carzy.auto_script.service.sub.AccessibilityReplay;
+import pub.carzy.auto_script.service.sub.Replay;
 import pub.carzy.auto_script.service.sub.SimpleReplay;
 import pub.carzy.auto_script.utils.OverlayInputDialog;
 
@@ -22,7 +25,7 @@ import pub.carzy.auto_script.utils.OverlayInputDialog;
  *
  * @author admin
  */
-public class ReplayAccScriptEngine extends AccScriptEngine {
+public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScriptEngine {
     private ViewWrapper viewWrapper;
     private DataWrapper dataWrapper;
 
@@ -45,9 +48,9 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
                             null,
                             false
                     );
-                    viewWrapper = new ViewWrapper(getWindowManager(), binding, createBindingParams(binding), new OverlayInputDialog(service));
                     binding.setCount(dataWrapper.count);
                     binding.setStatus(new PreviewFloatingStatus());
+                    viewWrapper = new ViewWrapper(getWindowManager(), binding, createBindingParams(binding), new OverlayInputDialog(service,getOverlayFlag()));
                     addListenerByView();
                     this.initialized = true;
                 }
@@ -69,12 +72,12 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
     }
 
     private void replayCallback() {
-        dataWrapper.replay.addCallback(new SimpleReplay.ResultListener() {
+        dataWrapper.replay.addCallback(new Replay.ResultListener() {
             @Override
             public void stop(int code, String message, Exception e) {
-                if (code == SimpleReplay.ResultListener.SUCCESS) {
+                if (code == Replay.ResultListener.SUCCESS) {
                     viewWrapper.binding.getStatus().setStatus(PreviewFloatingStatus.NONE);
-                } else if (code == SimpleReplay.ResultListener.FAIL && message != null) {
+                } else if (code == Replay.ResultListener.FAIL && message != null) {
                     Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("player", "stop", e);
@@ -83,9 +86,9 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
 
             @Override
             public void pause(int code, String message, Exception e) {
-                if (code == SimpleReplay.ResultListener.SUCCESS) {
+                if (code == Replay.ResultListener.SUCCESS) {
                     viewWrapper.binding.getStatus().setStatus(PreviewFloatingStatus.PAUSE);
-                } else if (code == SimpleReplay.ResultListener.FAIL && message != null) {
+                } else if (code == Replay.ResultListener.FAIL && message != null) {
                     Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("player", "pause", e);
@@ -94,9 +97,9 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
 
             @Override
             public void resume(int code, String message, Exception e) {
-                if (code == SimpleReplay.ResultListener.SUCCESS) {
+                if (code == Replay.ResultListener.SUCCESS) {
                     viewWrapper.binding.getStatus().setStatus(PreviewFloatingStatus.RUN);
-                } else if (code == SimpleReplay.ResultListener.FAIL && message != null) {
+                } else if (code == Replay.ResultListener.FAIL && message != null) {
                     Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("player", "resume", e);
@@ -105,9 +108,9 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
 
             @Override
             public void start(int code, String message, Exception e) {
-                if (code == SimpleReplay.ResultListener.SUCCESS) {
+                if (code == Replay.ResultListener.SUCCESS) {
                     viewWrapper.binding.getStatus().setStatus(PreviewFloatingStatus.RUN);
-                } else if (code == SimpleReplay.ResultListener.FAIL && message != null) {
+                } else if (code == Replay.ResultListener.FAIL && message != null) {
                     Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("player", "start", e);
@@ -134,7 +137,6 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
         binding.btnPause.setOnClickListener(v -> dataWrapper.replay.pause());
         binding.btnRestart.setOnClickListener(v -> dataWrapper.replay.start());
         binding.btnClose.setOnClickListener(v -> {
-            dataWrapper.replay.stop();
             close();
         });
         binding.btnCount.setOnClickListener(v -> {
@@ -152,22 +154,29 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
     @Override
     public void close() {
         reset();
-        viewWrapper.removeView();
+        if (viewWrapper != null) {
+            viewWrapper.removeView();
+        }
+        super.close();
     }
 
     @Override
     public void reset() {
-        dataWrapper.reset();
-        viewWrapper.reset();
+        if (dataWrapper != null) {
+            dataWrapper.reset();
+        }
+        if (viewWrapper != null) {
+            viewWrapper.reset();
+        }
     }
 
     private static class DataWrapper {
         final ObservableInt count;
-        final SimpleReplay replay;
+        final Replay replay;
 
         public DataWrapper(AccessibilityService service) {
             count = new ObservableInt(-1);
-            replay = new SimpleReplay(service);
+            replay = new AccessibilityReplay(service);
         }
 
         public void reset() {
@@ -181,12 +190,14 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
         final WindowManager windowManager;
         final WindowManager.LayoutParams bindingParams;
         final OverlayInputDialog dialog;
+        final int count;
 
         public ViewWrapper(WindowManager windowManager, WindowReplayFloatingButtonBinding binding, WindowManager.LayoutParams bindingParams, OverlayInputDialog dialog) {
             this.binding = binding;
             this.windowManager = windowManager;
             this.bindingParams = bindingParams;
             this.dialog = dialog;
+            count = binding.getCount().get();
         }
 
         public void removeView() {
@@ -202,7 +213,9 @@ public class ReplayAccScriptEngine extends AccScriptEngine {
         }
 
         public void reset() {
-
+            PreviewFloatingStatus status = binding.getStatus();
+            status.setStatus(PreviewFloatingStatus.NONE);
+            binding.getCount().set(count);
         }
     }
 }

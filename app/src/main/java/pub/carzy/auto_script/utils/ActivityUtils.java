@@ -27,6 +27,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
@@ -55,21 +56,21 @@ import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
-import pub.carzy.auto_script.activities.MacroInfoActivity;
-import pub.carzy.auto_script.activities.SettingActivity;
-import pub.carzy.auto_script.activities.about.child.AboutAcknowledgmentsActivity;
-import pub.carzy.auto_script.adapter.SingleSimpleAdapter;
+import pub.carzy.auto_script.activities.MacroListActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.Setting;
+import pub.carzy.auto_script.config.pojo.SettingKey;
+import pub.carzy.auto_script.entity.SettingProxy;
+import pub.carzy.auto_script.ex.DeviceNotRootedException;
+import pub.carzy.auto_script.ex.UnauthorizedRootAccessException;
 import pub.carzy.auto_script.service.MyAccessibilityService;
-import pub.carzy.auto_script.service.impl.RecordScriptAction;
+import pub.carzy.auto_script.service.ScriptEngine;
 
 
 /**
@@ -148,14 +149,14 @@ public class ActivityUtils {
                 .addAction(R.string.cancel, (d, i) -> {
                     if (cancel != null) {
                         cancel.accept(d, i);
-                    }else{
+                    } else {
                         d.dismiss();
                     }
                 })
                 .addAction(R.string.confirm, (d, i) -> {
                     if (confirm != null) {
                         confirm.accept(d, i);
-                    }else{
+                    } else {
                         d.dismiss();
                     }
                 })
@@ -164,6 +165,7 @@ public class ActivityUtils {
 
     /**
      * 获取本地化映射map,从资源文件夹查找
+     *
      * @param context 上下文
      * @return map
      */
@@ -207,8 +209,9 @@ public class ActivityUtils {
 
     /**
      * 切换本地化
+     *
      * @param context c
-     * @param locale l
+     * @param locale  l
      * @return 新的上下文
      */
     public static Context updateLocale(Context context, Locale locale) {
@@ -224,13 +227,14 @@ public class ActivityUtils {
     /**
      * 获取本地化
      * 如果用户有存储则使用,没有则默认英语
+     *
      * @param context 上下文
      * @param setting 配置类
      * @return 本地化
      */
     public static Locale getLocale(Context context, Setting setting) {
         //从配置中获取
-        String language = setting.getLanguage();
+        String language = setting.read(SettingKey.LANGUAGE, null);
         //
         Map<String, Locale> localeMap = ActivityUtils.getLocaleMap(context);
         // 1. 如果有 language 优先按 key 匹配
@@ -335,7 +339,7 @@ public class ActivityUtils {
                     accessibilityEnabled = Settings.Secure.getInt(context.getContentResolver(),
                             Settings.Secure.ACCESSIBILITY_ENABLED);
                 } catch (Settings.SettingNotFoundException e) {
-                    Log.e(RecordScriptAction.class.getCanonicalName(), "Error finding setting, default accessibility to not found", e);
+                    Log.e("accessibility", "Error finding setting, default accessibility to not found", e);
                 }
 
                 TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
@@ -578,5 +582,39 @@ public class ActivityUtils {
         listView.setDivider(null);
         listView.setPadding(10, 10, 10, 10);
         return QMUIPopups.popup(context, width).view(listView);
+    }
+
+    public static void onOpenFail(Context context, int type, int code, Runnable runnable, Object... args) {
+        ThreadUtil.runOnUi(() -> {
+            if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.ACCESSIBLE, ScriptEngine.ResultCallback.JUMP)) {
+                Toast.makeText(context, "已跳转到无障碍设置!", Toast.LENGTH_SHORT).show();
+            } else if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.JUMP, ScriptEngine.ResultCallback.FLOATING)) {
+                Toast.makeText(context, "已跳转到悬浮窗设置!", Toast.LENGTH_SHORT).show();
+            } else if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.ROOT, ScriptEngine.ResultCallback.EXCEPTION)) {
+                //root模式且发送异常
+                boolean hasError = false;
+                for (Object arg : args) {
+                    if (arg instanceof DeviceNotRootedException) {
+                        Toast.makeText(context, "当前设备未root!", Toast.LENGTH_SHORT).show();
+                        hasError = true;
+                    } else if (arg instanceof UnauthorizedRootAccessException) {
+                        Toast.makeText(context, "当前应用未授权root!", Toast.LENGTH_SHORT).show();
+                        hasError = true;
+                    }
+                }
+                if (hasError && type == SettingProxy.AUTO) {
+                    //切换到无障碍模式
+                    Toast.makeText(context, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
+                    runnable.run();
+                }
+            } else {
+                Toast.makeText(context, "打开失败!", Toast.LENGTH_SHORT).show();
+                for (Object arg : args) {
+                    if (arg instanceof Exception) {
+                        Log.e("ActivityUtils", "error:" + code, (Exception) arg);
+                    }
+                }
+            }
+        });
     }
 }

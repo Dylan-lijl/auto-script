@@ -1,9 +1,11 @@
 package pub.carzy.auto_script.config;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-import pub.carzy.auto_script.entity.FloatPoint;
+import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.entity.Style;
 
 /**
@@ -11,43 +13,27 @@ import pub.carzy.auto_script.entity.Style;
  */
 public interface Setting extends Serializable {
     List<String> keys();
-    void setAccepted(boolean accepted);
-
-    void setTick(Integer time);
-
-    Integer getTick();
-
-    boolean isAccepted();
 
     void reset();
 
-    void setLanguage(String language);
+    <T> void write(SettingKey<T> key, T value);
 
-    String getLanguage();
+    <T> T read(SettingKey<T> key, T defaultValue);
 
-    void setUUID(String uuid);
+    default <T> Map<String, T> getAll(SettingKey<T> settingKey) {
+        Map<String, T> map = new LinkedHashMap<>();
+        for (String key : keys()) {
+            if (key.startsWith(settingKey.getKey())) {
+                T read = read(settingKey, null);
+                if (read != null) {
+                    map.put(key, read);
+                }
+            }
+        }
+        return map;
+    }
 
-    String getUUID();
+    <T> void remove(SettingKey<T> settingKey);
 
-    void setPoint(FloatPoint point);
-
-    FloatPoint getPoint();
-
-    void setShowRecordWindow(Boolean b);
-
-    Boolean getShowRecordWindow();
-
-    void setAutoRunRecord(Integer delay);
-
-    Integer getAutoRunRecord();
-
-    List<Style> getAllStyle();
-
-    void updateStyle(Style style);
-
-    Style getStyle(long id) ;
-
-    void removeStyle(long id);
-    void setAutoPlay(Boolean v);
-    Boolean getAutoPlay();
+    <T> void update(SettingKey<T> settingKey, T changed);
 }
