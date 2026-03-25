@@ -1,6 +1,5 @@
 package pub.carzy.auto_script.service.impl.engines;
 
-import android.accessibilityservice.AccessibilityService;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
@@ -11,6 +10,7 @@ import androidx.databinding.ObservableInt;
 
 import java.util.List;
 
+import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.WindowReplayFloatingButtonBinding;
 import pub.carzy.auto_script.entity.EventDevice;
@@ -20,7 +20,7 @@ import pub.carzy.auto_script.service.impl.ReplayScriptEngine;
 import pub.carzy.auto_script.service.impl.RootScriptEngine;
 import pub.carzy.auto_script.service.sub.Replay;
 import pub.carzy.auto_script.service.sub.RootReplay;
-import pub.carzy.auto_script.service.sub.SimpleReplay;
+import pub.carzy.auto_script.service.sub.AbstractReplay;
 import pub.carzy.auto_script.utils.EventDeviceUtil;
 import pub.carzy.auto_script.utils.OverlayInputDialog;
 import pub.carzy.auto_script.utils.Shell;
@@ -43,7 +43,8 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
                     List<EventDevice> list = EventDeviceUtil.parse(Shell.getEventList(cmdProcess));
                     EventDevice gestureActuator = EventDeviceUtil.findGestureActuator(list);
                     EventDevice keyActuator = EventDeviceUtil.findKeyActuator(list);
-                    dataWrapper = new DataWrapper(cmdProcess, gestureActuator == null ? null : gestureActuator.getPath(), keyActuator == null ? null : keyActuator.getPath());
+                    dataWrapper = new DataWrapper(Pair.of(gestureActuator == null ? null : Shell.getRootProcess(), gestureActuator),
+                            Pair.of(keyActuator == null ? null : Shell.getRootProcess(), keyActuator));
                     for (Object arg : args) {
                         if (arg instanceof ReplayModel) {
                             dataWrapper.replay.setModel((ReplayModel) arg);
@@ -67,6 +68,7 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
         }
         viewWrapper.showView();
     }
+
     private void replayCallback() {
         dataWrapper.replay.addCallback(new Replay.ResultListener() {
             @Override
@@ -119,13 +121,14 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
             }
         });
     }
+
     private void addListenerByView() {
         WindowReplayFloatingButtonBinding binding = viewWrapper.binding;
         addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.bindingParams),
                 binding.btnStop, binding.btnRun, binding.btnCount, binding.btnRestart,
                 binding.btnPause, binding.btnClose, binding.btnMore);
         binding.btnRun.setOnClickListener(v -> {
-            if (dataWrapper.replay.getStatus() == SimpleReplay.PAUSE) {
+            if (dataWrapper.replay.getStatus() == AbstractReplay.PAUSE) {
                 dataWrapper.replay.resume();
             } else {
                 dataWrapper.replay.start();
@@ -159,6 +162,9 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
             viewWrapper.removeView();
         }
         super.close();
+        if (dataWrapper != null) {
+            dataWrapper.replay.close();
+        }
     }
 
     @Override
@@ -175,9 +181,9 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
         final ObservableInt count;
         final Replay replay;
 
-        public DataWrapper(Process process, String gestureEventPath, String keyEventPath) {
+        public DataWrapper(Pair<Process, EventDevice> gestureProcess, Pair<Process, EventDevice> keyEventProcess) {
             count = new ObservableInt(-1);
-            replay = new RootReplay(process, gestureEventPath, keyEventPath);
+            replay = new RootReplay(gestureProcess, keyEventProcess);
         }
 
         public void reset() {

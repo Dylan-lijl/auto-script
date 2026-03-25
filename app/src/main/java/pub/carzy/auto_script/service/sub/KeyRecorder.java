@@ -23,10 +23,8 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 /**
  * @author admin
  */
-public class KeyRecorder implements RecorderLifeCycle<KeyEntity> {
+public class KeyRecorder extends AbstractRecorderLifeCycle<KeyEntity> {
     private static final String TAG = "KeyRecorder";
-    private final AtomicBoolean isRunning;
-    private final AtomicBoolean isPaused;
     private final Map<Integer, KeyEntity> keyMap;
     private Runnable runnable;
     private final Stopwatch stopwatch;
@@ -34,8 +32,6 @@ public class KeyRecorder implements RecorderLifeCycle<KeyEntity> {
 
     public KeyRecorder(Stopwatch stopwatch) {
         this.stopwatch = stopwatch;
-        isRunning = new AtomicBoolean(false);
-        isPaused = new AtomicBoolean(false);
         keyMap = new HashMap<>();
     }
 
@@ -71,8 +67,17 @@ public class KeyRecorder implements RecorderLifeCycle<KeyEntity> {
                 if (line.contains(END_CONTENT)) {
                     break;
                 }
+                if (isPaused.get()) {
+                    if (!consumed.get()) {
+                        if (reading != null) {
+                            reading.pause();
+                        }
+                        consumed.set(true);
+                    }
+                    continue;
+                }
                 //过滤不是数据行,暂停状态以及未解析到开始符
-                if (!line.contains("]") || isPaused.get() || !started) continue;
+                if (!line.contains("]") || !started) continue;
 
                 // 解析标准格式: [ timestamp] type code value
                 String[] parts = line.substring(line.indexOf("]") + 1).trim().split("\\s+");
@@ -86,6 +91,9 @@ public class KeyRecorder implements RecorderLifeCycle<KeyEntity> {
             }
         } catch (Exception e) {
             Log.e(TAG, "Read Error: " + e.getMessage());
+        }
+        if (reading != null) {
+            reading.stop();
         }
     }
 

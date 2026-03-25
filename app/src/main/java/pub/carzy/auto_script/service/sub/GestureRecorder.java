@@ -22,10 +22,8 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 /**
  * @author admin
  */
-public class GestureRecorder implements RecorderLifeCycle<MotionEntity> {
+public class GestureRecorder extends AbstractRecorderLifeCycle<MotionEntity> {
     private static final String TAG = "GestureRecorder";
-    private final AtomicBoolean isRunning;
-    private final AtomicBoolean isPaused;
     // 状态追踪变量
     private final Map<Integer, MotionEntity> motionMap;
     private final Map<Integer, PointEntity> activeStateMap;
@@ -36,8 +34,6 @@ public class GestureRecorder implements RecorderLifeCycle<MotionEntity> {
 
     public GestureRecorder(Stopwatch stopwatch) {
         this.stopwatch = stopwatch;
-        isRunning = new AtomicBoolean(false);
-        isPaused = new AtomicBoolean(false);
         motionMap = new HashMap<>();
         activeStateMap = new HashMap<>();
         dirtySlots = new HashSet<>();
@@ -79,8 +75,17 @@ public class GestureRecorder implements RecorderLifeCycle<MotionEntity> {
                 if (line.contains(END_CONTENT)) {
                     break;
                 }
+                if (isPaused.get()) {
+                    if (!consumed.get()) {
+                        if (reading != null) {
+                            reading.pause();
+                        }
+                        consumed.set(true);
+                    }
+                    continue;
+                }
                 //过滤不是数据行,暂停状态以及未解析到开始符
-                if (!line.contains("]") || isPaused.get() || !started) continue;
+                if (!line.contains("]") || !started) continue;
 
                 // 解析标准格式: [ timestamp] type code value
                 String[] parts = line.substring(line.indexOf("]") + 1).trim().split("\\s+");
@@ -90,12 +95,13 @@ public class GestureRecorder implements RecorderLifeCycle<MotionEntity> {
                 int code = Integer.parseInt(parts[1], 16);
                 // 使用Long解析防止十六进制符号位溢出
                 int value = (int) Long.parseLong(parts[2], 16);
-
                 handleEvent(currentSlot, type, code, value, stopwatch.getElapsedMillis(), listener);
             }
-            Log.d(TAG, "正常结束......");
         } catch (Exception e) {
             Log.e(TAG, "Read Error: " + e.getMessage());
+        }
+        if (reading != null) {
+            reading.stop();
         }
     }
 
@@ -182,6 +188,7 @@ public class GestureRecorder implements RecorderLifeCycle<MotionEntity> {
     @Override
     public void pause() {
         isPaused.set(true);
+        consumed.set(false);
     }
 
     /**

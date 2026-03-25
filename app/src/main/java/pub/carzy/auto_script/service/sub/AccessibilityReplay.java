@@ -17,7 +17,7 @@ import pub.carzy.auto_script.service.data.ReplayModel;
  *
  * @author admin
  */
-public class AccessibilityReplay extends SimpleReplay<AccessibilityReplay.GesturePayload, AccessibilityReplay.KeyEventPayload> {
+public class AccessibilityReplay extends AbstractReplay<AccessibilityReplay.GesturePayload, AccessibilityReplay.KeyEventPayload> {
     /**
      * 无障碍
      */
@@ -122,7 +122,7 @@ public class AccessibilityReplay extends SimpleReplay<AccessibilityReplay.Gestur
     }
 
     @Override
-    protected boolean performGlobalAction(KeyEventPayload payload) {
+    protected boolean dispatchKeyEvent(KeyEventPayload payload) {
         if (payload.empty) {
             return false;
         }
@@ -132,7 +132,7 @@ public class AccessibilityReplay extends SimpleReplay<AccessibilityReplay.Gestur
         return true;
     }
 
-    public static class GesturePayload implements Payload{
+    public static class GesturePayload implements Payload {
         private boolean empty;
         private final GestureDescription.Builder builder;
 
@@ -145,9 +145,14 @@ public class AccessibilityReplay extends SimpleReplay<AccessibilityReplay.Gestur
         public boolean isEmpty() {
             return empty;
         }
+
+        @Override
+        public int size() {
+            return isEmpty() ? 0 : 1;
+        }
     }
 
-    public static class KeyEventPayload implements Payload{
+    public static class KeyEventPayload implements Payload {
         private boolean empty;
         private final List<KeyEvent> events;
 
@@ -159,6 +164,11 @@ public class AccessibilityReplay extends SimpleReplay<AccessibilityReplay.Gestur
         @Override
         public boolean isEmpty() {
             return empty;
+        }
+
+        @Override
+        public int size() {
+            return events.size();
         }
     }
 }

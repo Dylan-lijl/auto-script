@@ -1,7 +1,6 @@
 package pub.carzy.auto_script.service.impl.engines;
 
 import android.accessibilityservice.AccessibilityService;
-import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -19,7 +18,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.Setting;
@@ -37,7 +35,7 @@ import pub.carzy.auto_script.service.impl.AccScriptEngine;
 import pub.carzy.auto_script.service.impl.RecordScriptEngine;
 import pub.carzy.auto_script.service.sub.AccessibilityReplay;
 import pub.carzy.auto_script.service.sub.Replay;
-import pub.carzy.auto_script.service.sub.SimpleReplay;
+import pub.carzy.auto_script.service.sub.AbstractReplay;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.Stopwatch;
 
@@ -142,7 +140,7 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
 
     private void listenStopBtn() {
         viewWrapper.binding.btnFloatingStop.setOnClickListener(v -> {
-            if (dataWrapper.replay.getStatus() == SimpleReplay.RUNNING) {
+            if (dataWrapper.replay.getStatus() == AbstractReplay.RUNNING) {
                 dataWrapper.replay.stop();
             }
             long millis = dataWrapper.watcher.getElapsedMillis();
@@ -156,7 +154,7 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
 
     private void listenResumeBtn() {
         viewWrapper.binding.btnFloatingRun.setOnClickListener(v -> {
-            if (dataWrapper.replay.getStatus() == SimpleReplay.RUNNING) {
+            if (dataWrapper.replay.getStatus() == AbstractReplay.RUNNING) {
                 dataWrapper.replay.stop();
             }
             viewWrapper.binding.getRecordState().setState(RecordStateModel.STATE_RECORDING);

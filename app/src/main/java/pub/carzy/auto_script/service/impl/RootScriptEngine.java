@@ -81,4 +81,12 @@ public abstract class RootScriptEngine extends AbstractScriptEngine {
         }
         return params;
     }
+
+    @Override
+    public void close() {
+        super.close();
+        if (cmdProcess != null) {
+            cmdProcess.destroy();
+        }
+    }
 }

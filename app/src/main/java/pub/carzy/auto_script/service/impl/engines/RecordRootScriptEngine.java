@@ -6,8 +6,13 @@ import android.view.WindowManager;
 import androidx.databinding.DataBindingUtil;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -95,6 +100,24 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
             dataWrapper.clear();
             dataWrapper.watcher.resetAndStart();
             dataWrapper.cycle = createLifeCycle();
+            dataWrapper.cycle.setReadingBack(new RecorderLifeCycle.OnRecordReading() {
+                final Set<Integer> set = new HashSet<>();
+
+                @Override
+                public void pause(Object... args) {
+
+                }
+
+                @Override
+                public void stop(Object... args) {
+                    set.add((Integer) args[1]);
+                    //具体收到停止
+                    if (set.size() == ((Collection<?>) args[0]).size()) {
+                        jumpToInfo(transformData(dataWrapper.idWorker, dataWrapper.watcher.getElapsedMillis(),
+                                0, dataWrapper.motions, dataWrapper.keys));
+                    }
+                }
+            });
             dataWrapper.cycle.start(null, null);
             //重置开始时间
             dataWrapper.startTime.set(dataWrapper.watcher.getElapsedMillis());
@@ -114,11 +137,10 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
             close();
         });
         binding.btnFloatingStop.setOnClickListener(v -> {
+            //只是通知停止
             dataWrapper.watcher.stop();
             dataWrapper.cycle.stop();
             viewWrapper.binding.getRecordState().setState(RecordStateModel.STATE_IDLE);
-            jumpToInfo(transformData(dataWrapper.idWorker, dataWrapper.watcher.getElapsedMillis(),
-                    0, dataWrapper.motions, dataWrapper.keys));
         });
     }
 
@@ -126,25 +148,53 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
         return new RecorderLifeCycle<>() {
             GestureRecorder gestureRecorder;
             KeyRecorder keyRecorder;
-
+            OnRecordReading reading;
             final ThreadPoolExecutor executor = new ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
             @Override
             public void start(String devicePath, OnRecordListener<Void> listener) {
+                List<Integer> types = new ArrayList<>();
                 //手势
                 if (gestureDevice != null) {
+                    types.add(EventDeviceUtil.EV_ABS);
                     gestureRecorder = new GestureRecorder(dataWrapper.watcher);
+                    gestureRecorder.setReadingBack(new OnRecordReading() {
+                        @Override
+                        public void pause(Object... args) {
+                            dataWrapper.motions.remove(dataWrapper.motions.size() - 1);
+                            reading.pause(types, EventDeviceUtil.EV_ABS);
+                        }
+
+                        @Override
+                        public void stop(Object... args) {
+                            dataWrapper.motions.remove(dataWrapper.motions.size() - 1);
+                            reading.stop(types, EventDeviceUtil.EV_ABS);
+                        }
+                    });
                     executor.submit(() -> gestureRecorder.start(gestureDevice.getPath(), e -> dataWrapper.motions.add(e)));
                 }
                 //按键
                 if (keyDevice != null) {
+                    types.add(EventDeviceUtil.EV_KEY);
                     keyRecorder = new KeyRecorder(dataWrapper.watcher);
+                    keyRecorder.setReadingBack(new OnRecordReading() {
+                        @Override
+                        public void pause(Object... args) {
+                            reading.pause(types, EventDeviceUtil.EV_KEY);
+                        }
+
+                        @Override
+                        public void stop(Object... args) {
+                            reading.stop(types, EventDeviceUtil.EV_KEY);
+                        }
+                    });
                     executor.submit(() -> keyRecorder.start(keyDevice.getPath(), e -> dataWrapper.keys.add(e)));
                 }
             }
 
             @Override
             public void stop() {
+                //如果还有区分按键方式和控制按钮暂停和停止时就需要调用不同的移除
                 if (gestureRecorder != null) {
                     gestureRecorder.stop();
                 }
@@ -183,6 +233,11 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                 }
                 executor.shutdown();
             }
+
+            @Override
+            public void setReadingBack(OnRecordReading readingBack) {
+                reading = readingBack;
+            }
         };
     }
 
@@ -214,8 +269,8 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
         RecorderLifeCycle<Void> cycle;
 
         public DataWrapper(IdGenerator<Long> idWorker) {
-            motions = new ArrayList<>();
-            keys = new ArrayList<>();
+            motions = Collections.synchronizedList(new ArrayList<>());
+            keys = Collections.synchronizedList(new ArrayList<>());
             watcher = new Stopwatch();
             startTime = new AtomicLong(-1);
             this.idWorker = idWorker;

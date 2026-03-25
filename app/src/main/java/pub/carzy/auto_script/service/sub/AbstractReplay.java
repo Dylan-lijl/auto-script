@@ -1,12 +1,9 @@
 package pub.carzy.auto_script.service.sub;
 
 import android.util.Log;
-import android.view.KeyEvent;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -29,11 +26,11 @@ import pub.carzy.auto_script.utils.ThreadUtil;
  *
  * @author admin
  */
-public abstract class SimpleReplay<T extends Replay.Payload, D extends Replay.Payload> implements Replay {
+public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.Payload> implements Replay {
     /**
      * 播放状态
      */
-    private final AtomicInteger status = new AtomicInteger(STOP);
+    protected final AtomicInteger status = new AtomicInteger(STOP);
     /**
      * 运行中
      */
@@ -108,7 +105,7 @@ public abstract class SimpleReplay<T extends Replay.Payload, D extends Replay.Pa
      * 手势回调,记录手势执行或被取消,打印日志
      */
 
-    public SimpleReplay() {
+    public AbstractReplay() {
         //单线程池
         scheduler = Executors.newSingleThreadScheduledExecutor();
     }
@@ -133,6 +130,7 @@ public abstract class SimpleReplay<T extends Replay.Payload, D extends Replay.Pa
             } else {
                 model.init();
             }
+            doSelfInit();
             //记录开始时间 加上延迟时间
             startTime.set(System.currentTimeMillis() + model.getDelayStart());
             //调用时间片任务
@@ -143,6 +141,10 @@ public abstract class SimpleReplay<T extends Replay.Payload, D extends Replay.Pa
             //调用失败回调
             callback.forEach(c -> c.start(ResultListener.EXCEPTION, null, e));
         }
+    }
+
+    protected void doSelfInit() {
+
     }
 
     @Override
@@ -315,9 +317,10 @@ public abstract class SimpleReplay<T extends Replay.Payload, D extends Replay.Pa
             if (!gesturePayload.isEmpty()) {
                 //发送手势
                 ThreadUtil.runOnUi(() -> {
-                    if (dispatchGesture(gesturePayload)) {
-                        Log.d(this.getClass().getCanonicalName(), "dispatchGesture success");
-                    } else {
+                    if (status.get() != RUNNING) {
+                        return;
+                    }
+                    if (!dispatchGesture(gesturePayload)) {
                         Log.d(this.getClass().getCanonicalName(), "dispatchGesture fail");
                     }
                 });
@@ -325,7 +328,10 @@ public abstract class SimpleReplay<T extends Replay.Payload, D extends Replay.Pa
             if (!eventPayload.isEmpty()) {
                 //发送键事件
                 ThreadUtil.runOnUi(() -> {
-                    if (!performGlobalAction(eventPayload)) {
+                    if (status.get() != RUNNING) {
+                        return;
+                    }
+                    if (!dispatchKeyEvent(eventPayload)) {
                         Log.w(this.getClass().getCanonicalName(), "performGlobalAction failure");
                     }
                 });
@@ -370,7 +376,7 @@ public abstract class SimpleReplay<T extends Replay.Payload, D extends Replay.Pa
 
     protected abstract D createKeyEventPayload();
 
-    protected abstract boolean performGlobalAction(D item);
+    protected abstract boolean dispatchKeyEvent(D item);
 
     protected abstract boolean dispatchGesture(T payload);
 
@@ -399,6 +405,11 @@ public abstract class SimpleReplay<T extends Replay.Payload, D extends Replay.Pa
         stop();
         model = null;
         callback.clear();
+    }
+
+    @Override
+    public void close() {
+        clear();
     }
 
 }

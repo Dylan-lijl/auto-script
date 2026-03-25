@@ -12,8 +12,16 @@ public interface RecorderLifeCycle<T> {
 
     void destroy();
 
+    void setReadingBack(OnRecordReading readingBack);
+
     interface OnRecordListener<T> {
         void onCaptured(T data);
+    }
+
+    interface OnRecordReading {
+        void pause(Object... args);
+
+        void stop(Object... args);
     }
 
     String START_CONTENT = "__-start-__";

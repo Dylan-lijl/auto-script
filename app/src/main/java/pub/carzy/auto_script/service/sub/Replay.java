@@ -29,6 +29,8 @@ public interface Replay {
 
     void clear();
 
+    void close();
+
     interface ResultListener {
         int SUCCESS = 0;
         int FAIL = -1;
@@ -60,5 +62,6 @@ public interface Replay {
     }
     interface Payload{
         boolean isEmpty();
+        int size();
     }
 }

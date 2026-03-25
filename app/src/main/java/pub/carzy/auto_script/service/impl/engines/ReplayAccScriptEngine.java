@@ -17,7 +17,7 @@ import pub.carzy.auto_script.service.impl.AccScriptEngine;
 import pub.carzy.auto_script.service.impl.ReplayScriptEngine;
 import pub.carzy.auto_script.service.sub.AccessibilityReplay;
 import pub.carzy.auto_script.service.sub.Replay;
-import pub.carzy.auto_script.service.sub.SimpleReplay;
+import pub.carzy.auto_script.service.sub.AbstractReplay;
 import pub.carzy.auto_script.utils.OverlayInputDialog;
 
 /**
@@ -50,7 +50,7 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
                     );
                     binding.setCount(dataWrapper.count);
                     binding.setStatus(new PreviewFloatingStatus());
-                    viewWrapper = new ViewWrapper(getWindowManager(), binding, createBindingParams(binding), new OverlayInputDialog(service,getOverlayFlag()));
+                    viewWrapper = new ViewWrapper(getWindowManager(), binding, createBindingParams(binding), new OverlayInputDialog(service, getOverlayFlag()));
                     addListenerByView();
                     this.initialized = true;
                 }
@@ -127,7 +127,7 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
     private void listenButtons() {
         WindowReplayFloatingButtonBinding binding = viewWrapper.binding;
         binding.btnRun.setOnClickListener(v -> {
-            if (dataWrapper.replay.getStatus() == SimpleReplay.PAUSE) {
+            if (dataWrapper.replay.getStatus() == AbstractReplay.PAUSE) {
                 dataWrapper.replay.resume();
             } else {
                 dataWrapper.replay.start();
@@ -158,6 +158,9 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
             viewWrapper.removeView();
         }
         super.close();
+        if (dataWrapper != null) {
+            dataWrapper.replay.close();
+        }
     }
 
     @Override
