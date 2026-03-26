@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.entity.EventDevice;
 import pub.carzy.auto_script.service.data.ReplayModel;
-import pub.carzy.auto_script.utils.EventDeviceUtil;
+import pub.carzy.auto_script.utils.InputConstants;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -189,6 +189,24 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
     }
 
     @Override
+    protected void releaseGesture(ReplayModel.ReplayActionModel value) {
+        GesturePayload payload = createGesturePayload();
+        payload.up(value.getIndex());
+        payload.sync();
+        dispatchGesture(payload);
+        super.releaseGesture(value);
+    }
+
+    @Override
+    protected void releaseKey(ReplayModel.ReplayActionModel value) {
+        KeyEventPayload payload = createKeyEventPayload();
+        payload.up(value.getCode());
+        payload.sync();
+        dispatchKeyEvent(payload);
+        super.releaseKey(value);
+    }
+
+    @Override
     protected void processGestureAction(GesturePayload payload, ReplayModel.ReplayActionModel action, AtomicBoolean unfinished) {
         if (action == null || action.getPoints().isEmpty()) {
             return;
@@ -299,19 +317,19 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
 
         public void down(int index, int trackingId, Float x, Float y) {
             //手指索引位
-            cmd.add(new Number[]{EventDeviceUtil.EV_ABS, EventDeviceUtil.ABS_MT_SLOT, index});
+            cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_SLOT, index});
             //身份id
-            cmd.add(new Number[]{EventDeviceUtil.EV_ABS, EventDeviceUtil.ABS_MT_TRACKING_ID, trackingId});
+            cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_TRACKING_ID, trackingId});
             //按下
-            cmd.add(new Number[]{EventDeviceUtil.EV_KEY, EventDeviceUtil.BTN_TOUCH, EventDeviceUtil.KEY_PRESS});
+            cmd.add(new Number[]{InputConstants.EV_KEY, InputConstants.BTN_TOUCH, InputConstants.KEY_PRESS});
             //x
-            cmd.add(new Number[]{EventDeviceUtil.EV_ABS, EventDeviceUtil.ABS_MT_POSITION_X, x.intValue()});
+            cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_POSITION_X, x.intValue()});
             //y
-            cmd.add(new Number[]{EventDeviceUtil.EV_ABS, EventDeviceUtil.ABS_MT_POSITION_Y, y.intValue()});
+            cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_POSITION_Y, y.intValue()});
         }
 
         public void sync() {
-            cmd.add(new Number[]{EventDeviceUtil.EV_SYN, EventDeviceUtil.EV_SYN, EventDeviceUtil.EV_SYN});
+            cmd.add(new Number[]{InputConstants.EV_SYN, InputConstants.SYN_REPORT, InputConstants.EMPTY});
         }
 
         @SuppressLint("DefaultLocale")
@@ -321,15 +339,15 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
 
         public void up(int index) {
             //手势索引
-            cmd.add(new Number[]{EventDeviceUtil.EV_ABS, EventDeviceUtil.ABS_MT_SLOT, index});
-            cmd.add(new Number[]{EventDeviceUtil.EV_KEY, EventDeviceUtil.BTN_TOUCH, EventDeviceUtil.KEY_RELEASE});
-            cmd.add(new Number[]{EventDeviceUtil.EV_ABS, EventDeviceUtil.ABS_MT_TRACKING_ID, -1});
+            cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_SLOT, index});
+            cmd.add(new Number[]{InputConstants.EV_KEY, InputConstants.BTN_TOUCH, InputConstants.KEY_RELEASE});
+            cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_TRACKING_ID, InputConstants.TRACKING_ID_END});
         }
 
         public void move(int index, Float x, Float y) {
-            cmd.add(new Number[]{EventDeviceUtil.EV_ABS, EventDeviceUtil.ABS_MT_SLOT, index});
-            cmd.add(new Number[]{EventDeviceUtil.EV_ABS, EventDeviceUtil.ABS_MT_POSITION_X, x.intValue()});
-            cmd.add(new Number[]{EventDeviceUtil.EV_ABS, EventDeviceUtil.ABS_MT_POSITION_Y, y.intValue()});
+            cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_SLOT, index});
+            cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_POSITION_X, x.intValue()});
+            cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_POSITION_Y, y.intValue()});
         }
 
         @Override
@@ -351,11 +369,11 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
         }
 
         public void down(Integer code) {
-            events.add(new Number[]{EventDeviceUtil.EV_KEY, code, KeyEvent.ACTION_DOWN});
+            events.add(new Number[]{InputConstants.EV_KEY, code, KeyEvent.ACTION_DOWN});
         }
 
         public void up(Integer code) {
-            events.add(new Number[]{EventDeviceUtil.EV_KEY, code, KeyEvent.ACTION_UP});
+            events.add(new Number[]{InputConstants.EV_KEY, code, KeyEvent.ACTION_UP});
         }
 
         @SuppressLint("DefaultLocale")
@@ -364,7 +382,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
         }
 
         public void sync() {
-            events.add(new Number[]{EventDeviceUtil.EV_SYN, EventDeviceUtil.EV_SYN, EventDeviceUtil.EV_SYN});
+            events.add(new Number[]{InputConstants.EV_SYN, InputConstants.SYN_REPORT, InputConstants.EMPTY});
         }
 
         @Override

@@ -94,9 +94,6 @@ public class ReplayModel {
         return actionWaitMap.headMap(duration, b);
     }
 
-    //锁
-    private ReentrantLock lock = new ReentrantLock();
-
     public void removeToDeleteMap(Set<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return;
@@ -120,35 +117,27 @@ public class ReplayModel {
         if (inited) {
             return;
         }
-        lock.lock();
-        try {
-            if (inited) {
-                return;
-            }
-            if (actions == null || actions.isEmpty()) {
-                return;
-            }
-            //排序 先根据startTime进行排序,如果相同则使用id进行排序
-            actions.sort(Comparator.comparingLong(ReplayActionModel::getStartTime).thenComparingLong(ReplayActionModel::getId));
-            //进行遍历
-            for (ReplayActionModel line : actions) {
-                ReplayActionModel model = actionWaitMap.get(line.getStartTime());
-                if (model != null) {
-                    //存在说明是相同的时间,则形成链表
-                    model.setLast(line);
-                } else {
-                    actionWaitMap.put(line.getStartTime(), model = line);
-                }
-                //重置
-                model.reset();
-                //根据oder字段进行排序,如果order相同则根据id排序
-                line.getPoints().sort(Comparator.comparingDouble(ReplayPointModel::getOrder).thenComparingLong(ReplayPointModel::getId));
-            }
-            delayEndCount.set(delayEnd);
-            inited = true;
-        } finally {
-            lock.unlock();
+        if (actions == null || actions.isEmpty()) {
+            return;
         }
+        //排序 先根据startTime进行排序,如果相同则使用id进行排序
+        actions.sort(Comparator.comparingLong(ReplayActionModel::getStartTime).thenComparingLong(ReplayActionModel::getId));
+        //进行遍历
+        for (ReplayActionModel line : actions) {
+            ReplayActionModel model = actionWaitMap.get(line.getStartTime());
+            if (model != null) {
+                //存在说明是相同的时间,则形成链表
+                model.setLast(line);
+            } else {
+                actionWaitMap.put(line.getStartTime(), model = line);
+            }
+            //重置
+            model.reset();
+            //根据oder字段进行排序,如果order相同则根据id排序
+            line.getPoints().sort(Comparator.comparingDouble(ReplayPointModel::getOrder).thenComparingLong(ReplayPointModel::getId));
+        }
+        delayEndCount.set(delayEnd);
+        inited = true;
     }
 
     public void recover() {

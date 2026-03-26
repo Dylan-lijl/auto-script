@@ -206,6 +206,8 @@ public class MacroInfoActivity extends BaseActivity {
                 @Override
                 public void onFail(int code, Object... args) {
                     ActivityUtils.onOpenFail(MacroInfoActivity.this, type, code, () -> {
+                        //切换到无障碍模式
+                        Toast.makeText(MacroInfoActivity.this, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
                         replayScriptEngine = new ReplayAccScriptEngine();
                         ThreadUtil.runOnCpu(() -> GlobalSingletonScriptEngineController.getInstance().open(replayScriptEngine, reference.get()));
                     }, args);
@@ -425,7 +427,7 @@ public class MacroInfoActivity extends BaseActivity {
     }
 
     /**
-     * 跳转添加Point todo这里需要处理顺序
+     * 跳转添加Point
      */
     private void addPoint() {
         ScriptVoEntityModel.ScriptActionModel action = model.getLastCheckAction();

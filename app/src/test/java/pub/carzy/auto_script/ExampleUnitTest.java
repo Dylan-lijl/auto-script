@@ -37,23 +37,27 @@ public class ExampleUnitTest {
             throw new RuntimeException(e);
         }
         try (PrintWriter writer = new PrintWriter(dest)) {
-            Consumer<File> fileConsumer = f -> {
-                File[] files = f.listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        if (!file.isFile()) {
-                            continue;
-                        }
-                        try (BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream(file)))){
-                            writer.println("-----start:"+file.getAbsoluteFile()+"-----");
-                            String line;
-                            while ((line = reader.readLine()) != null) {
-                                writer.println(line);
+            Consumer<File> fileConsumer = new Consumer<>() {
+                @Override
+                public void accept(File f) {
+                    File[] files = f.listFiles();
+                    if (files != null) {
+                        for (File file : files) {
+                            if (file.isFile()) {
+                                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
+                                    writer.println("-----start:" + file.getAbsoluteFile() + "-----");
+                                    String line;
+                                    while ((line = reader.readLine()) != null) {
+                                        writer.println(line);
+                                    }
+                                    writer.println("-----end-----");
+                                    writer.flush();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            } else if (file.isDirectory()) {
+                                this.accept(file);
                             }
-                            writer.println("-----end-----");
-                            writer.flush();
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
                         }
                     }
                 }

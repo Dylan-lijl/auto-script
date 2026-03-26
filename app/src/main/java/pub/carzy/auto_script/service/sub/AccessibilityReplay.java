@@ -109,6 +109,19 @@ public class AccessibilityReplay extends AbstractReplay<AccessibilityReplay.Gest
     }
 
     @Override
+    protected void releaseGesture(ReplayModel.ReplayActionModel value) {
+        //这里不需要处理,因为构建的手势派发后由系统去决定是否终止
+        super.releaseGesture(value);
+    }
+
+    @Override
+    protected void releaseKey(ReplayModel.ReplayActionModel value) {
+        //发送抬起事件
+        service.performGlobalAction(value.getCode());
+        super.releaseKey(value);
+    }
+
+    @Override
     protected KeyEventPayload createKeyEventPayload() {
         return new KeyEventPayload();
     }

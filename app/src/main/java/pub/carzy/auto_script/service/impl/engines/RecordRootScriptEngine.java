@@ -33,6 +33,7 @@ import pub.carzy.auto_script.service.sub.RecorderLifeCycle;
 import pub.carzy.auto_script.utils.EventDeviceUtil;
 import pub.carzy.auto_script.service.sub.GestureRecorder;
 import pub.carzy.auto_script.service.sub.KeyRecorder;
+import pub.carzy.auto_script.utils.InputConstants;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.Shell;
 import pub.carzy.auto_script.utils.Stopwatch;
@@ -156,36 +157,36 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                 List<Integer> types = new ArrayList<>();
                 //手势
                 if (gestureDevice != null) {
-                    types.add(EventDeviceUtil.EV_ABS);
+                    types.add(InputConstants.EV_ABS);
                     gestureRecorder = new GestureRecorder(dataWrapper.watcher);
                     gestureRecorder.setReadingBack(new OnRecordReading() {
                         @Override
                         public void pause(Object... args) {
                             dataWrapper.motions.remove(dataWrapper.motions.size() - 1);
-                            reading.pause(types, EventDeviceUtil.EV_ABS);
+                            reading.pause(types, InputConstants.EV_ABS);
                         }
 
                         @Override
                         public void stop(Object... args) {
                             dataWrapper.motions.remove(dataWrapper.motions.size() - 1);
-                            reading.stop(types, EventDeviceUtil.EV_ABS);
+                            reading.stop(types, InputConstants.EV_ABS);
                         }
                     });
                     executor.submit(() -> gestureRecorder.start(gestureDevice.getPath(), e -> dataWrapper.motions.add(e)));
                 }
                 //按键
                 if (keyDevice != null) {
-                    types.add(EventDeviceUtil.EV_KEY);
+                    types.add(InputConstants.EV_KEY);
                     keyRecorder = new KeyRecorder(dataWrapper.watcher);
                     keyRecorder.setReadingBack(new OnRecordReading() {
                         @Override
                         public void pause(Object... args) {
-                            reading.pause(types, EventDeviceUtil.EV_KEY);
+                            reading.pause(types, InputConstants.EV_KEY);
                         }
 
                         @Override
                         public void stop(Object... args) {
-                            reading.stop(types, EventDeviceUtil.EV_KEY);
+                            reading.stop(types, InputConstants.EV_KEY);
                         }
                     });
                     executor.submit(() -> keyRecorder.start(keyDevice.getPath(), e -> dataWrapper.keys.add(e)));
@@ -200,6 +201,16 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                 }
                 if (keyRecorder != null) {
                     keyRecorder.stop();
+                }
+            }
+
+            @Override
+            public void clear() {
+                if (gestureRecorder != null) {
+                    gestureRecorder.clear();
+                }
+                if (keyRecorder != null) {
+                    keyRecorder.clear();
                 }
             }
 

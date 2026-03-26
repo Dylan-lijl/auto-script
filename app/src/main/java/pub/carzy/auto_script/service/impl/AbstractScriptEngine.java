@@ -89,7 +89,7 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
         }
         ThreadUtil.runOnUi(() -> new AlertDialog.Builder(Startup.CURRENT)
                 .setTitle(R.string.permission_prompt)
-                .setMessage(R.string.permission_content)
+                .setMessage(R.string.float_button_permission)
                 .setPositiveButton(R.string.go_to_open, (dialog, which) -> {
                     dialog.dismiss();
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);

@@ -118,6 +118,13 @@ public class MacroListActivity extends BaseActivity {
     private Adapter adapter;
     private IdGenerator<Long> idWorker;
     /**
+     * 目前这个还是需要优化,理想状态下是同一个引擎只需要reset而不需要重复创建相同引擎,
+     * 但是如果设置引擎模式切换或特殊情况(比如root可用了)则需要重新创建
+     * 目前是打开一次就创建新的一个引擎来保证配置更新生效
+     */
+    private RecordScriptEngine recordEngine;
+    private ReplayScriptEngine replayEngine;
+    /**
      * 选择文件回调
      */
     private final ActivityResultLauncher<Intent> pickerLauncher =
@@ -664,8 +671,6 @@ public class MacroListActivity extends BaseActivity {
         });
     }
 
-    ReplayScriptEngine replayEngine;
-
     /**
      * 打开运行脚本服务
      *
@@ -691,6 +696,7 @@ public class MacroListActivity extends BaseActivity {
                     @Override
                     public void onFail(int code, Object... args) {
                         ActivityUtils.onOpenFail(MacroListActivity.this, type, code, () -> {
+                            Toast.makeText(MacroListActivity.this, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
                             replayEngine = new ReplayAccScriptEngine();
                             ThreadUtil.runOnCpu(() -> {
                                 GlobalSingletonScriptEngineController.getInstance().open(replayEngine, reference.get());
@@ -758,8 +764,6 @@ public class MacroListActivity extends BaseActivity {
                 }).show();
     }
 
-    private RecordScriptEngine recordEngine;
-
     /**
      * 打开录制服务
      */
@@ -771,6 +775,7 @@ public class MacroListActivity extends BaseActivity {
             @Override
             public void onFail(int code, Object... args) {
                 ActivityUtils.onOpenFail(MacroListActivity.this, type, code, () -> {
+                    Toast.makeText(MacroListActivity.this, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
                     recordEngine = new RecordAccScriptEngine();
                     ThreadUtil.runOnCpu(() -> GlobalSingletonScriptEngineController.getInstance().open(recordEngine, reference.get()));
                 }, args);

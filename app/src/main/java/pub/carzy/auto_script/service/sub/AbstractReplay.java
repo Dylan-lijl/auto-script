@@ -125,10 +125,12 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
             //将标志位恢复成运行状态
             status.set(RUNNING);
             //重置或初始化
-            if (model.getInited()) {
-                model.recover();
-            } else {
-                model.init();
+            synchronized (this) {
+                if (model.getInited()) {
+                    model.recover();
+                } else {
+                    model.init();
+                }
             }
             doSelfInit();
             //记录开始时间 加上延迟时间
@@ -196,9 +198,9 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     }
 
     /**
-     * 只有部分按键可以比如home,返回,进程,而电源键和音量加减不能正常执行
+     * 释放(抬起)已经按下的手势或按键
      */
-    private void releaseKeyMap() {
+    private synchronized void releaseKeyMap() {
         //获取正在处理的数据
         ConcurrentNavigableMap<Long, ReplayModel.ReplayActionModel> waitMap = model.headWaitMap(System.currentTimeMillis() - startTime.get(), true);
         ThreadUtil.runOnUi(() -> {
@@ -208,22 +210,36 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
             //释放已经按下的键
             waitMap.forEach((key, value) -> {
                 while (value != null) {
+                    //全部类型都抬起
                     if (value.getType() == ScriptActionEntity.KEY_EVENT && value.getCode() != null) {
                         long r = value.getRemainingTime().get();
                         //小于0说明已经被释放了,大于等于时长说明未开始
                         if (r >= value.getDuration() && r <= 0) {
                             continue;
                         }
-                        //释放 todo 这里已经计算出哪些key要被抬起
-                       /* if (!performGlobalAction(value.getCode())) {
-                            Log.w(SimpleReplay.class.getCanonicalName(), "pause#performGlobalAction: failure");
-                        }*/
+                        //这里直接调用子类处理方法
+                        releaseKey(value);
+                    } else if (value.getType() == ScriptActionEntity.GESTURE) {
+                        AtomicInteger current = value.getCurrent();
+                        //说明已经执行过了或未执行过
+                        if (current.get() >= value.getPoints().size()||current.get()==0) {
+                            return;
+                        }
+                        releaseGesture(value);
                     }
                     //递归处理
                     value = value.getLast();
                 }
             });
         });
+    }
+
+    protected void releaseGesture(ReplayModel.ReplayActionModel value) {
+        value.getCurrent().set(value.getPoints().size());
+    }
+
+    protected void releaseKey(ReplayModel.ReplayActionModel value) {
+        value.getRemainingTime().set(0);
     }
 
     /**
@@ -286,34 +302,36 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
                     }
                 }
             };
-            //删除的id
-            Set<Long> ids = new HashSet<>();
-            for (Map.Entry<Long, ReplayModel.ReplayActionModel> line : headWaitMap.entrySet()) {
-                ReplayModel.ReplayActionModel actionModel = line.getValue();
-                Long id = line.getKey();
-                //回调执行当前action
-                try {
-                    consumer.accept(actionModel);
-                } catch (Exception e) {
-                    Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
-                }
-                //遍历action next链表,递归处理
-                ReplayModel.ReplayActionModel loop = actionModel.getLast();
-                while (loop != null) {
+            synchronized (this) {
+                //删除的id
+                Set<Long> ids = new HashSet<>();
+                for (Map.Entry<Long, ReplayModel.ReplayActionModel> line : headWaitMap.entrySet()) {
+                    ReplayModel.ReplayActionModel actionModel = line.getValue();
+                    Long id = line.getKey();
+                    //回调执行当前action
                     try {
-                        consumer.accept(loop);
+                        consumer.accept(actionModel);
                     } catch (Exception e) {
-                        Log.e(this.getClass().getCanonicalName(), "while tickProcess exception", e);
+                        Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
                     }
-                    loop = loop.getLast();
+                    //遍历action next链表,递归处理
+                    ReplayModel.ReplayActionModel loop = actionModel.getLast();
+                    while (loop != null) {
+                        try {
+                            consumer.accept(loop);
+                        } catch (Exception e) {
+                            Log.e(this.getClass().getCanonicalName(), "while tickProcess exception", e);
+                        }
+                        loop = loop.getLast();
+                    }
+                    //已完成则添加到移除列表
+                    if (!unfinished.get()) {
+                        ids.add(id);
+                    }
                 }
-                //已完成则添加到移除列表
-                if (!unfinished.get()) {
-                    ids.add(id);
-                }
+                //将指定的id移到删除map
+                model.removeToDeleteMap(ids);
             }
-            //将指定的id移到删除map
-            model.removeToDeleteMap(ids);
             if (!gesturePayload.isEmpty()) {
                 //发送手势
                 ThreadUtil.runOnUi(() -> {

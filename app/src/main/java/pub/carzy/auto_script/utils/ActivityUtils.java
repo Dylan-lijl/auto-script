@@ -603,10 +603,10 @@ public class ActivityUtils {
                     }
                 }
                 if (hasError && type == SettingProxy.AUTO) {
-                    //切换到无障碍模式
-                    Toast.makeText(context, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
                     runnable.run();
                 }
+            } else if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.CANCEL)){
+                Toast.makeText(context, "已取消!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(context, "打开失败!", Toast.LENGTH_SHORT).show();
                 for (Object arg : args) {

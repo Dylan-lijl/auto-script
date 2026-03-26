@@ -1,6 +1,8 @@
 package pub.carzy.auto_script.service.impl;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -13,11 +15,14 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
+import android.view.accessibility.AccessibilityManager;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.ViewDataBinding;
 
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+
+import java.util.List;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
@@ -61,28 +66,22 @@ public abstract class AccScriptEngine extends AbstractScriptEngine {
         boolean enabled = false;
         try {
             Startup context = BeanFactory.getInstance().get(Startup.class);
-            int accessibilityEnabled = 0;
-            final String service = context.getPackageName() + "/" + MyAccessibilityService.class.getCanonicalName();
-            try {
-                accessibilityEnabled = Settings.Secure.getInt(context.getContentResolver(),
-                        Settings.Secure.ACCESSIBILITY_ENABLED);
-            } catch (Settings.SettingNotFoundException e) {
-                Log.e("accessibility", "Error finding setting, default accessibility to not found", e);
-                throw e;
-            }
+            AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+            if (am != null) {
+                // 2. 获取当前【已启用】的所有无障碍服务列表
+                List<AccessibilityServiceInfo> enabledServices = am.getEnabledAccessibilityServiceList(
+                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
+                ComponentName myService = new ComponentName(context, MyAccessibilityService.class);
+                // 3. 遍历检查你的服务是否在列表中
+                for (AccessibilityServiceInfo info : enabledServices) {
+                    String infoId = info.getId();
+                    if (infoId == null) continue;
 
-            TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
-            if (accessibilityEnabled == 1) {
-                String settingValue = Settings.Secure.getString(context.getContentResolver(),
-                        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-                if (settingValue != null) {
-                    colonSplitter.setString(settingValue);
-                    while (colonSplitter.hasNext()) {
-                        String componentName = colonSplitter.next();
-                        if (componentName.equalsIgnoreCase(service)) {
-                            enabled = true;
-                            break;
-                        }
+                    // 2. 将系统返回的 ID 转化为 ComponentName 再对比
+                    ComponentName infoComponent = ComponentName.unflattenFromString(infoId);
+                    if (infoComponent != null && infoComponent.equals(myService)) {
+                        enabled = true;
+                        break;
                     }
                 }
             }

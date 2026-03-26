@@ -8,6 +8,7 @@ public interface RecorderLifeCycle<T> {
     void start(String devicePath, OnRecordListener<T> listener);
 
     void stop();
+    void clear();
 
     void pause();
 
