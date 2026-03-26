@@ -119,7 +119,7 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
         addMaskViewListener();
         //添加长按拖动功能
         addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.bindingParams),
-                binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop);
+                binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop,binding.btnFloatingClose);
         //自动回放切换
         listenAutoReplay();
         //点击录制按钮

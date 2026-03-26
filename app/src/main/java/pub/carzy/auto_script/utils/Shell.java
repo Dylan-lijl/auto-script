@@ -76,7 +76,8 @@ public class Shell {
     public static void grantOverlayPermissionSilently(Process cmdProcess, String packageName) {
         OutputStream stream = cmdProcess.getOutputStream();
         try {
-            stream.write(("appops set " + packageName + " SYSTEM_ALERT_WINDOW allow\n").getBytes());
+//            stream.write(("appops set " + packageName + " SYSTEM_ALERT_WINDOW allow\n").getBytes());
+            stream.write(("appops set " + packageName + " SYSTEM_ALERT_WINDOW allow && am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS\n").getBytes());
             stream.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -1,5 +1,8 @@
 package pub.carzy.auto_script.service.sub;
 
+/**
+ * @author admin
+ */
 public interface RecorderLifeCycle<T> {
 
     void start(String devicePath, OnRecordListener<T> listener);

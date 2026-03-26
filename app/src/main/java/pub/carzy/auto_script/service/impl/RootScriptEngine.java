@@ -9,6 +9,9 @@ import androidx.databinding.ViewDataBinding;
 
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 
+import java.util.function.Consumer;
+
+import cn.hutool.core.lang.copier.Copier;
 import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.Setting;
@@ -44,12 +47,25 @@ public abstract class RootScriptEngine extends AbstractScriptEngine {
     protected void authorizeFloating(ResultCallback callback) {
         //发送adb命令静默授权
         Shell.grantOverlayPermissionSilently(cmdProcess, BeanFactory.getInstance().get(Startup.class).getPackageName());
-        if (hasFloating()) {
-            callback.onSuccess();
-        } else {
-            //回退到弹窗
-            super.authorizeFloating(callback);
-        }
+        final int[] retryCount = {19};
+        Consumer<ResultCallback> supperBack = super::authorizeFloating;
+        // 使用匿名的 Runnable 避免数组引用带来的视觉混乱
+        final Runnable checker = new Runnable() {
+            @Override
+            public void run() {
+                if (hasFloating()) {
+                    callback.onSuccess();
+                } else if (retryCount[0] > 0) {
+                    retryCount[0]--;
+                    // 50ms 检查一次，对性能更友好
+                    ThreadUtil.runOnUi(this, 50);
+                } else {
+                    // 最终失败，走弹窗方案
+                    supperBack.accept(callback);
+                }
+            }
+        };
+        ThreadUtil.runOnUi(checker, 50);
     }
 
     protected WindowManager.LayoutParams createBindingParams(ViewDataBinding binding) {

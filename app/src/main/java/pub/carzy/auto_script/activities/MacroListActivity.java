@@ -691,7 +691,7 @@ public class MacroListActivity extends BaseActivity {
                     @Override
                     public void onFail(int code, Object... args) {
                         ActivityUtils.onOpenFail(MacroListActivity.this, type, code, () -> {
-                            replayEngine = new ReplayRootScriptEngine();
+                            replayEngine = new ReplayAccScriptEngine();
                             ThreadUtil.runOnCpu(() -> {
                                 GlobalSingletonScriptEngineController.getInstance().open(replayEngine, reference.get());
                             });
