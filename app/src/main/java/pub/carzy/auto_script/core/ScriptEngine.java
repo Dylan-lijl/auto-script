@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service;
+package pub.carzy.auto_script.core;
 
 /**
  * @author admin
@@ -11,8 +11,6 @@ public interface ScriptEngine {
     void close();
 
     void reset();
-
-    void setCloseBack(Runnable runnable);
 
     interface ResultCallback {
         /**

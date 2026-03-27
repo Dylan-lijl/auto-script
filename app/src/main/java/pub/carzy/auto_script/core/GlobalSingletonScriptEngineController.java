@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service;
+package pub.carzy.auto_script.core;
 
 /**
  * 全局脚本管理器

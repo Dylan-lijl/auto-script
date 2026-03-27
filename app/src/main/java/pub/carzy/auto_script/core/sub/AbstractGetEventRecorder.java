@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service.sub;
+package pub.carzy.auto_script.core.sub;
 
 import android.util.Log;
 
@@ -63,11 +63,15 @@ public abstract class AbstractGetEventRecorder<T> extends AbstractRecorderLifeCy
                     continue;
                 }
                 //过滤不是数据行,暂停状态以及未解析到开始符
-                if (!line.contains("]") || !started) continue;
+                if (!line.contains("]") || !started) {
+                    continue;
+                }
 
                 // 解析标准格式: [ timestamp] type code value
                 String[] parts = line.substring(line.indexOf("]") + 1).trim().split("\\s+");
-                if (parts.length < 3) continue;
+                if (parts.length < 3) {
+                    continue;
+                }
 
                 int type = Integer.parseInt(parts[0], 16);
                 int code = Integer.parseInt(parts[1], 16);

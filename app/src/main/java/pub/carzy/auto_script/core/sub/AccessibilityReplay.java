@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service.sub;
+package pub.carzy.auto_script.core.sub;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import pub.carzy.auto_script.service.data.ReplayModel;
+import pub.carzy.auto_script.core.data.ReplayModel;
 
 /**
  * 无障碍回放
@@ -32,7 +32,6 @@ public class AccessibilityReplay extends AbstractReplay<AccessibilityReplay.Gest
         @Override
         public void onCompleted(GestureDescription gestureDescription) {
             super.onCompleted(gestureDescription);
-            Log.d(AccessibilityReplay.this.getClass().getCanonicalName(), "GestureResultCallback#onCompleted: ");
         }
 
         @Override

@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service.impl;
+package pub.carzy.auto_script.core.impl;
 
 import android.graphics.PixelFormat;
 import android.util.Log;
@@ -11,7 +11,6 @@ import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 
 import java.util.function.Consumer;
 
-import cn.hutool.core.lang.copier.Copier;
 import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.Setting;

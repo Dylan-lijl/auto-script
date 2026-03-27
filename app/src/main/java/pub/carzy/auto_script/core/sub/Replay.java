@@ -1,6 +1,6 @@
-package pub.carzy.auto_script.service.sub;
+package pub.carzy.auto_script.core.sub;
 
-import pub.carzy.auto_script.service.data.ReplayModel;
+import pub.carzy.auto_script.core.data.ReplayModel;
 
 /**
  * @author admin
@@ -11,11 +11,7 @@ public interface Replay {
 
     void addCallback(Replay.ResultListener listener);
 
-    void removeCallback(ResultListener listener);
-
     void setRepeatCount(int repeatCount);
-
-    int getRepeatCount();
 
     void start();
 

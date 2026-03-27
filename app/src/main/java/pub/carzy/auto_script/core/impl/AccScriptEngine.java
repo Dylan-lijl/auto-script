@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service.impl;
+package pub.carzy.auto_script.core.impl;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.provider.Settings;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -30,7 +29,7 @@ import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.entity.FloatPoint;
-import pub.carzy.auto_script.service.MyAccessibilityService;
+import pub.carzy.auto_script.core.MyAccessibilityService;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -75,7 +74,9 @@ public abstract class AccScriptEngine extends AbstractScriptEngine {
                 // 3. 遍历检查你的服务是否在列表中
                 for (AccessibilityServiceInfo info : enabledServices) {
                     String infoId = info.getId();
-                    if (infoId == null) continue;
+                    if (infoId == null) {
+                        continue;
+                    }
 
                     // 2. 将系统返回的 ID 转化为 ComponentName 再对比
                     ComponentName infoComponent = ComponentName.unflattenFromString(infoId);

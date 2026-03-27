@@ -51,17 +51,14 @@ import pub.carzy.auto_script.entity.DevelopmentProcessItem;
 import pub.carzy.auto_script.entity.EventDevice;
 import pub.carzy.auto_script.entity.FuturePlanEntity;
 import pub.carzy.auto_script.entity.KeyEntity;
-import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.WrapperEntity;
 import pub.carzy.auto_script.model.AboutDevTestModel;
 import pub.carzy.auto_script.model.AboutDevelopmentProcessModel;
-import pub.carzy.auto_script.service.sub.KeyRecorder;
-import pub.carzy.auto_script.service.sub.RecorderLifeCycle;
+import pub.carzy.auto_script.core.sub.KeyRecorder;
 import pub.carzy.auto_script.ui.GridBackgroundView;
 import pub.carzy.auto_script.ui_components.components.CollapseView;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.EventDeviceUtil;
-import pub.carzy.auto_script.service.sub.GestureRecorder;
 import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.Shell;
 import pub.carzy.auto_script.utils.Stopwatch;
@@ -498,29 +495,25 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
                 Stopwatch stopwatch = new Stopwatch();
                 KeyRecorder recorder = new KeyRecorder(stopwatch);
                 List<KeyEntity> data = new ArrayList<>();
-                binding.rootBtn.setOnClickListener(v -> {
-                    ThreadUtil.runOnCpu(() -> {
-                        try {
-                            Process process = Shell.getRootProcess();
-                            String listStr = Shell.getEventList(process);
-                            List<EventDevice> devices = EventDeviceUtil.parse(listStr);
-                            EventDevice target = EventDeviceUtil.findKeyActuator(devices);
+                binding.rootBtn.setOnClickListener(v -> ThreadUtil.runOnCpu(() -> {
+                    try {
+                        Process process = Shell.getRootProcess();
+                        String listStr = Shell.getEventList(process);
+                        List<EventDevice> devices = EventDeviceUtil.parse(listStr);
+                        EventDevice target = EventDeviceUtil.findKeyActuator(devices);
 
-                            if (target != null) {
-                                ThreadUtil.runOnUi(() -> {
-                                    Toast.makeText(context, "开始录制: " + target.getName(), Toast.LENGTH_SHORT).show();
-                                    binding.stopBtn.setVisibility(View.VISIBLE);
-                                });
-                                stopwatch.start();
-                                recorder.start(target.getPath(), data1 -> {
-                                    data.add(data1);
-                                });
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        if (target != null) {
+                            ThreadUtil.runOnUi(() -> {
+                                Toast.makeText(context, "开始录制: " + target.getName(), Toast.LENGTH_SHORT).show();
+                                binding.stopBtn.setVisibility(View.VISIBLE);
+                            });
+                            stopwatch.start();
+                            recorder.start(target.getPath(), data::add);
                         }
-                    });
-                });
+                    } catch (Exception e) {
+                        Log.e(this.getClass().getCanonicalName(),"error",e);
+                    }
+                }));
 
                 binding.stopBtn.setOnClickListener(v -> {
                     recorder.stop();

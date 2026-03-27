@@ -47,7 +47,7 @@
         <activity android:name=".activities.about.child.AboutTroubleshootingActivity" />
 
         <service
-            android:name=".service.MyAccessibilityService"
+            android:name=".core.MyAccessibilityService"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>

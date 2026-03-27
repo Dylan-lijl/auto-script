@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service.impl.engines;
+package pub.carzy.auto_script.core.impl.engines;
 
 import android.accessibilityservice.AccessibilityService;
 import android.graphics.PixelFormat;
@@ -29,13 +29,13 @@ import pub.carzy.auto_script.entity.KeyEntity;
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.model.RecordStateModel;
-import pub.carzy.auto_script.service.MyAccessibilityService;
-import pub.carzy.auto_script.service.data.ReplayModel;
-import pub.carzy.auto_script.service.impl.AccScriptEngine;
-import pub.carzy.auto_script.service.impl.RecordScriptEngine;
-import pub.carzy.auto_script.service.sub.AccessibilityReplay;
-import pub.carzy.auto_script.service.sub.Replay;
-import pub.carzy.auto_script.service.sub.AbstractReplay;
+import pub.carzy.auto_script.core.MyAccessibilityService;
+import pub.carzy.auto_script.core.data.ReplayModel;
+import pub.carzy.auto_script.core.impl.AccScriptEngine;
+import pub.carzy.auto_script.core.impl.RecordScriptEngine;
+import pub.carzy.auto_script.core.sub.AccessibilityReplay;
+import pub.carzy.auto_script.core.sub.Replay;
+import pub.carzy.auto_script.core.sub.AbstractReplay;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.Stopwatch;
 

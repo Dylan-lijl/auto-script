@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service;
+package pub.carzy.auto_script.core;
 
 import android.accessibilityservice.AccessibilityService;
 import android.content.BroadcastReceiver;

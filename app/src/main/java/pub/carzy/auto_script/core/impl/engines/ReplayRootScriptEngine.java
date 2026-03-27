@@ -1,6 +1,5 @@
-package pub.carzy.auto_script.service.impl.engines;
+package pub.carzy.auto_script.core.impl.engines;
 
-import android.accessibilityservice.AccessibilityService;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
@@ -9,25 +8,29 @@ import android.widget.Toast;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ObservableInt;
 
+import java.util.List;
+
+import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.WindowReplayFloatingButtonBinding;
+import pub.carzy.auto_script.entity.EventDevice;
 import pub.carzy.auto_script.model.PreviewFloatingStatus;
-import pub.carzy.auto_script.service.data.ReplayModel;
-import pub.carzy.auto_script.service.impl.AccScriptEngine;
-import pub.carzy.auto_script.service.impl.ReplayScriptEngine;
-import pub.carzy.auto_script.service.sub.AccessibilityReplay;
-import pub.carzy.auto_script.service.sub.Replay;
-import pub.carzy.auto_script.service.sub.AbstractReplay;
+import pub.carzy.auto_script.core.data.ReplayModel;
+import pub.carzy.auto_script.core.impl.ReplayScriptEngine;
+import pub.carzy.auto_script.core.impl.RootScriptEngine;
+import pub.carzy.auto_script.core.sub.Replay;
+import pub.carzy.auto_script.core.sub.RootReplay;
+import pub.carzy.auto_script.core.sub.AbstractReplay;
+import pub.carzy.auto_script.utils.EventDeviceUtil;
 import pub.carzy.auto_script.utils.OverlayInputDialog;
+import pub.carzy.auto_script.utils.Shell;
 
 /**
- * 无障碍回放
- *
  * @author admin
  */
-public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScriptEngine {
-    private ViewWrapper viewWrapper;
+public class ReplayRootScriptEngine extends RootScriptEngine implements ReplayScriptEngine {
     private DataWrapper dataWrapper;
+    private ViewWrapper viewWrapper;
 
     @Override
     public void start(Object... args) {
@@ -36,39 +39,34 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
         if (!this.initialized) {
             synchronized (this) {
                 if (!this.initialized) {
-                    dataWrapper = new DataWrapper(service);
+                    //获取设备
+                    List<EventDevice> list = EventDeviceUtil.parse(Shell.getEventList(cmdProcess));
+                    EventDevice gestureActuator = EventDeviceUtil.findGestureActuator(list);
+                    EventDevice keyActuator = EventDeviceUtil.findKeyActuator(list);
+                    dataWrapper = new DataWrapper(Pair.of(gestureActuator == null ? null : Shell.getRootProcess(), gestureActuator),
+                            Pair.of(keyActuator == null ? null : Shell.getRootProcess(), keyActuator));
                     for (Object arg : args) {
                         if (arg instanceof ReplayModel) {
                             dataWrapper.replay.setModel((ReplayModel) arg);
                         }
                     }
                     WindowReplayFloatingButtonBinding binding = DataBindingUtil.inflate(
-                            LayoutInflater.from(service),
+                            LayoutInflater.from(getContext()),
                             R.layout.window_replay_floating_button,
                             null,
                             false
                     );
                     binding.setCount(dataWrapper.count);
                     binding.setStatus(new PreviewFloatingStatus());
-                    viewWrapper = new ViewWrapper(getWindowManager(), binding, createBindingParams(binding), new OverlayInputDialog(service, getOverlayFlag()));
+                    viewWrapper = new ViewWrapper(getWindowManager(), binding, createBindingParams(binding), new OverlayInputDialog(getContext(), getOverlayFlag()));
                     addListenerByView();
+                    //回放回调
+                    replayCallback();
                     this.initialized = true;
                 }
             }
         }
         viewWrapper.showView();
-    }
-
-    private void addListenerByView() {
-        //各个按钮监听
-        listenButtons();
-        //回放回调
-        replayCallback();
-        WindowReplayFloatingButtonBinding binding = viewWrapper.binding;
-        //添加长按移动事件
-        addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.bindingParams),
-                binding.btnMore, binding.btnClose, binding.btnCount, binding.btnPause, binding.btnRestart,
-                binding.btnRun, binding.btnStop);
     }
 
     private void replayCallback() {
@@ -78,7 +76,7 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
                 if (code == Replay.ResultListener.SUCCESS) {
                     viewWrapper.binding.getStatus().setStatus(PreviewFloatingStatus.NONE);
                 } else if (code == Replay.ResultListener.FAIL && message != null) {
-                    Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("player", "stop", e);
                 }
@@ -89,7 +87,7 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
                 if (code == Replay.ResultListener.SUCCESS) {
                     viewWrapper.binding.getStatus().setStatus(PreviewFloatingStatus.PAUSE);
                 } else if (code == Replay.ResultListener.FAIL && message != null) {
-                    Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("player", "pause", e);
                 }
@@ -100,7 +98,7 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
                 if (code == Replay.ResultListener.SUCCESS) {
                     viewWrapper.binding.getStatus().setStatus(PreviewFloatingStatus.RUN);
                 } else if (code == Replay.ResultListener.FAIL && message != null) {
-                    Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("player", "resume", e);
                 }
@@ -111,7 +109,7 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
                 if (code == Replay.ResultListener.SUCCESS) {
                     viewWrapper.binding.getStatus().setStatus(PreviewFloatingStatus.RUN);
                 } else if (code == Replay.ResultListener.FAIL && message != null) {
-                    Toast.makeText(service, message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("player", "start", e);
                 }
@@ -124,8 +122,11 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
         });
     }
 
-    private void listenButtons() {
+    private void addListenerByView() {
         WindowReplayFloatingButtonBinding binding = viewWrapper.binding;
+        addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.bindingParams),
+                binding.btnStop, binding.btnRun, binding.btnCount, binding.btnRestart,
+                binding.btnPause, binding.btnClose, binding.btnMore);
         binding.btnRun.setOnClickListener(v -> {
             if (dataWrapper.replay.getStatus() == AbstractReplay.PAUSE) {
                 dataWrapper.replay.resume();
@@ -136,9 +137,7 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
         binding.btnStop.setOnClickListener(v -> dataWrapper.replay.stop());
         binding.btnPause.setOnClickListener(v -> dataWrapper.replay.pause());
         binding.btnRestart.setOnClickListener(v -> dataWrapper.replay.start());
-        binding.btnClose.setOnClickListener(v -> {
-            close();
-        });
+        binding.btnClose.setOnClickListener(v -> close());
         binding.btnCount.setOnClickListener(v -> {
             if (viewWrapper.dialog.isShowing()) {
                 viewWrapper.dialog.dismiss();
@@ -149,6 +148,7 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
                 });
             }
         });
+        binding.btnMore.setOnClickListener(e -> binding.getStatus().setSelected(!binding.getStatus().getSelected()));
     }
 
     @Override
@@ -177,9 +177,9 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
         final ObservableInt count;
         final Replay replay;
 
-        public DataWrapper(AccessibilityService service) {
+        public DataWrapper(Pair<Process, EventDevice> gestureProcess, Pair<Process, EventDevice> keyEventProcess) {
             count = new ObservableInt(-1);
-            replay = new AccessibilityReplay(service);
+            replay = new RootReplay(gestureProcess, keyEventProcess);
         }
 
         public void reset() {

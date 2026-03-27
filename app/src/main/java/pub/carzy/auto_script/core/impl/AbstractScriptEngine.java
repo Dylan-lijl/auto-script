@@ -1,25 +1,19 @@
-package pub.carzy.auto_script.service.impl;
+package pub.carzy.auto_script.core.impl;
 
 
 import android.accessibilityservice.AccessibilityService;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.PixelFormat;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.databinding.ViewDataBinding;
-
-import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 
 import java.util.List;
 
@@ -28,17 +22,14 @@ import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.activities.MacroInfoActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
-import pub.carzy.auto_script.config.Setting;
-import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
-import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.entity.KeyEntity;
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
-import pub.carzy.auto_script.service.ScriptEngine;
+import pub.carzy.auto_script.core.ScriptEngine;
 import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -52,11 +43,6 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
     @Override
     public void start(Object... args) {
 
-    }
-
-    @Override
-    public void setCloseBack(Runnable runnable) {
-        closeBack = runnable;
     }
 
     @Override

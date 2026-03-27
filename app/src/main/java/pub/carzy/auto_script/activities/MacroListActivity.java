@@ -1,6 +1,5 @@
 package pub.carzy.auto_script.activities;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
@@ -10,12 +9,10 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -33,16 +30,12 @@ import androidx.databinding.ObservableBoolean;
 import androidx.databinding.ObservableList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.google.gson.Gson;
-import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
 import com.qmuiteam.qmui.recyclerView.QMUIRVItemSwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeViewHolder;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
-import com.qmuiteam.qmui.util.QMUIKeyboardHelper;
-import com.qmuiteam.qmui.util.QMUIViewHelper;
 import com.qmuiteam.qmui.widget.QMUIEmptyView;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
@@ -54,7 +47,6 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -82,21 +74,19 @@ import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.entity.ExportScriptEntity;
 import pub.carzy.auto_script.entity.SettingProxy;
-import pub.carzy.auto_script.ex.DeviceNotRootedException;
-import pub.carzy.auto_script.ex.UnauthorizedRootAccessException;
 import pub.carzy.auto_script.model.DialogScriptImportModel;
 import pub.carzy.auto_script.model.MacroListModel;
-import pub.carzy.auto_script.service.GlobalSingletonScriptEngineController;
-import pub.carzy.auto_script.service.MyAccessibilityService;
-import pub.carzy.auto_script.service.ScriptEngine;
-import pub.carzy.auto_script.service.data.ReplayModel;
-import pub.carzy.auto_script.service.impl.AccScriptEngine;
-import pub.carzy.auto_script.service.impl.RecordScriptEngine;
-import pub.carzy.auto_script.service.impl.ReplayScriptEngine;
-import pub.carzy.auto_script.service.impl.engines.RecordAccScriptEngine;
-import pub.carzy.auto_script.service.impl.engines.RecordRootScriptEngine;
-import pub.carzy.auto_script.service.impl.engines.ReplayAccScriptEngine;
-import pub.carzy.auto_script.service.impl.engines.ReplayRootScriptEngine;
+import pub.carzy.auto_script.core.GlobalSingletonScriptEngineController;
+import pub.carzy.auto_script.core.MyAccessibilityService;
+import pub.carzy.auto_script.core.ScriptEngine;
+import pub.carzy.auto_script.core.data.ReplayModel;
+import pub.carzy.auto_script.core.impl.AccScriptEngine;
+import pub.carzy.auto_script.core.impl.RecordScriptEngine;
+import pub.carzy.auto_script.core.impl.ReplayScriptEngine;
+import pub.carzy.auto_script.core.impl.engines.RecordAccScriptEngine;
+import pub.carzy.auto_script.core.impl.engines.RecordRootScriptEngine;
+import pub.carzy.auto_script.core.impl.engines.ReplayAccScriptEngine;
+import pub.carzy.auto_script.core.impl.engines.ReplayRootScriptEngine;
 import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
@@ -140,9 +130,7 @@ public class MacroListActivity extends BaseActivity {
                     } else if (data.getData() != null) {
                         uris.add(data.getData());
                     }
-                    ThreadUtil.runOnCpu(() -> {
-                        handleImportFiles(uris);
-                    });
+                    ThreadUtil.runOnCpu(() -> handleImportFiles(uris));
                 }
             });
 
@@ -282,19 +270,15 @@ public class MacroListActivity extends BaseActivity {
                                 if (m.getSizeAdapted() == R.id.size_auto_adapt) {
                                     if (exportScript.getScreenWidth() != metrics.widthPixels) {
                                         BigDecimal proportion = BigDecimal.valueOf(metrics.widthPixels).divide(BigDecimal.valueOf(exportScript.getScreenWidth()), 4, RoundingMode.HALF_UP);
-                                        exportScript.getData().forEach(line -> {
-                                            line.getPoints().forEach(point -> {
-                                                point.setX(Math.max(0, proportion.multiply(BigDecimal.valueOf(point.getX())).setScale(2, RoundingMode.HALF_UP).floatValue()));
-                                            });
-                                        });
+                                        exportScript.getData().forEach(line ->
+                                                line.getPoints().forEach(point ->
+                                                        point.setX(Math.max(0, proportion.multiply(BigDecimal.valueOf(point.getX())).setScale(2, RoundingMode.HALF_UP).floatValue()))));
                                     }
                                     if (exportScript.getScreenHeight() != metrics.heightPixels) {
                                         BigDecimal proportion = BigDecimal.valueOf(metrics.heightPixels).divide(BigDecimal.valueOf(exportScript.getScreenHeight()), 4, RoundingMode.HALF_UP);
-                                        exportScript.getData().forEach(line -> {
-                                            line.getPoints().forEach(point -> {
-                                                point.setY(Math.max(0, proportion.multiply(BigDecimal.valueOf(point.getY())).setScale(2, RoundingMode.HALF_UP).floatValue()));
-                                            });
-                                        });
+                                        exportScript.getData().forEach(line ->
+                                                line.getPoints().forEach(point ->
+                                                        point.setY(Math.max(0, proportion.multiply(BigDecimal.valueOf(point.getY())).setScale(2, RoundingMode.HALF_UP).floatValue()))));
                                     }
                                 }
                                 dbData.addAll(exportScript.getData());
@@ -381,9 +365,7 @@ public class MacroListActivity extends BaseActivity {
                 runnable.run();
             }
         });
-        ThreadUtil.runOnUi(() -> {
-            Toast.makeText(this, getString(R.string.import_successful) + ":" + voEntities.size(), Toast.LENGTH_SHORT).show();
-        });
+        ThreadUtil.runOnUi(() -> Toast.makeText(this, getString(R.string.import_successful) + ":" + voEntities.size(), Toast.LENGTH_SHORT).show());
     }
 
     @Override
@@ -527,18 +509,6 @@ public class MacroListActivity extends BaseActivity {
         });
 //        binding.btnRecord.setOnClickListener((e) -> openService());
     }
-
-    private EditText createSearchEditText() {
-        EditText et = new EditText(this);
-        et.setHint(R.string.search_keyword);
-        et.setSingleLine(true);
-        et.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
-        et.setBackground(null);
-        et.setTextSize(16);
-        et.setPadding(0, 0, 0, 0);
-        return et;
-    }
-
 
     @Override
     protected void openBottomSheet() {
@@ -698,9 +668,7 @@ public class MacroListActivity extends BaseActivity {
                         ActivityUtils.onOpenFail(MacroListActivity.this, type, code, () -> {
                             Toast.makeText(MacroListActivity.this, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
                             replayEngine = new ReplayAccScriptEngine();
-                            ThreadUtil.runOnCpu(() -> {
-                                GlobalSingletonScriptEngineController.getInstance().open(replayEngine, reference.get());
-                            });
+                            ThreadUtil.runOnUi(() -> GlobalSingletonScriptEngineController.getInstance().open(replayEngine, reference.get()));
                         }, args);
                     }
 
@@ -744,9 +712,7 @@ public class MacroListActivity extends BaseActivity {
                             //移除id对应的数据 adapter会感知到
 //                            model.getData().removeIf(item -> ids.contains(item.getId()));
                             model.getData().stream().filter(item -> ids.contains(item.getId())).collect(Collectors.toList())
-                                    .forEach(item -> {
-                                        model.getData().remove(item);
-                                    });
+                                    .forEach(item -> model.getData().remove(item));
                             dialog.dismiss();
                             if (success != null) {
                                 success.run();
@@ -759,9 +725,7 @@ public class MacroListActivity extends BaseActivity {
                             adapter.checkedIds.remove(id);
                         }));
                     }
-                }), (dialog, i) -> {
-                    dialog.dismiss();
-                }).show();
+                }), (dialog, i) -> dialog.dismiss()).show();
     }
 
     /**
@@ -777,14 +741,14 @@ public class MacroListActivity extends BaseActivity {
                 ActivityUtils.onOpenFail(MacroListActivity.this, type, code, () -> {
                     Toast.makeText(MacroListActivity.this, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
                     recordEngine = new RecordAccScriptEngine();
-                    ThreadUtil.runOnCpu(() -> GlobalSingletonScriptEngineController.getInstance().open(recordEngine, reference.get()));
+                    ThreadUtil.runOnUi(() -> GlobalSingletonScriptEngineController.getInstance().open(recordEngine, reference.get()));
                 }, args);
             }
 
             @Override
             public void onSuccess() {
                 if (recordEngine instanceof RecordAccScriptEngine) {
-                    ((RecordAccScriptEngine) recordEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                    ((AccScriptEngine) recordEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
                 }
 //                recordEngine.setCloseBack(() -> recordEngine = null);
                 //打开
@@ -984,9 +948,9 @@ public class MacroListActivity extends BaseActivity {
         }
     }
 
-    class StringAdapter extends RecyclerView.Adapter<StringAdapter.VH> {
+    static class StringAdapter extends RecyclerView.Adapter<StringAdapter.VH> {
 
-        private List<String> data;
+        private final List<String> data;
 
         public StringAdapter(List<String> data) {
             this.data = data;

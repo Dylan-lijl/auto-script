@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service.sub;
+package pub.carzy.auto_script.core.sub;
 
 import android.util.Log;
 
@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
-import pub.carzy.auto_script.service.data.ReplayModel;
+import pub.carzy.auto_script.core.data.ReplayModel;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -87,24 +87,13 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     }
 
     @Override
-    public void removeCallback(ResultListener listener) {
-        callback.remove(listener);
-    }
-
-    @Override
     public void setRepeatCount(int repeatCount) {
         this.repeatCount.set(repeatCount);
-    }
-
-    @Override
-    public int getRepeatCount() {
-        return repeatCount.get();
     }
 
     /**
      * 手势回调,记录手势执行或被取消,打印日志
      */
-
     public AbstractReplay() {
         //单线程池
         scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -126,11 +115,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
             status.set(RUNNING);
             //重置或初始化
             synchronized (this) {
-                if (model.getInited()) {
-                    model.recover();
-                } else {
-                    model.init();
-                }
+                model.recover();
             }
             doSelfInit();
             //记录开始时间 加上延迟时间
@@ -222,7 +207,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
                     } else if (value.getType() == ScriptActionEntity.GESTURE) {
                         AtomicInteger current = value.getCurrent();
                         //说明已经执行过了或未执行过
-                        if (current.get() >= value.getPoints().size()||current.get()==0) {
+                        if (current.get() >= value.getPoints().size() || current.get() == 0) {
                             return;
                         }
                         releaseGesture(value);
@@ -266,7 +251,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     /**
      * 时间片任务
      */
-    private void tickProcess() {
+    protected void tickProcess() {
         if (status.get() != RUNNING) {
             return;
         }

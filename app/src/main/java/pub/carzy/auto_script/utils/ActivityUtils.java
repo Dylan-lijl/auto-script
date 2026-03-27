@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -48,7 +47,6 @@ import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUIWrapContentListView;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogView;
-import com.qmuiteam.qmui.widget.popup.QMUIFullScreenPopup;
 import com.qmuiteam.qmui.widget.popup.QMUIPopup;
 import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
@@ -61,7 +59,6 @@ import java.util.function.Consumer;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
-import pub.carzy.auto_script.activities.MacroListActivity;
 import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.Setting;
@@ -69,8 +66,8 @@ import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.ex.DeviceNotRootedException;
 import pub.carzy.auto_script.ex.UnauthorizedRootAccessException;
-import pub.carzy.auto_script.service.MyAccessibilityService;
-import pub.carzy.auto_script.service.ScriptEngine;
+import pub.carzy.auto_script.core.MyAccessibilityService;
+import pub.carzy.auto_script.core.ScriptEngine;
 
 
 /**

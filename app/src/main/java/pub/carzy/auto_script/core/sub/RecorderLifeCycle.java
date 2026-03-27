@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service.sub;
+package pub.carzy.auto_script.core.sub;
 
 /**
  * @author admin

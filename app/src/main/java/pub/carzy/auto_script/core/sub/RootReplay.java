@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service.sub;
+package pub.carzy.auto_script.core.sub;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.entity.EventDevice;
-import pub.carzy.auto_script.service.data.ReplayModel;
+import pub.carzy.auto_script.core.data.ReplayModel;
 import pub.carzy.auto_script.utils.InputConstants;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -98,10 +98,6 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
         return 16;
     }
 
-    private boolean hasCmd() {
-        return !queue.isEmpty();
-    }
-
     @Override
     protected void doSelfInit() {
         super.doSelfInit();
@@ -154,7 +150,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
 
     @Override
     protected boolean dispatchGesture(GesturePayload payload) {
-        if (payload.empty || gestureWriter == null) {
+        if (payload.isEmpty() || gestureWriter == null) {
             return false;
         }
         try {
@@ -212,45 +208,68 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
             return;
         }
         //查看索引位
-        int current = action.getCurrent().get();
         int max = action.getPoints().size() - 1;
         //已处理
-        if (current > max) {
+        if (action.getCurrent().get() > max) {
             return;
         }
         if (action.getTrackingId() == null) {
             action.setTrackingId(trackingId.getAndAdd(1));
         }
         long t = tick.get();
+        boolean synced = false;
         //遍历点
-        for (int i = current; i < action.getPoints().size(); i++) {
+        while (t > 0 && action.getCurrent().get() <= max) {
+            int i = action.getCurrent().get();
             ReplayModel.ReplayPointModel point = action.getPoints().get(i);
             //这里其实还是有点问题,如果间隔时间大于时间片,可能不准确,应该需要记录剩余时间
-            t = t - point.getDeltaTime();
-            if (i == 0) {
-                payload.down(action.getIndex(), action.getTrackingId(), point.getX(), point.getY());
-            } else {
-                payload.move(action.getIndex(), point.getX(), point.getY());
+            long reTime = point.getRemainingTime().get();
+            if (reTime <= 0) {
+                //一般情况下不会出现这个问题
+                action.getCurrent().incrementAndGet();
+                continue;
             }
-            action.getCurrent().set(i + 1);
+            long cost = Math.min(t, reTime);
+            if (!point.isDispatched()) {
+                //第一个点代表按下
+                if (i == 0) {
+                    payload.down(action.getIndex(), action.getTrackingId(), point.getX(), point.getY());
+                    point.setDispatched(true);
+                } else {
+                    // move 只在首次进入触发
+                    payload.move(action.getIndex(), point.getX(), point.getY());
+                    point.setDispatched(true);
+                }
+            }
+            // 时间推进
+            t -= cost;
+            point.getRemainingTime().set(reTime - cost);
+            // 当前点完成
+            if (point.getRemainingTime().get() <= 0) {
+                action.getCurrent().incrementAndGet();
+            }
             // 重点：如果到达最后一个点，必须先发送当前坐标的 sync，再发送抬起信号
-            if (i == max) {
+            // 最后一点
+            if (i == max && point.getRemainingTime().get() <= 0) {
+                if (!point.isDispatched()) {
+                    payload.move(action.getIndex(), point.getX(), point.getY());
+                    point.setDispatched(true);
+                }
                 if (!payload.isEmpty()) {
                     payload.sync();
                 }
                 payload.up(action.getIndex());
                 payload.sync();
-                break;
-            }
-
-            // 时间片用完，仅针对 Move 过程
-            if (t <= 0) {
-                payload.sync();
+                synced = true;
                 break;
             }
         }
-        payload.empty = payload.cmd.isEmpty();
-        if (action.getCurrent().get() <= max) {
+        if (!synced && !payload.isEmpty()) {
+            payload.sync();
+        }
+        ReplayModel.ReplayPointModel lastPoint = action.getPoints().get(max);
+        // 只有在确定没做完时才更新，不要覆盖之前的 true
+        if (!(lastPoint.isDispatched() && lastPoint.getRemainingTime().get() <= 0)) {
             unfinished.set(true);
         }
     }
@@ -307,11 +326,9 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
     }
 
     public static class GesturePayload implements Payload {
-        private boolean empty;
         private final List<Number[]> cmd;
 
         public GesturePayload() {
-            empty = true;
             cmd = new ArrayList<>();
         }
 
@@ -330,11 +347,6 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
 
         public void sync() {
             cmd.add(new Number[]{InputConstants.EV_SYN, InputConstants.SYN_REPORT, InputConstants.EMPTY});
-        }
-
-        @SuppressLint("DefaultLocale")
-        private String format(int type, int c, int v) {
-            return String.format("%d %d %d", type, c, v);
         }
 
         public void up(int index) {
@@ -374,11 +386,6 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
 
         public void up(Integer code) {
             events.add(new Number[]{InputConstants.EV_KEY, code, KeyEvent.ACTION_UP});
-        }
-
-        @SuppressLint("DefaultLocale")
-        private String format(int type, int c, int v) {
-            return String.format("%d %d %d", type, c, v);
         }
 
         public void sync() {

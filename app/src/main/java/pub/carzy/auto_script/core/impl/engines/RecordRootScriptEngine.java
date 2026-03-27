@@ -1,4 +1,4 @@
-package pub.carzy.auto_script.service.impl.engines;
+package pub.carzy.auto_script.core.impl.engines;
 
 import android.view.LayoutInflater;
 import android.view.WindowManager;
@@ -7,12 +7,10 @@ import androidx.databinding.DataBindingUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,12 +25,12 @@ import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.ex.DeviceNotRootedException;
 import pub.carzy.auto_script.ex.ProcessReadOrWriteIOException;
 import pub.carzy.auto_script.model.RecordStateModel;
-import pub.carzy.auto_script.service.impl.RecordScriptEngine;
-import pub.carzy.auto_script.service.impl.RootScriptEngine;
-import pub.carzy.auto_script.service.sub.RecorderLifeCycle;
+import pub.carzy.auto_script.core.impl.RecordScriptEngine;
+import pub.carzy.auto_script.core.impl.RootScriptEngine;
+import pub.carzy.auto_script.core.sub.RecorderLifeCycle;
 import pub.carzy.auto_script.utils.EventDeviceUtil;
-import pub.carzy.auto_script.service.sub.GestureRecorder;
-import pub.carzy.auto_script.service.sub.KeyRecorder;
+import pub.carzy.auto_script.core.sub.GestureRecorder;
+import pub.carzy.auto_script.core.sub.KeyRecorder;
 import pub.carzy.auto_script.utils.InputConstants;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.Shell;
@@ -95,13 +93,12 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
         WindowRecordFloatingButtonBinding binding = viewWrapper.binding;
         //添加长按拖动功能
         addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.params),
-                binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop,binding.btnFloatingClose);
+                binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop, binding.btnFloatingClose);
         binding.btnFloatingRecord.setOnClickListener((e) -> {
             binding.getRecordState().setState(RecordStateModel.STATE_RECORDING);
             dataWrapper.clear();
             dataWrapper.watcher.resetAndStart();
-            dataWrapper.cycle = createLifeCycle();
-            dataWrapper.cycle.setReadingBack(new RecorderLifeCycle.OnRecordReading() {
+            dataWrapper.cycle = createLifeCycle(new RecorderLifeCycle.OnRecordReading() {
                 final Set<Integer> set = new HashSet<>();
 
                 @Override
@@ -134,9 +131,7 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
             dataWrapper.startTime.set(dataWrapper.watcher.getElapsedMillis());
             dataWrapper.cycle.resume();
         });
-        binding.btnFloatingClose.setOnClickListener(v -> {
-            close();
-        });
+        binding.btnFloatingClose.setOnClickListener(v -> close());
         binding.btnFloatingStop.setOnClickListener(v -> {
             //只是通知停止
             dataWrapper.watcher.stop();
@@ -145,11 +140,11 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
         });
     }
 
-    private RecorderLifeCycle<Void> createLifeCycle() {
-        return new RecorderLifeCycle<>() {
+    private RecorderLifeCycle<Void> createLifeCycle(final RecorderLifeCycle.OnRecordReading r) {
+        RecorderLifeCycle<Void> cycle = new RecorderLifeCycle<>() {
             GestureRecorder gestureRecorder;
             KeyRecorder keyRecorder;
-            OnRecordReading reading;
+            RecorderLifeCycle.OnRecordReading reading;
             final ThreadPoolExecutor executor = new ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
             @Override
@@ -163,13 +158,17 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                         @Override
                         public void pause(Object... args) {
                             dataWrapper.motions.remove(dataWrapper.motions.size() - 1);
-                            reading.pause(types, InputConstants.EV_ABS);
+                            if (reading != null) {
+                                reading.pause(types, InputConstants.EV_ABS);
+                            }
                         }
 
                         @Override
                         public void stop(Object... args) {
                             dataWrapper.motions.remove(dataWrapper.motions.size() - 1);
-                            reading.stop(types, InputConstants.EV_ABS);
+                            if (reading != null) {
+                                reading.stop(types, InputConstants.EV_ABS);
+                            }
                         }
                     });
                     executor.submit(() -> gestureRecorder.start(gestureDevice.getPath(), e -> dataWrapper.motions.add(e)));
@@ -181,12 +180,16 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                     keyRecorder.setReadingBack(new OnRecordReading() {
                         @Override
                         public void pause(Object... args) {
-                            reading.pause(types, InputConstants.EV_KEY);
+                            if (reading != null) {
+                                reading.pause(types, InputConstants.EV_KEY);
+                            }
                         }
 
                         @Override
                         public void stop(Object... args) {
-                            reading.stop(types, InputConstants.EV_KEY);
+                            if (reading != null) {
+                                reading.stop(types, InputConstants.EV_KEY);
+                            }
                         }
                     });
                     executor.submit(() -> keyRecorder.start(keyDevice.getPath(), e -> dataWrapper.keys.add(e)));
@@ -250,6 +253,8 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                 reading = readingBack;
             }
         };
+        cycle.setReadingBack(r);
+        return cycle;
     }
 
     @Override
@@ -280,8 +285,8 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
         RecorderLifeCycle<Void> cycle;
 
         public DataWrapper(IdGenerator<Long> idWorker) {
-            motions = Collections.synchronizedList(new ArrayList<>());
-            keys = Collections.synchronizedList(new ArrayList<>());
+            motions = new ArrayList<>();
+            keys = new ArrayList<>();
             watcher = new Stopwatch();
             startTime = new AtomicLong(-1);
             this.idWorker = idWorker;

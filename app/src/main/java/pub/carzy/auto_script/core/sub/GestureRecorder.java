@@ -1,10 +1,5 @@
-package pub.carzy.auto_script.service.sub;
+package pub.carzy.auto_script.core.sub;
 
-import android.util.Log;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,15 +9,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.utils.InputConstants;
-import pub.carzy.auto_script.utils.Shell;
 import pub.carzy.auto_script.utils.Stopwatch;
-import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
  * @author admin
  */
 public class GestureRecorder extends AbstractGetEventRecorder<MotionEntity> {
-    private static final String TAG = "GestureRecorder";
     // 状态追踪变量
     private final Map<Integer, MotionEntity> motionMap;
     private final Map<Integer, PointEntity> activeStateMap;

@@ -1,6 +1,4 @@
-package pub.carzy.auto_script.service.data;
-
-import androidx.room.ColumnInfo;
+package pub.carzy.auto_script.core.data;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,7 +10,6 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import lombok.Data;
@@ -71,6 +68,7 @@ public class ReplayModel {
                 duration = 0L;
                 for (ReplayPointModel pointModel : points) {
                     duration += pointModel.getDeltaTime();
+                    pointModel.reset();
                 }
             }
         }
@@ -84,6 +82,24 @@ public class ReplayModel {
         private Float y;
         private Long deltaTime;
         private Float order;
+        //-------------运行时数据-------------
+        //这个参数主要解决tick小于delta时间
+        private final AtomicLong remainingTime;
+        boolean dispatched;
+
+        public ReplayPointModel(Long id, Float x, Float y, Long deltaTime, Float order) {
+            this.id = id;
+            this.x = x;
+            this.y = y;
+            this.deltaTime = deltaTime;
+            this.order = order;
+            remainingTime = new AtomicLong(deltaTime);
+        }
+
+        public void reset() {
+            remainingTime.set(deltaTime);
+            dispatched = false;
+        }
     }
 
     //-----------运行时数据-----------
@@ -125,14 +141,14 @@ public class ReplayModel {
         //进行遍历
         for (ReplayActionModel line : actions) {
             ReplayActionModel model = actionWaitMap.get(line.getStartTime());
-            if (model != null) {
+            if (model == null) {
+                actionWaitMap.put(line.getStartTime(),line);
+            } else {
                 //存在说明是相同的时间,则形成链表
                 model.setLast(line);
-            } else {
-                actionWaitMap.put(line.getStartTime(), model = line);
             }
             //重置
-            model.reset();
+            line.reset();
             //根据oder字段进行排序,如果order相同则根据id排序
             line.getPoints().sort(Comparator.comparingDouble(ReplayPointModel::getOrder).thenComparingLong(ReplayPointModel::getId));
         }
@@ -189,8 +205,7 @@ public class ReplayModel {
             List<ScriptPointEntity> list = map.get(action.getId());
             if (list != null && !list.isEmpty()) {
                 for (ScriptPointEntity point : list) {
-                    ReplayPointModel pointModel = new ReplayPointModel();
-                    BeanHandler.copyProperties(point, pointModel);
+                    ReplayPointModel pointModel = new ReplayPointModel(point.getId(), point.getX(), point.getY(), point.getDeltaTime(), point.getOrder());
                     actionModel.getPoints().add(pointModel);
                 }
             }

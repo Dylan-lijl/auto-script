@@ -26,7 +26,7 @@ public class ExampleUnitTest {
 
     @Test
     public void writeToFile() {
-        File src = new File("D:\\data\\project\\other\\github\\auto-script\\app\\src\\main\\java\\pub\\carzy\\auto_script\\service");
+        File src = new File("D:\\data\\project\\other\\github\\auto-script\\app\\src\\main\\java\\pub\\carzy\\auto_script\\core");
         File dest = new File("C:\\Users\\admin\\Desktop\\out.txt");
         if (dest.exists()) {
             dest.delete();

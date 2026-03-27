@@ -1,15 +1,6 @@
-package pub.carzy.auto_script.service.sub;
+package pub.carzy.auto_script.core.sub;
 
-import android.util.Log;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import pub.carzy.auto_script.entity.MotionEntity;
-import pub.carzy.auto_script.utils.Shell;
 
 /**
  * @author admin

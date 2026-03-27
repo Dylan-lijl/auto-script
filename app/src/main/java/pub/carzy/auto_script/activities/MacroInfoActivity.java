@@ -81,15 +81,13 @@ import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
-import pub.carzy.auto_script.service.GlobalSingletonScriptEngineController;
-import pub.carzy.auto_script.service.MyAccessibilityService;
-import pub.carzy.auto_script.service.ScriptEngine;
-import pub.carzy.auto_script.service.data.ReplayModel;
-import pub.carzy.auto_script.service.impl.ReplayScriptEngine;
-import pub.carzy.auto_script.service.impl.engines.RecordAccScriptEngine;
-import pub.carzy.auto_script.service.impl.engines.RecordRootScriptEngine;
-import pub.carzy.auto_script.service.impl.engines.ReplayAccScriptEngine;
-import pub.carzy.auto_script.service.impl.engines.ReplayRootScriptEngine;
+import pub.carzy.auto_script.core.GlobalSingletonScriptEngineController;
+import pub.carzy.auto_script.core.MyAccessibilityService;
+import pub.carzy.auto_script.core.ScriptEngine;
+import pub.carzy.auto_script.core.data.ReplayModel;
+import pub.carzy.auto_script.core.impl.ReplayScriptEngine;
+import pub.carzy.auto_script.core.impl.engines.ReplayAccScriptEngine;
+import pub.carzy.auto_script.core.impl.engines.ReplayRootScriptEngine;
 import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.adapter.SingleStackRender;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
@@ -209,7 +207,7 @@ public class MacroInfoActivity extends BaseActivity {
                         //切换到无障碍模式
                         Toast.makeText(MacroInfoActivity.this, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
                         replayScriptEngine = new ReplayAccScriptEngine();
-                        ThreadUtil.runOnCpu(() -> GlobalSingletonScriptEngineController.getInstance().open(replayScriptEngine, reference.get()));
+                        ThreadUtil.runOnUi(() -> GlobalSingletonScriptEngineController.getInstance().open(replayScriptEngine, reference.get()));
                     }, args);
                 }
 
@@ -994,7 +992,7 @@ public class MacroInfoActivity extends BaseActivity {
             };
         }
 
-        public static Map<String, Integer> codeMap;
+        public static volatile Map<String, Integer> codeMap;
 
         public static List<CodeOption> allKeyEvent() {
             List<CodeOption> list = new ArrayList<>();
