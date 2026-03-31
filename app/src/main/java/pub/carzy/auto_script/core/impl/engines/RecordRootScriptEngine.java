@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import pub.carzy.auto_script.R;
@@ -35,6 +37,7 @@ import pub.carzy.auto_script.utils.InputConstants;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.Shell;
 import pub.carzy.auto_script.utils.Stopwatch;
+import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
  * @author admin
@@ -92,12 +95,19 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
     private void addListenerByView() {
         WindowRecordFloatingButtonBinding binding = viewWrapper.binding;
         //添加长按拖动功能
-        addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.params),
+        addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.params, () -> {
+                    if (binding.getRecordState().getState() != RecordStateModel.STATE_RECORDING) {
+                        return;
+                    }
+                    ThreadUtil.runOnUi(dataWrapper::removeLastMotion, 50);
+                }),
                 binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop, binding.btnFloatingClose);
+        AtomicInteger state = new AtomicInteger(0);
         binding.btnFloatingRecord.setOnClickListener((e) -> {
             binding.getRecordState().setState(RecordStateModel.STATE_RECORDING);
             dataWrapper.clear();
             dataWrapper.watcher.resetAndStart();
+            state.set(0);
             dataWrapper.cycle = createLifeCycle(new RecorderLifeCycle.OnRecordReading() {
                 final Set<Integer> set = new HashSet<>();
 
@@ -110,9 +120,10 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                 public void stop(Object... args) {
                     set.add((Integer) args[1]);
                     //具体收到停止
-                    if (set.size() == ((Collection<?>) args[0]).size()) {
+                    if (set.size() == ((Collection<?>) args[0]).size() && state.get() == 0) {
+                        state.set(1);
                         jumpToInfo(transformData(dataWrapper.idWorker, dataWrapper.watcher.getElapsedMillis(),
-                                0, dataWrapper.motions, dataWrapper.keys));
+                                0, dataWrapper.getMotionsData(), dataWrapper.getKeysData()));
                     }
                 }
             });
@@ -137,6 +148,15 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
             dataWrapper.watcher.stop();
             dataWrapper.cycle.stop();
             viewWrapper.binding.getRecordState().setState(RecordStateModel.STATE_IDLE);
+            //保险策略
+            ThreadUtil.runOnUi(() -> {
+                if (state.get() != 0) {
+                    return;
+                }
+                state.set(1);
+                jumpToInfo(transformData(dataWrapper.idWorker, dataWrapper.watcher.getElapsedMillis(),
+                        0, dataWrapper.getMotionsData(), dataWrapper.getKeysData()));
+            }, 1000);
         });
     }
 
@@ -157,7 +177,7 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                     gestureRecorder.setReadingBack(new OnRecordReading() {
                         @Override
                         public void pause(Object... args) {
-                            dataWrapper.motions.remove(dataWrapper.motions.size() - 1);
+                            dataWrapper.removeLastMotion();
                             if (reading != null) {
                                 reading.pause(types, InputConstants.EV_ABS);
                             }
@@ -165,13 +185,13 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
 
                         @Override
                         public void stop(Object... args) {
-                            dataWrapper.motions.remove(dataWrapper.motions.size() - 1);
+                            dataWrapper.removeLastMotion();
                             if (reading != null) {
                                 reading.stop(types, InputConstants.EV_ABS);
                             }
                         }
                     });
-                    executor.submit(() -> gestureRecorder.start(gestureDevice.getPath(), e -> dataWrapper.motions.add(e)));
+                    executor.submit(() -> gestureRecorder.start(gestureDevice.getPath(), e -> dataWrapper.addMotion(e)));
                 }
                 //按键
                 if (keyDevice != null) {
@@ -192,7 +212,7 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                             }
                         }
                     });
-                    executor.submit(() -> keyRecorder.start(keyDevice.getPath(), e -> dataWrapper.keys.add(e)));
+                    executor.submit(() -> keyRecorder.start(keyDevice.getPath(), e -> dataWrapper.addKey(e)));
                 }
             }
 
@@ -292,17 +312,37 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
             this.idWorker = idWorker;
         }
 
-        public void clear() {
+        public synchronized List<MotionEntity> getMotionsData() {
+            return new ArrayList<>(motions);
+        }
+
+        public synchronized List<KeyEntity> getKeysData() {
+            return new ArrayList<>(keys);
+        }
+
+        public synchronized void clear() {
             motions.clear();
             keys.clear();
         }
 
-        public void reset() {
+        public synchronized void reset() {
             clear();
             watcher.stop();
             if (cycle != null) {
                 cycle.stop();
             }
+        }
+
+        public synchronized void removeLastMotion() {
+            motions.remove(motions.size() - 1);
+        }
+
+        public synchronized void addKey(KeyEntity e) {
+            keys.add(e);
+        }
+
+        public synchronized void addMotion(MotionEntity e) {
+            motions.add(e);
         }
     }
 

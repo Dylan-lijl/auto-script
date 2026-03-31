@@ -41,19 +41,4 @@ public class GlobalSingletonScriptEngineController {
         }
     }
 
-    public boolean start(Object... objects) {
-        if (engine == null) {
-            return false;
-        } else {
-            engine.start(objects);
-            return true;
-        }
-    }
-
-    public synchronized void close() {
-        if (engine != null) {
-            engine.close();
-            engine = null;
-        }
-    }
 }

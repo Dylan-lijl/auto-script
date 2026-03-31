@@ -37,11 +37,6 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
             synchronized (this) {
                 if (!this.initialized) {
                     dataWrapper = new DataWrapper(service);
-                    for (Object arg : args) {
-                        if (arg instanceof ReplayModel) {
-                            dataWrapper.replay.setModel((ReplayModel) arg);
-                        }
-                    }
                     WindowReplayFloatingButtonBinding binding = DataBindingUtil.inflate(
                             LayoutInflater.from(service),
                             R.layout.window_replay_floating_button,
@@ -54,6 +49,11 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
                     addListenerByView();
                     this.initialized = true;
                 }
+            }
+        }
+        for (Object arg : args) {
+            if (arg instanceof ReplayModel) {
+                dataWrapper.replay.setModel((ReplayModel) arg);
             }
         }
         viewWrapper.showView();

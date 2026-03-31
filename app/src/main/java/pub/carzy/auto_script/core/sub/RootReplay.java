@@ -1,6 +1,5 @@
 package pub.carzy.auto_script.core.sub;
 
-import android.annotation.SuppressLint;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -9,6 +8,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -49,15 +49,13 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
         while (executor != null) {
             try {
                 Payload poll = queue.poll(1, TimeUnit.SECONDS);
-                if (poll == null || poll.isEmpty() ||
-                        !(poll instanceof GesturePayload || poll instanceof KeyEventPayload)) {
+                if (poll == null || poll.isEmpty()) {
                     continue;
                 }
                 int size = getEventStructSize();
                 ByteBuffer buffer = ByteBuffer.allocate(size * poll.size());
                 buffer.order(ByteOrder.LITTLE_ENDIAN);
-                List<Number[]> data = poll instanceof GesturePayload ? ((GesturePayload) poll).cmd : ((KeyEventPayload) poll).events;
-                for (Number[] line : data) {
+                for (Number[] line : poll.getData()) {
                     if (line.length != 3) {
                         continue;
                     }
@@ -73,13 +71,9 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
                     buffer.putShort(code);
                     buffer.putInt(value);
                 }
-                // 一次性批量写入管道，效率最高
-                if (poll instanceof GesturePayload) {
-                    gestureWriter.write(buffer.array());
-                    gestureWriter.flush();
-                } else {
-                    keyEventWriter.write(buffer.array());
-                    keyEventWriter.flush();
+                if (buffer.hasArray()) {
+                    poll.write(buffer.array());
+                    poll.flush();
                 }
             } catch (Exception e) {
                 Log.e("RootReplay", "writeData:exception", e);
@@ -141,6 +135,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
             return false;
         }
         try {
+            payload.binding(keyEventWriter);
             queue.put(payload);
         } catch (InterruptedException e) {
             Log.d("RootReplay", "dispatchKeyEvent: ", e);
@@ -154,6 +149,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
             return false;
         }
         try {
+            payload.binding(gestureWriter);
             queue.put(payload);
         } catch (InterruptedException e) {
             Log.d("RootReplay", "dispatchGesture: ", e);
@@ -203,7 +199,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
     }
 
     @Override
-    protected void processGestureAction(GesturePayload payload, ReplayModel.ReplayActionModel action, AtomicBoolean unfinished) {
+    protected void processGestureAction(GesturePayload payload, ReplayModel.ReplayActionModel root, ReplayModel.ReplayActionModel action, AtomicBoolean unfinished) {
         if (action == null || action.getPoints().isEmpty()) {
             return;
         }
@@ -280,7 +276,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
     }
 
     @Override
-    protected void processCodeAction(KeyEventPayload payload, ReplayModel.ReplayActionModel model, AtomicBoolean unfinished) {
+    protected void processCodeAction(KeyEventPayload payload, ReplayModel.ReplayActionModel root, ReplayModel.ReplayActionModel model, AtomicBoolean unfinished) {
         if (model == null || model.getCode() == null || model.getRemainingTime().get() <= 0) {
             return;
         }
@@ -325,7 +321,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
         }
     }
 
-    public static class GesturePayload implements Payload {
+    public static class GesturePayload extends AbstractPayload {
         private final List<Number[]> cmd;
 
         public GesturePayload() {
@@ -371,9 +367,14 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
         public int size() {
             return cmd.size();
         }
+
+        @Override
+        public Collection<Number[]> getData() {
+            return cmd;
+        }
     }
 
-    public static class KeyEventPayload implements Payload {
+    public static class KeyEventPayload extends AbstractPayload {
         private final List<Number[]> events;
 
         public KeyEventPayload() {
@@ -400,6 +401,11 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
         @Override
         public int size() {
             return events.size();
+        }
+
+        @Override
+        public Collection<Number[]> getData() {
+            return events;
         }
     }
 }

@@ -45,11 +45,6 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
                     EventDevice keyActuator = EventDeviceUtil.findKeyActuator(list);
                     dataWrapper = new DataWrapper(Pair.of(gestureActuator == null ? null : Shell.getRootProcess(), gestureActuator),
                             Pair.of(keyActuator == null ? null : Shell.getRootProcess(), keyActuator));
-                    for (Object arg : args) {
-                        if (arg instanceof ReplayModel) {
-                            dataWrapper.replay.setModel((ReplayModel) arg);
-                        }
-                    }
                     WindowReplayFloatingButtonBinding binding = DataBindingUtil.inflate(
                             LayoutInflater.from(getContext()),
                             R.layout.window_replay_floating_button,
@@ -64,6 +59,11 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
                     replayCallback();
                     this.initialized = true;
                 }
+            }
+        }
+        for (Object arg : args) {
+            if (arg instanceof ReplayModel) {
+                dataWrapper.replay.setModel((ReplayModel) arg);
             }
         }
         viewWrapper.showView();

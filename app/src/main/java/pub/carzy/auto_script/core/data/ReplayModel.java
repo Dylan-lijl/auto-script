@@ -50,11 +50,12 @@ public class ReplayModel {
         //----------运行数据------------
         private Integer trackingId;
         //如果时间相同,则形成链表
-        private ReplayActionModel last;
+        private List<ReplayActionModel> parallel = new ArrayList<>();
         //当前运行到哪一步,手势类型可以用的到
         private AtomicInteger current = new AtomicInteger(0);
         //当前剩余时间,键类型可以用的到
         private AtomicLong remainingTime = new AtomicLong(0);
+        private boolean merged = false;
 
         /**
          * 重置
@@ -63,14 +64,16 @@ public class ReplayModel {
             current.set(0);
             trackingId = null;
             remainingTime.set(duration);
-            if (type == ScriptActionEntity.GESTURE) {
-                //防止出错,直接遍历追加
-                duration = 0L;
-                for (ReplayPointModel pointModel : points) {
-                    duration += pointModel.getDeltaTime();
-                    pointModel.reset();
-                }
+            for (ReplayActionModel loop : parallel) {
+                loop.reset();
             }
+        }
+
+        public ReplayPointModel getLastPoint() {
+            if (!points.isEmpty()) {
+                return points.get(points.size() - 1);
+            }
+            return null;
         }
     }
 
@@ -120,11 +123,6 @@ public class ReplayModel {
                 continue;
             }
             model.reset();
-            ReplayActionModel loop = model.getLast();
-            while (loop != null) {
-                loop.reset();
-                loop = loop.getLast();
-            }
             actionDeleteMap.put(id, model);
         }
     }
@@ -142,10 +140,10 @@ public class ReplayModel {
         for (ReplayActionModel line : actions) {
             ReplayActionModel model = actionWaitMap.get(line.getStartTime());
             if (model == null) {
-                actionWaitMap.put(line.getStartTime(),line);
+                actionWaitMap.put(line.getStartTime(), line);
             } else {
-                //存在说明是相同的时间,则形成链表
-                model.setLast(line);
+                //存在说明是相同的时间,则添加到集合
+                model.parallel.add(line);
             }
             //重置
             line.reset();
@@ -166,12 +164,7 @@ public class ReplayModel {
         map.putAll(actionDeleteMap);
         map.putAll(actionWaitMap);
         //保险起见,遍历元素调用reset方法
-        map.values().forEach((v) -> {
-            while (v != null) {
-                v.reset();
-                v = v.getLast();
-            }
-        });
+        map.values().forEach((v) -> v.parallel.forEach(ReplayActionModel::reset));
         //清空数据
         actionWaitMap.clear();
         actionDeleteMap.clear();

@@ -1,5 +1,10 @@
 package pub.carzy.auto_script.core.sub;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+
 import pub.carzy.auto_script.core.data.ReplayModel;
 
 /**
@@ -7,6 +12,7 @@ import pub.carzy.auto_script.core.data.ReplayModel;
  */
 public interface Replay {
     void setModel(ReplayModel model);
+
     void clearCallback();
 
     void addCallback(Replay.ResultListener listener);
@@ -56,8 +62,46 @@ public interface Replay {
 
         }
     }
-    interface Payload{
+
+    interface Payload {
         boolean isEmpty();
+
         int size();
+
+        Collection<Number[]> getData();
+
+        void binding(DataOutputStream writer);
+
+        void write(byte[] bytes) throws IOException;
+
+        void flush() throws IOException;
+    }
+
+    abstract class AbstractPayload implements Payload {
+        protected DataOutputStream writer;
+
+        @Override
+        public void binding(DataOutputStream writer) {
+            this.writer = writer;
+        }
+
+        @Override
+        public void write(byte[] bytes) throws IOException {
+            if (writer != null) {
+                writer.write(bytes);
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            if (writer != null) {
+                writer.flush();
+            }
+        }
+
+        @Override
+        public Collection<Number[]> getData() {
+            return null;
+        }
     }
 }

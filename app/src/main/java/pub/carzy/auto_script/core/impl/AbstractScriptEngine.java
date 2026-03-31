@@ -55,9 +55,11 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
     protected boolean hasFloating() {
         return Settings.canDrawOverlays(BeanFactory.getInstance().get(Startup.class));
     }
-    protected int getOverlayFlag(){
+
+    protected int getOverlayFlag() {
         return WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
     }
+
     @Override
     public void init(ResultCallback callback) {
         if (hasFloating()) {
@@ -194,6 +196,10 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
     }
 
     protected View.OnTouchListener createMoveListener(View view, WindowManager.LayoutParams params) {
+        return createMoveListener(view, params, null);
+    }
+
+    protected View.OnTouchListener createMoveListener(View view, WindowManager.LayoutParams params, Runnable runnable) {
         final int dragThreshold = 10;
         WindowManager windowManager = (WindowManager) getContext().getSystemService(AccessibilityService.WINDOW_SERVICE);
         return new View.OnTouchListener() {
@@ -233,6 +239,8 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
                         if (!isDragging) {
                             // 手指未移动超过阈值，触发点击事件
                             v.performClick();
+                        } else if (runnable != null) {
+                            runnable.run();
                         }
                         return true;
                 }

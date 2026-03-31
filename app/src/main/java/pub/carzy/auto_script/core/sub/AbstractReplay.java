@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import lombok.Getter;
@@ -52,7 +53,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     /**
      * 定时任务线程池
      */
-    private final ScheduledExecutorService scheduler;
+    protected final ScheduledExecutorService scheduler;
     /**
      * 时间片
      */
@@ -70,7 +71,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     /**
      * 重复次数 <=0时终止
      */
-    private final AtomicInteger repeatCount = new AtomicInteger(-1);
+    protected final AtomicInteger repeatCount = new AtomicInteger(-1);
     /**
      * 回调
      */
@@ -192,35 +193,41 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
             if (waitMap.isEmpty()) {
                 return;
             }
+            Consumer<ReplayModel.ReplayActionModel> consumer = value -> {
+                if (value == null) {
+                    return;
+                }
+                //全部类型都抬起
+                if (value.getType() == ScriptActionEntity.KEY_EVENT && value.getCode() != null) {
+                    long r = value.getRemainingTime().get();
+                    //小于0说明已经被释放了,大于等于时长说明未开始
+                    if (r >= value.getDuration() && r <= 0) {
+                        return;
+                    }
+                    //这里直接调用子类处理方法
+                    releaseKey(value);
+                } else if (value.getType() == ScriptActionEntity.GESTURE) {
+                    AtomicInteger current = value.getCurrent();
+                    //说明已经执行过了或未执行过
+                    if (current.get() >= value.getPoints().size() || current.get() == 0) {
+                        return;
+                    }
+                    releaseGesture(value);
+                }
+            };
             //释放已经按下的键
             waitMap.forEach((key, value) -> {
-                while (value != null) {
-                    //全部类型都抬起
-                    if (value.getType() == ScriptActionEntity.KEY_EVENT && value.getCode() != null) {
-                        long r = value.getRemainingTime().get();
-                        //小于0说明已经被释放了,大于等于时长说明未开始
-                        if (r >= value.getDuration() && r <= 0) {
-                            continue;
-                        }
-                        //这里直接调用子类处理方法
-                        releaseKey(value);
-                    } else if (value.getType() == ScriptActionEntity.GESTURE) {
-                        AtomicInteger current = value.getCurrent();
-                        //说明已经执行过了或未执行过
-                        if (current.get() >= value.getPoints().size() || current.get() == 0) {
-                            return;
-                        }
-                        releaseGesture(value);
-                    }
-                    //递归处理
-                    value = value.getLast();
-                }
+                consumer.accept(value);
+                value.getParallel().forEach(consumer);
             });
         });
     }
 
     protected void releaseGesture(ReplayModel.ReplayActionModel value) {
         value.getCurrent().set(value.getPoints().size());
+        ReplayModel.ReplayPointModel last = value.getLastPoint();
+        last.setDispatched(true);
+        last.getRemainingTime().set(0);
     }
 
     protected void releaseKey(ReplayModel.ReplayActionModel value) {
@@ -270,18 +277,18 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
             //是否完成,递归判断,只有存在一个未完成就不能从wait中移除
             AtomicBoolean unfinished = new AtomicBoolean(false);
             //由于要递归处理,所以使用回调方式
-            Consumer<ReplayModel.ReplayActionModel> consumer = replayActionModel -> {
-                if (replayActionModel.getType() == ScriptActionEntity.GESTURE) {
+            BiConsumer<ReplayModel.ReplayActionModel, ReplayModel.ReplayActionModel> consumer = (root, current) -> {
+                if (current.getType() == ScriptActionEntity.GESTURE) {
                     try {
                         //处理手势
-                        processGestureAction(gesturePayload, replayActionModel, unfinished);
+                        processGestureAction(gesturePayload, root, current, unfinished);
                     } catch (Exception e) {
                         Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
                     }
-                } else if (replayActionModel.getType() == ScriptActionEntity.KEY_EVENT) {
+                } else if (current.getType() == ScriptActionEntity.KEY_EVENT) {
                     try {
                         //处理键类型
-                        processCodeAction(eventPayload, replayActionModel, unfinished);
+                        processCodeAction(eventPayload, root, current, unfinished);
                     } catch (Exception e) {
                         Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
                     }
@@ -295,20 +302,12 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
                     Long id = line.getKey();
                     //回调执行当前action
                     try {
-                        consumer.accept(actionModel);
+                        consumer.accept(actionModel, actionModel);
                     } catch (Exception e) {
                         Log.e(this.getClass().getCanonicalName(), "tickProcess exception", e);
                     }
-                    //遍历action next链表,递归处理
-                    ReplayModel.ReplayActionModel loop = actionModel.getLast();
-                    while (loop != null) {
-                        try {
-                            consumer.accept(loop);
-                        } catch (Exception e) {
-                            Log.e(this.getClass().getCanonicalName(), "while tickProcess exception", e);
-                        }
-                        loop = loop.getLast();
-                    }
+                    //遍历同行
+                    actionModel.getParallel().forEach(v -> consumer.accept(actionModel, v));
                     //已完成则添加到移除列表
                     if (!unfinished.get()) {
                         ids.add(id);
@@ -383,7 +382,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
 
     protected abstract boolean dispatchGesture(T payload);
 
-    protected abstract void processGestureAction(T payload, ReplayModel.ReplayActionModel replayActionModel, AtomicBoolean unfinished);
+    protected abstract void processGestureAction(T payload, ReplayModel.ReplayActionModel root, ReplayModel.ReplayActionModel current, AtomicBoolean unfinished);
 
     protected abstract T createGesturePayload();
 
@@ -397,11 +396,11 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     /**
      * 处理键类型
      *
-     * @param model      action
+     * @param current      current
      * @param keyEvents  事件集合容器
      * @param unfinished 是否完成
      */
-    protected abstract void processCodeAction(D keyEvents, ReplayModel.ReplayActionModel model, AtomicBoolean unfinished);
+    protected abstract void processCodeAction(D keyEvents,ReplayModel.ReplayActionModel root, ReplayModel.ReplayActionModel current, AtomicBoolean unfinished);
 
     @Override
     public void clear() {
