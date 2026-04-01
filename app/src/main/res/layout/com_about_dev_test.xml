@@ -77,7 +77,6 @@
                     android:src="@drawable/reset"
                     android:tint="@color/link"
                     tools:ignore="UseAppTint" />
-
                 <Button
                     android:id="@+id/test_btn"
                     android:layout_width="wrap_content"

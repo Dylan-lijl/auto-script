@@ -118,7 +118,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
             synchronized (this) {
                 model.recover();
             }
-            doSelfInit();
+            afterStartInit();
             //记录开始时间 加上延迟时间
             startTime.set(System.currentTimeMillis() + model.getDelayStart());
             //调用时间片任务
@@ -131,7 +131,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
         }
     }
 
-    protected void doSelfInit() {
+    protected void afterStartInit() {
 
     }
 
@@ -154,6 +154,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
             status.set(STOP);
             //释放键类型事件
             releaseKeyMap();
+            recover();
             //成功回调
             callback.forEach(c -> c.stop(ResultListener.SUCCESS, null, null));
         } catch (Exception e) {
@@ -312,6 +313,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
                     if (!unfinished.get()) {
                         ids.add(id);
                     }
+                    unfinished.set(false);
                 }
                 //将指定的id移到删除map
                 model.removeToDeleteMap(ids);
@@ -351,6 +353,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
                 //完成回调
                 this.callback.forEach(completedListener -> completedListener.before(status.get(), repeatCount.get()));
                 try {
+
                     //小于等于0则退出
                     boolean out = repeatCount.get() == 0;
                     if (!out) {
@@ -358,6 +361,11 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
                             repeatCount.set(repeatCount.get() - 1);
                         }
                         out = repeatCount.get() == 0;
+                    }
+                    //延迟个10ms等待处理完成
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException ignored) {
                     }
                     if (out) {
                         //进入停止状态,并终止后续任务
@@ -386,7 +394,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
 
     protected abstract T createGesturePayload();
 
-    private void recover() {
+    protected void recover() {
         //重置
         model.recover();
         //重置开始时间
@@ -396,11 +404,11 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     /**
      * 处理键类型
      *
-     * @param current      current
+     * @param current    current
      * @param keyEvents  事件集合容器
      * @param unfinished 是否完成
      */
-    protected abstract void processCodeAction(D keyEvents,ReplayModel.ReplayActionModel root, ReplayModel.ReplayActionModel current, AtomicBoolean unfinished);
+    protected abstract void processCodeAction(D keyEvents, ReplayModel.ReplayActionModel root, ReplayModel.ReplayActionModel current, AtomicBoolean unfinished);
 
     @Override
     public void clear() {

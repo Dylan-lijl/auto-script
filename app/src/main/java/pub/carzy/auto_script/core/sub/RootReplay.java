@@ -10,8 +10,10 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -39,22 +41,34 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
     private final BlockingQueue<Payload> queue;
 
     public RootReplay(Pair<Process, EventDevice> gestureProcess, Pair<Process, EventDevice> keyEventProcess) {
-        trackingId = new AtomicInteger(1);
+        trackingId = new AtomicInteger((int) (System.currentTimeMillis() & 0xFFFF));
         this.gestureProcess = gestureProcess;
         this.keyEventProcess = keyEventProcess;
         queue = new LinkedBlockingQueue<>();
     }
 
+    Map<Integer, Integer> slotMap = new ConcurrentHashMap<>();
+
+    /**
+     * <a href="https://cs.android.com/android/platform/superproject/+/android-latest-release:frameworks/native/services/inputflinger/tests/MultiTouchInputMapper_test.cpp;l=1?q=MultiTouchInputMapper_test&sq=">android多手势测试demo</a>
+     */
     private void writeData() {
+        int slot = 0;
         while (executor != null) {
             try {
                 Payload poll = queue.poll(1, TimeUnit.SECONDS);
                 if (poll == null || poll.isEmpty()) {
+                    if (poll instanceof NullPayload) {
+                        slotMap.clear();
+                    } else if (poll instanceof BreakPayload) {
+                        break;
+                    }
+                    poll = null;
                     continue;
                 }
                 int size = getEventStructSize();
-                ByteBuffer buffer = ByteBuffer.allocate(size * poll.size());
-                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                int oldActive = slotMap.size();
+                List<Number[]> newData = new ArrayList<>(poll.getData().size() + 2);
                 for (Number[] line : poll.getData()) {
                     if (line.length != 3) {
                         continue;
@@ -62,23 +76,51 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
                     short type = line[0].shortValue();
                     short code = line[1].shortValue();
                     int value = line[2].intValue();
-                    // 16字节结构体：Time(8) + Type(2) + Code(2) + Value(4)
-                    buffer.putLong(0);
-                    if (size == 24) {
-                        buffer.putLong(0);
+                    if (poll instanceof GesturePayload) {
+                        if (type == InputConstants.EV_ABS && code == InputConstants.ABS_MT_SLOT) {
+                            slot = value;
+                        } else if (type == InputConstants.EV_ABS
+                                && code == InputConstants.ABS_MT_TRACKING_ID) {
+                            if (value == InputConstants.TRACKING_ID_END) {
+                                slotMap.remove(slot);
+                            } else {
+                                slotMap.put(slot, value);
+                            }
+                        } else if (type == InputConstants.SYN_REPORT && code == InputConstants.SYN_REPORT) {
+                            if (oldActive == 0 && !slotMap.isEmpty()) {
+                                newData.add(new Number[]{InputConstants.EV_KEY, InputConstants.BTN_TOUCH, InputConstants.KEY_PRESS});
+                            } else if (oldActive > 0 && slotMap.isEmpty()) {
+                                newData.add(new Number[]{InputConstants.EV_KEY, InputConstants.BTN_TOUCH, InputConstants.KEY_RELEASE});
+                            }
+                        }
                     }
-                    buffer.putShort(type);
-                    buffer.putShort(code);
-                    buffer.putInt(value);
+                    newData.add(line);
                 }
-                if (buffer.hasArray()) {
-                    poll.write(buffer.array());
-                    poll.flush();
+                ByteBuffer buffer = ByteBuffer.allocate(size * newData.size());
+                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                for (Number[] line : newData) {
+                    // 16字节结构体：Time(8) + Type(2) + Code(2) + Value(4)
+                    putData(buffer, size, line[0].shortValue(), line[1].shortValue(), line[2].intValue());
+//                    Log.d("writeData", (size == 24 ? "0 " : "") + "0 " + line[0] + " " + line[1] + " " + line[2]);
                 }
+                poll.write(buffer.array());
+                poll.flush();
+                poll = null;
+                newData = null;
             } catch (Exception e) {
                 Log.e("RootReplay", "writeData:exception", e);
             }
         }
+    }
+
+    private static void putData(ByteBuffer buffer, int size, short type, short code, int value) {
+        buffer.putLong(0);
+        if (size == 24) {
+            buffer.putLong(0);
+        }
+        buffer.putShort(type);
+        buffer.putShort(code);
+        buffer.putInt(value);
     }
 
     public int getEventStructSize() {
@@ -93,10 +135,26 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
     }
 
     @Override
-    protected void doSelfInit() {
-        super.doSelfInit();
+    protected void recover() {
+        try {
+            queue.put(new NullPayload());
+        } catch (InterruptedException ignored) {
+        }
+        super.recover();
+    }
+
+    @Override
+    protected void afterStartInit() {
+        super.afterStartInit();
         this.gestureWriter = gestureProcess.getKey() == null ? null : new DataOutputStream(gestureProcess.getKey().getOutputStream());
         this.keyEventWriter = keyEventProcess.getKey() == null ? null : new DataOutputStream(keyEventProcess.getKey().getOutputStream());
+        if (executor != null && !executor.isShutdown()) {
+            try {
+                queue.put(new BreakPayload());
+            } catch (InterruptedException ignored) {
+            }
+            executor.shutdownNow();
+        }
         executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10));
         ThreadUtil.runOnCpu(() -> {
             if (gestureWriter != null) {
@@ -158,7 +216,20 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
     }
 
     @Override
+    public void pause() {
+        try {
+            queue.put(new NullPayload());
+        } catch (InterruptedException ignored) {
+        }
+        super.pause();
+    }
+
+    @Override
     public void stop() {
+        try {
+            queue.put(new BreakPayload());
+        } catch (InterruptedException ignored) {
+        }
         super.stop();
         if (executor != null) {
             executor.shutdown();
@@ -210,7 +281,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
             return;
         }
         if (action.getTrackingId() == null) {
-            action.setTrackingId(trackingId.getAndAdd(1));
+            action.setTrackingId(trackingId.getAndUpdate(v -> (v + 1) & 0x7FFFFFFF));
         }
         long t = tick.get();
         boolean synced = false;
@@ -334,7 +405,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
             //身份id
             cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_TRACKING_ID, trackingId});
             //按下
-            cmd.add(new Number[]{InputConstants.EV_KEY, InputConstants.BTN_TOUCH, InputConstants.KEY_PRESS});
+//            cmd.add(new Number[]{InputConstants.EV_KEY, InputConstants.BTN_TOUCH, InputConstants.KEY_PRESS});
             //x
             cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_POSITION_X, x.intValue()});
             //y
@@ -348,7 +419,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
         public void up(int index) {
             //手势索引
             cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_SLOT, index});
-            cmd.add(new Number[]{InputConstants.EV_KEY, InputConstants.BTN_TOUCH, InputConstants.KEY_RELEASE});
+//            cmd.add(new Number[]{InputConstants.EV_KEY, InputConstants.BTN_TOUCH, InputConstants.KEY_RELEASE});
             cmd.add(new Number[]{InputConstants.EV_ABS, InputConstants.ABS_MT_TRACKING_ID, InputConstants.TRACKING_ID_END});
         }
 

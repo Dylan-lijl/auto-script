@@ -67,6 +67,9 @@ public class ReplayModel {
             for (ReplayActionModel loop : parallel) {
                 loop.reset();
             }
+            for (ReplayPointModel point : points) {
+                point.reset();
+            }
         }
 
         public ReplayPointModel getLastPoint() {

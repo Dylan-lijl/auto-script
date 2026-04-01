@@ -5,19 +5,11 @@ import android.accessibilityservice.GestureDescription;
 import android.graphics.Path;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.KeyEvent;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.NavigableSet;
-import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import pub.carzy.auto_script.core.data.ReplayModel;
@@ -44,7 +36,7 @@ public class AccessibilityReplay extends AbstractReplay<AccessibilityReplay.Gest
     }
 
     @Override
-    protected void doSelfInit() {
+    protected void afterStartInit() {
         //这里需要重构map,将冲突的手势要放在一起
         ReplayModel model = getModel();
         ConcurrentSkipListMap<Long, ReplayModel.ReplayActionModel> newMap = new ConcurrentSkipListMap<>();
@@ -94,7 +86,7 @@ public class AccessibilityReplay extends AbstractReplay<AccessibilityReplay.Gest
             newMap.put(key, value);
         }
         model.setActionWaitMap(newMap);
-        super.doSelfInit();
+        super.afterStartInit();
     }
 
     /**

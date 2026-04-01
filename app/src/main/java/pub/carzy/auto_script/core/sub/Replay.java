@@ -104,4 +104,26 @@ public interface Replay {
             return null;
         }
     }
+    class NullPayload extends AbstractPayload{
+        @Override
+        public boolean isEmpty() {
+            return true;
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+    }
+    class BreakPayload extends AbstractPayload{
+        @Override
+        public boolean isEmpty() {
+            return true;
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+    }
 }

@@ -26,8 +26,9 @@ public abstract class AbstractGetEventRecorder<T> extends AbstractRecorderLifeCy
 
     /**
      * 公共逻辑,先得到root进程,然后写入监听命令并循环读取返回内容
+     *
      * @param devicePath 设备路径
-     * @param listener 回调处理器 解析成完整对象时回调
+     * @param listener   回调处理器 解析成完整对象时回调
      */
     @Override
     protected void doStart(String devicePath, OnRecordListener<T> listener) {
@@ -77,6 +78,7 @@ public abstract class AbstractGetEventRecorder<T> extends AbstractRecorderLifeCy
                 int code = Integer.parseInt(parts[1], 16);
                 // 使用Long解析防止十六进制符号位溢出
                 int value = (int) Long.parseLong(parts[2], 16);
+                Log.d("doStart", type + " " + code + " " + value);
                 //子类实现实际解析逻辑
                 handleEvent(type, code, value, stopwatch.getElapsedMillis(), listener);
             }
@@ -88,16 +90,18 @@ public abstract class AbstractGetEventRecorder<T> extends AbstractRecorderLifeCy
     /**
      * 处理内容 标准格式: [ timestamp] type code value
      * 具体参考值参考这个: {@link pub.carzy.auto_script.utils.InputConstants}
-     * @param type type
-     * @param code code
-     * @param value value
+     *
+     * @param type          type
+     * @param code          code
+     * @param value         value
      * @param elapsedMillis 时间点
-     * @param listener 回调
+     * @param listener      回调
      */
     protected abstract void handleEvent(int type, int code, int value, long elapsedMillis, OnRecordListener<T> listener);
 
     /**
      * 创建停止命令回调
+     *
      * @param os 流
      * @return 回调
      */

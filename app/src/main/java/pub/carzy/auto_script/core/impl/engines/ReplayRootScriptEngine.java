@@ -136,7 +136,10 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
         });
         binding.btnStop.setOnClickListener(v -> dataWrapper.replay.stop());
         binding.btnPause.setOnClickListener(v -> dataWrapper.replay.pause());
-        binding.btnRestart.setOnClickListener(v -> dataWrapper.replay.start());
+        binding.btnRestart.setOnClickListener(v -> {
+            dataWrapper.replay.stop();
+            dataWrapper.replay.start();
+        });
         binding.btnClose.setOnClickListener(v -> close());
         binding.btnCount.setOnClickListener(v -> {
             if (viewWrapper.dialog.isShowing()) {
