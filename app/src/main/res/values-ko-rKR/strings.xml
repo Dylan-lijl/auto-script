@@ -192,4 +192,7 @@
     <string name="select_all">전체 선택</string>
     <string name="deselect_all">전체 해제</string>
     <string name="check_version">버전 확인</string>
+    <string name="auto">자동</string>
+    <string name="accessibility_mode">접근성 모드</string>
+    <string name="root_mode">Root모드</string>
 </resources>

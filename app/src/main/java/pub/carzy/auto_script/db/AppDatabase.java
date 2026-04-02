@@ -61,7 +61,8 @@ public abstract class AppDatabase extends RoomDatabase {
                                         Log.d("ROOM_SQL", "ARGS => " + bindArgs);
                                     },
                                     Executors.newSingleThreadExecutor()
-                            ).fallbackToDestructiveMigration(true)
+                            ).fallbackToDestructiveMigration(false)
+                            //后续要解决表变更问题
                             .build();
                 }
             }

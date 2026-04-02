@@ -6,12 +6,11 @@ import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
 import pub.carzy.auto_script.BR;
-import pub.carzy.auto_script.R;
 
 /**
  * @author admin
  */
-public class Style extends BaseObservable {
+public class Style extends BaseObservable implements Cloneable{
     public static final Style DEFAULT_STYLE;
 
     static {
@@ -131,5 +130,16 @@ public class Style extends BaseObservable {
     public void setTopBarImageColor(int topBarImageColor) {
         this.topBarImageColor = topBarImageColor;
         notifyPropertyChanged(BR.topBarImageColor);
+    }
+
+    @Override
+    public Style clone() {
+        try {
+            Style clone = (Style) super.clone();
+            //都是基本对象
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

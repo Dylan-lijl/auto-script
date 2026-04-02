@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 开启 -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <size android:height="26dp"/>
+            <corners android:radius="16dp"/>
+            <solid android:color="@color/rainbow_blue"/>
+        </shape>
+    </item>
+    <!-- 关闭 -->
+    <item>
+        <shape android:shape="rectangle">
+            <size android:height="26dp"/>
+            <corners android:radius="16dp"/>
+            <solid android:color="@color/disabled"/>
+        </shape>
+    </item>
+</selector>

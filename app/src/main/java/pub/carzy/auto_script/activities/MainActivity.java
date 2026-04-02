@@ -18,6 +18,7 @@ import pub.carzy.auto_script.config.pojo.SettingKey;
 
 /**
  * 主页面
+ *
  * @author admin
  */
 public class MainActivity extends BaseActivity {
@@ -27,7 +28,7 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         //检查是否同意免责声明
         Setting setting = BeanFactory.getInstance().get(Setting.class);
-        if (setting.read(SettingKey.ACCEPTED,null)) {
+        if (setting.read(SettingKey.ACCEPTED, false)) {
             // 已同意，跳转到列表页面
             startActivity(new Intent(this, MacroListActivity.class));
         } else {

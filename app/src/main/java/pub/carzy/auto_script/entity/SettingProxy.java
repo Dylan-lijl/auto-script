@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.entity;
 
+import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import androidx.databinding.ObservableArrayList;
@@ -14,15 +15,73 @@ import pub.carzy.auto_script.BR;
  *
  * @author admin
  */
-public class SettingProxy extends BaseObservable {
+public class SettingProxy extends BaseObservable implements Cloneable {
+    public static final SettingProxy DEFAULT;
     public static final int AUTO = 0;
     public static final int ACCESSIBILITY = 1;
     public static final int ROOT = 2;
+
+
+    static {
+        DEFAULT = new SettingProxy();
+        DEFAULT.setType(AUTO);
+        DEFAULT.setTick(10);
+        DEFAULT.setAutoClose(true);
+        DEFAULT.setShowOperation(true);
+        DEFAULT.setOperationConfig(new OperationConfig(50, "#1677ff", "#ffffff", 3));
+        DEFAULT.setAutoPlay(true);
+        DEFAULT.setIgnoreFloatingScript(true);
+        DEFAULT.setFloatPoint(new FloatPoint(200, 200));
+        DEFAULT.setDynamicUpdate(true);
+        DEFAULT.setMaskConfig(new MaskConfig("#6b6b6b1a", 10, false, 5, "#000000"));
+    }
+
+    /**
+     * 类型
+     */
+    private Integer type = AUTO;
+    /**
+     * 时间片
+     */
+    private Integer tick = 10;
+    /**
+     * 自动关闭
+     */
+    private Boolean autoClose = true;
+    /**
+     * 显示点按
+     */
+    private Boolean showOperation = true;
+    /**
+     * 点按操作配置
+     */
+    private OperationConfig operationConfig;
+    /**
+     * 自动回放
+     */
+    private Boolean autoPlay = true;
+    /**
+     * 忽略悬浮窗脚本
+     */
+    private Boolean ignoreFloatingScript = true;
+    /**
+     * 悬浮窗位置
+     */
+    private FloatPoint floatPoint;
+    /**
+     * 动态更新
+     */
+    private Boolean dynamicUpdate = true;
+    /**
+     * 蒙层设置
+     */
+    private MaskConfig maskConfig;
+    /**
+     * 样式
+     */
     private ObservableList<Style> styles = new ObservableArrayList<>();
 
-    private Integer type = AUTO;
-    private Boolean autoPlay = true;
-    private Integer tick = 10;
+
     @Bindable
     public Boolean getAutoPlay() {
         return autoPlay;
@@ -112,11 +171,6 @@ public class SettingProxy extends BaseObservable {
         return null;
     }
 
-    /**
-     * 悬浮窗位置
-     */
-    private FloatPoint floatPoint;
-
     @Bindable
     public FloatPoint getFloatPoint() {
         return floatPoint;
@@ -132,8 +186,106 @@ public class SettingProxy extends BaseObservable {
         return type;
     }
 
+    @Bindable
+    public String getTypeString() {
+        switch (type) {
+            case ROOT:
+                return "root模式";
+            case ACCESSIBILITY:
+                return "无障碍模式";
+            case AUTO:
+                return "自动";
+            default:
+                return "错误";
+        }
+    }
+
     public void setType(Integer type) {
         this.type = type;
         notifyPropertyChanged(BR.type);
+        notifyPropertyChanged(BR.typeString);
+    }
+
+    @Bindable
+    public Boolean getAutoClose() {
+        return autoClose;
+    }
+
+    public void setAutoClose(Boolean autoClose) {
+        this.autoClose = autoClose;
+        notifyPropertyChanged(BR.autoClose);
+    }
+
+    @Bindable
+    public Boolean getShowOperation() {
+        return showOperation;
+    }
+
+    public void setShowOperation(Boolean showOperation) {
+        this.showOperation = showOperation;
+        notifyPropertyChanged(BR.showOperation);
+    }
+
+    @Bindable
+    public OperationConfig getOperationConfig() {
+        return operationConfig;
+    }
+
+    public void setOperationConfig(OperationConfig operationConfig) {
+        this.operationConfig = operationConfig;
+        notifyPropertyChanged(BR.operationConfig);
+    }
+
+    @Bindable
+    public Boolean getIgnoreFloatingScript() {
+        return ignoreFloatingScript;
+    }
+
+    public void setIgnoreFloatingScript(Boolean ignoreFloatingScript) {
+        this.ignoreFloatingScript = ignoreFloatingScript;
+        notifyPropertyChanged(BR.ignoreFloatingScript);
+    }
+
+    @Bindable
+    public Boolean getDynamicUpdate() {
+        return dynamicUpdate;
+    }
+
+    public void setDynamicUpdate(Boolean dynamicUpdate) {
+        this.dynamicUpdate = dynamicUpdate;
+        notifyPropertyChanged(BR.dynamicUpdate);
+    }
+
+    @Bindable
+    public MaskConfig getMaskConfig() {
+        return maskConfig;
+    }
+
+    public void setMaskConfig(MaskConfig maskConfig) {
+        this.maskConfig = maskConfig;
+        notifyPropertyChanged(BR.maskConfig);
+    }
+
+    @Override
+    public SettingProxy clone() {
+        try {
+            SettingProxy clone = (SettingProxy) super.clone();
+            clone.styles = new ObservableArrayList<>();
+            for (Style style : styles) {
+                clone.styles.add(style.clone());
+            }
+            if (this.floatPoint != null) {
+                clone.floatPoint = this.floatPoint.clone();
+            }
+            if (this.maskConfig != null) {
+                clone.maskConfig = this.maskConfig.clone();
+            }
+            if (this.operationConfig != null) {
+                clone.operationConfig = this.operationConfig.clone();
+            }
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

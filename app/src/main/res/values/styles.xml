@@ -45,7 +45,7 @@
     <style name="FormVerticalItemStyle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginTop">5dp</item>
         <item name="android:gravity">center_vertical</item>
     </style>
 
@@ -59,4 +59,99 @@
         <attr name="android:icon" format="reference" />
         <attr name="android:hint" format="color" />
     </declare-styleable>
+
+    <style name="unitTitle">
+        <item name="android:textColor">@color/secondary</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="fieldLayout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+        <item name="android:layout_marginTop">5dp</item>
+        <item name="android:layout_marginBottom">5dp</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="fieldLeftLayout">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingEnd">15dp</item>
+    </style>
+
+    <style name="fieldLabel">
+        <item name="android:textSize">16sp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="fieldDescription">
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:textColor">@color/secondary</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="fieldDropDownLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_vertical|end</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:drawableEnd">@drawable/expand_up_down</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:textColor">@color/secondary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="fieldInputLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_vertical|end</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:drawableEnd">@drawable/arrow_right</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:textColor">@color/secondary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="fieldSwitchLabel" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:thumb">@drawable/switch_thumb</item>
+        <item name="track">@drawable/switch_track</item>
+        <item name="android:splitTrack">false</item>
+        <!-- 去掉默认 padding -->
+        <item name="trackTint">@null</item>
+        <item name="thumbTint">@null</item>
+        <item name="android:thumbTextPadding">8dp</item>
+    </style>
+
+    <style name="fieldColorLabel">
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:layout_width">60dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:background">@color/black</item>
+    </style>
+
+    <style name="fieldColorLabel.InsideColor">
+        <item name="android:layout_margin">3dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="dividingLine">
+        <item name="android:layout_height">2dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:background">@color/secondary2</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
+    </style>
 </resources>

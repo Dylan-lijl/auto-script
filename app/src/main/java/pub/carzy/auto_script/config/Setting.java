@@ -18,6 +18,10 @@ public interface Setting extends Serializable {
 
     <T> void write(SettingKey<T> key, T value);
 
+    default <T> T read(SettingKey<T> key) {
+        return read(key, null);
+    }
+
     <T> T read(SettingKey<T> key, T defaultValue);
 
     default <T> Map<String, T> getAll(SettingKey<T> settingKey) {

@@ -570,6 +570,31 @@ public class ActivityUtils {
         // 状态栏图标默认白色，无法更改
     }
 
+    public static QMUIPopup showMessagePopup(View view, Context context, String message) {
+        int screenWidth = QMUIDisplayHelper.getScreenWidth(context);
+        int halfWidth = screenWidth / 2;
+        return showMessagePopup(view, context, message, halfWidth);
+    }
+
+    public static QMUIPopup showMessagePopup(View view, Context context, String message, Integer width) {
+        TextView textView = new TextView(context);
+        textView.setLineSpacing(QMUIDisplayHelper.dp2px(context, 4), 1.0f);
+        int padding = QMUIDisplayHelper.dp2px(context, 10);
+        textView.setPadding(padding, padding, padding, padding);
+        textView.setText(message);
+        return QMUIPopups.popup(context, width)
+                .preferredDirection(QMUIPopup.DIRECTION_BOTTOM)
+                .view(textView)
+                .skinManager(QMUISkinManager.defaultInstance(context))
+                .edgeProtection(QMUIDisplayHelper.dp2px(context, 20))
+                .offsetX(QMUIDisplayHelper.dp2px(context, 20))
+                .offsetYIfBottom(QMUIDisplayHelper.dp2px(context, 5))
+                .shadow(true)
+                .arrow(true)
+                .animStyle(QMUIPopup.ANIM_GROW_FROM_CENTER)
+                .show(view);
+    }
+
     public static QMUIPopup listPopup(Context context, int width, int maxHeight, BaseAdapter adapter, AdapterView.OnItemClickListener onItemClickListener, AdapterView.OnItemLongClickListener longClickListener) {
         ListView listView = new QMUIWrapContentListView(context, maxHeight);
         listView.setAdapter(adapter);
@@ -602,7 +627,7 @@ public class ActivityUtils {
                 if (hasError && type == SettingProxy.AUTO) {
                     runnable.run();
                 }
-            } else if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.CANCEL)){
+            } else if (ScriptEngine.ResultCallback.hasFlags(code, ScriptEngine.ResultCallback.CANCEL)) {
                 Toast.makeText(context, "已取消!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(context, "打开失败!", Toast.LENGTH_SHORT).show();

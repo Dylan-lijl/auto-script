@@ -192,4 +192,7 @@
     <string name="select_all">Select All</string>
     <string name="deselect_all">Deselect All</string>
     <string name="check_version">Check version</string>
+    <string name="auto">Auto</string>
+    <string name="accessibility_mode">Accessibility Mode</string>
+    <string name="root_mode">Root Mode</string>
 </resources>

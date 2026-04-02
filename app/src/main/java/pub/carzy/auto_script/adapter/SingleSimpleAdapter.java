@@ -7,7 +7,6 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import pub.carzy.auto_script.R;
@@ -59,9 +58,11 @@ public class SingleSimpleAdapter extends BaseAdapter {
     public static class Data {
         public String text;
         public boolean selected;
-        public Data(String text, boolean selected) {
+        public Object[] args;
+        public Data(String text, boolean selected,Object... args) {
             this.text = text;
             this.selected = selected;
+            this.args = args;
         }
     }
     static class ViewHolder {

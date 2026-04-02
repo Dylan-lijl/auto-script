@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,8 +16,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatEditText;
 import androidx.databinding.DataBindingUtil;
 
 import com.qmuiteam.qmui.skin.QMUISkinManager;
@@ -30,8 +33,12 @@ import com.qmuiteam.qmui.widget.popup.QMUIPopup;
 import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -73,6 +80,7 @@ public class SettingActivity extends BaseActivity {
         idGenerator = BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
         });
         model = new SettingModel();
+        model.setProxy(SettingProxy.DEFAULT.clone());
         binding.setModel(model);
         initTopBar();
         readConfig();
@@ -80,8 +88,56 @@ public class SettingActivity extends BaseActivity {
     }
 
     private void initListeners() {
+        //模式
+        binding.typeRootLayout.setOnClickListener(e -> {
+            //展开下拉选
+            List<SingleSimpleAdapter.Data> data = new ArrayList<>();
+            Integer type = model.getProxy().getType();
+            data.add(new SingleSimpleAdapter.Data(getString(R.string.auto), type == SettingProxy.AUTO, SettingProxy.AUTO));
+            data.add(new SingleSimpleAdapter.Data(getString(R.string.accessibility_mode), type == SettingProxy.ACCESSIBILITY, SettingProxy.ACCESSIBILITY));
+            data.add(new SingleSimpleAdapter.Data(getString(R.string.root_mode), type == SettingProxy.ROOT, SettingProxy.ROOT));
+            SingleSimpleAdapter adapter = new SingleSimpleAdapter(new ArrayList<>(data));
+            QMUIPopup[] popups = new QMUIPopup[]{null};
+            popups[0] = ActivityUtils.listPopup(SettingActivity.this, 500, 400, adapter,
+                    (parent, view, position, id) -> {
+                        SingleSimpleAdapter.Data item = (SingleSimpleAdapter.Data) adapter.getItem(position);
+                        model.getProxy().setType((Integer) item.args[0]);
+                        setting.write(SettingKey.TYPE, model.getProxy().getType());
+                        popups[0].dismiss();
+                    }, null).show(binding.typeInput);
+        });
+        //事件片
+        binding.tickRootLayout.setOnClickListener(e -> {
+            //这里我想弹出一个输入框,然后一个取消和确认按钮
+            final QMUIDialog.EditTextDialogBuilder builder = new QMUIDialog.EditTextDialogBuilder(this);
+            builder.setTitle("时间片")
+                    .setPlaceholder("请输入内容")
+                    .setInputType(InputType.TYPE_CLASS_NUMBER)
+                    .addAction(R.string.cancel, (dialog, index) -> dialog.dismiss())
+                    .addAction(R.string.confirm, (dialog, index) -> {
+                        CharSequence text = builder.getEditText().getText();
+                        if (text==null){
+                            return;
+                        }
+                        try {
+                            int tick = Integer.parseInt(text.toString());
+                            if (tick > 0) {
+                                // 1. 先保存数据
+                                model.getProxy().setTick(tick);
+                                setting.write(SettingKey.TICK, tick);
+                                // 2. 只有成功了才关闭对话框
+                                dialog.dismiss();
+                            } else {
+                                Toast.makeText(this, "请输入大于0的数字", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (NumberFormatException exception) {
+                            Toast.makeText(this, "输入内容无效", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .create(com.qmuiteam.qmui.R.style.QMUI_Dialog).show();
+        });
         //创建新样式
-        binding.styleAddBtn.setOnClickListener(e -> editStyle(true));
+        /*binding.styleAddBtn.setOnClickListener(e -> editStyle(true));
         //展示全部样式
         binding.styleBtn.setOnClickListener(this::showAllStyle);
         //移除样式
@@ -169,7 +225,7 @@ public class SettingActivity extends BaseActivity {
                     ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
                 }));
         //模式切换
-        binding.typeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+        *//*binding.typeGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.auto_btn) {
                 model.getProxy().setType(SettingProxy.AUTO);
             } else if (checkedId == R.id.accessibility_btn) {
@@ -178,8 +234,8 @@ public class SettingActivity extends BaseActivity {
                 model.getProxy().setType(SettingProxy.ROOT);
             }
             setting.write(SettingKey.TYPE, model.getProxy().getType());
-        });
-        binding.autoPlayBtn.setOnCheckedChangeListener((buttonView, isChecked) -> setting.write(SettingKey.AUTO_PLAY, isChecked));
+        });*//*
+        binding.autoPlayBtn.setOnCheckedChangeListener((buttonView, isChecked) -> setting.write(SettingKey.AUTO_PLAY, isChecked));*/
     }
 
     /**
@@ -218,7 +274,7 @@ public class SettingActivity extends BaseActivity {
                 style.setCurrentVersion(System.currentTimeMillis());
                 model.getProxy().updateCurrentStyle();
                 updateGlobalStyle(style);
-                ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
+                ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class), style));
             }
             if (popups[0] != null) {
                 popups[0].dismiss();
@@ -320,7 +376,7 @@ public class SettingActivity extends BaseActivity {
                             return;
                         }
                     }
-                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
+                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class), style));
                 })
                 .create().show();
     }
@@ -353,15 +409,18 @@ public class SettingActivity extends BaseActivity {
      */
     private void readConfig() {
         ThreadUtil.runOnCpu(() -> {
-            SettingProxy proxy = new SettingProxy();
-            FloatPoint floatPoint = setting.read(SettingKey.FLOAT_POINT, null);
-            proxy.setFloatPoint(Objects.requireNonNullElseGet(floatPoint, () -> new FloatPoint(200, 200)));
-            proxy.setStyles(new ArrayList<>(setting.getAll(SettingKey.STYLE).values()));
-            Integer i = setting.read(SettingKey.TYPE, null);
-            proxy.setType(i);
-            proxy.setAutoPlay(setting.read(SettingKey.AUTO_PLAY, null));
-            proxy.setTick(setting.read(SettingKey.TICK, null));
-            model.setProxy(proxy);
+            //如果读取的不是null就覆盖值
+            Optional.ofNullable(setting.read(SettingKey.TYPE)).ifPresent(model.getProxy()::setType);
+            Optional.ofNullable(setting.read(SettingKey.TICK)).ifPresent(model.getProxy()::setTick);
+            Optional.ofNullable(setting.read(SettingKey.AUTO_CLOSE)).ifPresent(model.getProxy()::setAutoClose);
+            Optional.ofNullable(setting.read(SettingKey.SHOW_OPERATION)).ifPresent(model.getProxy()::setShowOperation);
+            Optional.ofNullable(setting.read(SettingKey.OPERATION_CONFIG)).ifPresent(model.getProxy()::setOperationConfig);
+            Optional.ofNullable(setting.read(SettingKey.AUTO_PLAY)).ifPresent(model.getProxy()::setAutoPlay);
+            Optional.ofNullable(setting.read(SettingKey.IGNORE_FLOATING_SCRIPT)).ifPresent(model.getProxy()::setIgnoreFloatingScript);
+            Optional.ofNullable(setting.read(SettingKey.FLOAT_POINT)).ifPresent(model.getProxy()::setFloatPoint);
+            Optional.ofNullable(setting.read(SettingKey.DYNAMIC_UPDATE)).ifPresent(model.getProxy()::setDynamicUpdate);
+            Optional.ofNullable(setting.read(SettingKey.MASK_CONFIG)).ifPresent(model.getProxy()::setMaskConfig);
+            Optional.ofNullable(setting.getAll(SettingKey.STYLE)).ifPresent(a -> model.getProxy().setStyles(new ArrayList<>(a.values())));
         });
     }
 

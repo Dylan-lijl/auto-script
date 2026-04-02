@@ -9,7 +9,7 @@ import pub.carzy.auto_script.BR;
 /**
  * @author admin
  */
-public class FloatPoint extends BaseObservable {
+public class FloatPoint extends BaseObservable implements Cloneable {
     private int x;
     private int y;
 
@@ -39,5 +39,16 @@ public class FloatPoint extends BaseObservable {
     public void setY(int y) {
         this.y = y;
         notifyPropertyChanged(BR.y);
+    }
+
+    @Override
+    public FloatPoint clone() {
+        try {
+            FloatPoint clone = (FloatPoint) super.clone();
+            //都是基础对象
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

@@ -18,6 +18,7 @@ import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.ViewDisclaimerBinding;
+import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.model.DisclaimerModel;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.MixedUtil;
@@ -116,7 +117,7 @@ public class DisclaimerActivity extends BaseActivity {
     private void startCountDown() {
         //倒计时
         ThreadUtil.runOnCpu(() -> {
-            Integer tick = setting.read(SettingKey.TICK, null);
+            Integer tick = setting.read(SettingKey.TICK, SettingProxy.DEFAULT.getTick());
             ThreadUtil.runOnUi(() -> {
                 model.setTick(tick);
                 timer = new CountDownTimer(tick * 1000, 1000) {

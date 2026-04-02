@@ -13,6 +13,8 @@
 
         <import type="pub.carzy.auto_script.entity.SettingProxy" />
 
+        <import type="pub.carzy.auto_script.utils.ActivityUtils" />
+
         <variable
             name="model"
             type="pub.carzy.auto_script.model.SettingModel" />
@@ -21,189 +23,513 @@
     <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <ScrollView
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <LinearLayout
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="@{model.proxy==null?View.INVISIBLE:View.VISIBLE}">
+
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/com_common_top_bar" />
+
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_height="match_parent"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
                 android:visibility="@{model.proxy==null?View.INVISIBLE:View.VISIBLE}">
-                <include
-                    android:id="@+id/top_bar_layout"
-                    layout="@layout/com_common_top_bar" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
                     android:orientation="vertical"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="5dp">
+                    tools:ignore="HardcodedText">
 
                     <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="脚本设置"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                    <RadioGroup
-                        android:id="@+id/type_group"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@{@string/label_format(`模式`)}"
-                            android:textSize="16sp" />
-
-                        <RadioButton
-                            android:id="@+id/auto_btn"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="@{model.proxy.type==SettingProxy.AUTO}"
-                            android:text="自动" />
-
-                        <RadioButton
-                            android:id="@+id/accessibility_btn"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="@{model.proxy.type==SettingProxy.ACCESSIBILITY}"
-                            android:text="无障碍模式" />
-
-                        <RadioButton
-                            android:id="@+id/root_btn"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="@{model.proxy.type==SettingProxy.ROOT}"
-                            android:text="Root模式" />
-                    </RadioGroup>
+                        style="@style/unitTitle"
+                        android:text="脚本设置" />
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp">
+                        android:id="@+id/type_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="模式" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="对应录制和回放时使用的引擎,自动是优先使用root,如果不能使用则使用无障碍模式" />
+                        </LinearLayout>
 
                         <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="间隔时长" />
-
-                        <EditText
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:inputType="number"
-                            android:text="@{StringUtils.format(model.proxy.tick)}" />
+                            android:id="@+id/type_input"
+                            style="@style/fieldDropDownLabel"
+                            android:text="@{model.proxy.typeString}" />
                     </LinearLayout>
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:orientation="vertical"
-                        android:visibility="@{model.proxy.type==SettingProxy.ACCESSIBILITY?View.VISIBLE:View.GONE}">
+                        android:id="@+id/tick_root_layout"
+                        style="@style/fieldLayout">
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="无障碍设置"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                        <LinearLayout style="@style/fieldLeftLayout">
 
                             <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="10dp"
-                                android:text="@{@string/label_format(`自动回放`)}" />
+                                style="@style/fieldLabel"
+                                android:text="时间片" />
 
-                            <androidx.appcompat.widget.SwitchCompat
-                                android:id="@+id/auto_play_btn"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:checked="@={model.proxy.autoPlay}" />
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="单位是毫秒,时间片越小，手势回放越精确，但 CPU 消耗越高。默认值为 10 毫秒，建议不要设置得过大或过小。" />
+                        </LinearLayout>
+
+                        <TextView
+                            style="@style/fieldInputLabel"
+                            android:text="@{StringUtils.format(model.proxy.tick)+@string/unit_ms}" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/auto_close_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="自动退出悬浮窗" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="停止录制并进入详情页时，自动关闭悬浮窗。" />
+                        </LinearLayout>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            style="@style/fieldSwitchLabel"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/show_operation_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="显示点按操作" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="支持显示触控位置，并可在无障碍录制、Root录制及Root回放模式下使用" />
+                        </LinearLayout>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            style="@style/fieldSwitchLabel"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/operation_size_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="大小" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="设置触摸位置小圆点的半径大小" />
+                        </LinearLayout>
+
+                        <TextView style="@style/fieldInputLabel" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/operation_line_width_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="边框线条" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="调整触摸位置小圆点外边框的线条粗细" />
+                        </LinearLayout>
+
+                        <TextView style="@style/fieldInputLabel" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/operation_touch_color_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="激活颜色" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="设置触摸点在按下或拖动时的显示颜色" />
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/fieldColorLabel">
+
+                            <TextView
+                                style="@style/fieldColorLabel.InsideColor"
+                                android:background="@color/rainbow_blue"/>
                         </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:visibility="@{model.proxy.type==SettingProxy.ROOT?View.VISIBLE:View.GONE}">
+                        android:id="@+id/operation_idle_color_root_layout"
+                        style="@style/fieldLayout">
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Root设置"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="默认颜色" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="设置触摸点在抬起时的显示颜色" />
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/fieldColorLabel">
+
+                            <TextView
+                                style="@style/fieldColorLabel.InsideColor"
+                                android:background="@color/white" />
+                        </LinearLayout>
                     </LinearLayout>
 
+                    <TextView style="@style/dividingLine" />
+
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/overlay"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        style="@style/unitTitle"
+                        android:text="无障碍设置" />
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:baselineAligned="true"
-                        android:orientation="horizontal"
-                        android:visibility="@{model.proxy.floatPoint==null?View.GONE:View.VISIBLE}">
+                        android:id="@+id/auto_play_root_layout"
+                        style="@style/fieldLayout">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/position" />
+                        <LinearLayout style="@style/fieldLeftLayout">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:text="@{@string/label_format(`X`)}" />
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="自动回放" />
 
-                        <EditText
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:autofillHints="false"
-                            android:inputType="numberDecimal"
-                            android:text="@{StringUtils.format(model.proxy.floatPoint.x)}"
-                            tools:ignore="LabelFor" />
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="暂停录制后关闭蒙层，并回放蒙层期间收集的手势操作。" />
+                        </LinearLayout>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@{@string/label_format(`Y`)}" />
-
-                        <EditText
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:autofillHints="false"
-                            android:inputType="numberDecimal"
-                            android:text="@{StringUtils.format(model.proxy.floatPoint.y)}"
-                            tools:ignore="LabelFor" />
+                        <androidx.appcompat.widget.SwitchCompat
+                            style="@style/fieldSwitchLabel"
+                            android:checked="true" />
                     </LinearLayout>
 
+                    <TextView style="@style/dividingLine" />
+
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/style"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        style="@style/unitTitle"
+                        android:text="Root设置" />
 
                     <LinearLayout
+                        android:id="@+id/root_setting_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="忽略悬浮窗操作手势" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="录制过程中，移除悬浮窗控制操作产生的手势。" />
+                        </LinearLayout>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            style="@style/fieldSwitchLabel"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                    <TextView style="@style/dividingLine" />
+
+                    <TextView
+                        style="@style/unitTitle"
+                        android:text="@string/overlay" />
+
+                    <LinearLayout
+                        android:id="@+id/float_point_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="@string/position" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="悬浮窗相对于页面内容的显示X,Y位置" />
+                        </LinearLayout>
+
+                        <TextView style="@style/fieldInputLabel" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/float_point_update_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="动态更新"
+                                tools:ignore="TooManyViews" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="打开悬浮窗会回到上次关闭时的位置" />
+                        </LinearLayout>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            style="@style/fieldSwitchLabel"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                    <TextView style="@style/dividingLine" />
+
+                    <TextView
+                        style="@style/unitTitle"
+                        android:text="蒙层" />
+
+                    <LinearLayout
+                        android:id="@+id/mask_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="颜色" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="蒙层背景颜色" />
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/fieldColorLabel">
+
+                            <TextView
+                                style="@style/fieldColorLabel.InsideColor"
+                                android:background="@color/frosted_glass"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/size_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="标尺" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="在蒙层生成指定条的标尺" />
+                        </LinearLayout>
+
+                        <TextView style="@style/fieldInputLabel" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/grid_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="网格" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="展示网格线" />
+                        </LinearLayout>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            style="@style/fieldSwitchLabel"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/grid_color_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="网格线颜色" />
+
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/fieldColorLabel">
+
+                            <TextView
+                                style="@style/fieldColorLabel.InsideColor"
+                                android:background="@color/black" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/grid_size_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="网格线线条" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="网格线宽度" />
+                        </LinearLayout>
+
+                        <TextView style="@style/fieldInputLabel" />
+                    </LinearLayout>
+                    <TextView style="@style/dividingLine" />
+
+                    <TextView
+                        style="@style/unitTitle"
+                        android:text="@string/style" />
+                    <LinearLayout
+                        android:id="@+id/style_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="样式配置" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="切换不同样式配置" />
+                        </LinearLayout>
+
+                        <TextView style="@style/fieldDropDownLabel" />
+                    </LinearLayout>
+                    <TextView style="@style/unitTitle" android:text="状态栏" android:textStyle="bold" />
+                    <LinearLayout
+                        android:id="@+id/status_bar_background_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="背景颜色" />
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="状态栏背景颜色" />
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/fieldColorLabel">
+                            <TextView style="@style/fieldColorLabel.InsideColor" android:background="@color/black"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/status_bar_dark_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="文字亮度" />
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="状态栏文字亮度（深色/浅色）" />
+                        </LinearLayout>
+
+                        <androidx.appcompat.widget.SwitchCompat style="@style/fieldSwitchLabel" android:checked="true"/>
+                    </LinearLayout>
+                    <!--设置标题栏背景颜色、文字颜色和图标颜色-->
+                    <TextView style="@style/unitTitle" android:text="标题栏"  android:textStyle="bold" />
+                    <LinearLayout
+                        android:id="@+id/title_background_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="背景颜色" />
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="标题栏背景颜色" />
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/fieldColorLabel">
+                            <TextView style="@style/fieldColorLabel.InsideColor" android:background="@color/white"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/title_text_color_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="文字颜色" />
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="标题栏文字颜色" />
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/fieldColorLabel">
+                            <TextView style="@style/fieldColorLabel.InsideColor" android:background="@color/white"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/title_image_color_root_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="图标颜色" />
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="标题栏图标颜色" />
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/fieldColorLabel">
+                            <TextView style="@style/fieldColorLabel.InsideColor" android:background="@color/white"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                    <!--<LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -286,6 +612,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:onClick="@{v->ActivityUtils.showMessagePopup(v,context,`状态栏背景颜色及文字亮度（深色/浅色）`)}"
                             android:text="@string/status_bar"
                             android:textSize="18sp" />
 
@@ -300,7 +627,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
-                                android:visibility="@{model.proxy.currentStyle==null?View.INVISIBLE:View.VISIBLE}">
+                                android:visibility="@{model.proxy.currentStyle==null?View.GONE:View.VISIBLE}">
 
                                 <LinearLayout
                                     android:layout_width="match_parent"
@@ -346,6 +673,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:onClick="@{v->ActivityUtils.showMessagePopup(v,context,`设置标题栏背景颜色、文字颜色和图标颜色`)}"
                             android:text="@string/title_bar"
                             android:textSize="18sp" />
 
@@ -353,7 +681,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
-                            android:orientation="vertical">
+                            android:orientation="vertical"
+                            android:visibility="@{model.proxy.currentStyle==null?View.GONE:View.VISIBLE}">
 
                             <LinearLayout
                                 style="@style/FormVerticalItemStyle"
@@ -415,9 +744,9 @@
                                     android:textColor="@{MixedUtil.isColorLight(model.proxy.currentStyle.topBarImageColor)?@color/black:@color/white}" />
                             </LinearLayout>
                         </LinearLayout>
-                    </LinearLayout>
+                    </LinearLayout>-->
                 </LinearLayout>
-            </LinearLayout>
-        </ScrollView>
+            </ScrollView>
+        </LinearLayout>
     </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
 </layout>

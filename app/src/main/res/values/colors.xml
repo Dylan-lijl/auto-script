@@ -11,6 +11,8 @@
     <color name="danger">#ff4d4f</color>
     <color name="safe">#4CAF50</color>
     <color name="disabled">#720A0000</color>
+    <color name="secondary">#720A0000</color>
+    <color name="secondary2">#72A8A8A8</color>
     <color name="selected_blue">#E6F4FF</color>
     <color name="button_pressed">#faad14</color>
     <color name="warning">#FFA500</color>

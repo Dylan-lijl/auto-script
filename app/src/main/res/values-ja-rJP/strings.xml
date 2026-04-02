@@ -192,4 +192,7 @@
     <string name="select_all">すべて選択</string>
     <string name="deselect_all">すべて解除</string>
     <string name="check_version">バージョンを確認</string>
+    <string name="auto">自動</string>
+    <string name="accessibility_mode">アクセシビリティモード</string>
+    <string name="root_mode">Rootモード</string>
 </resources>

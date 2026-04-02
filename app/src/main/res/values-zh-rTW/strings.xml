@@ -192,4 +192,7 @@
     <string name="select_all">全選</string>
     <string name="deselect_all">全不選</string>
     <string name="check_version">檢查版本</string>
+    <string name="auto">自動</string>
+    <string name="accessibility_mode">無障礙模式</string>
+    <string name="root_mode">Root模式</string>
 </resources>
