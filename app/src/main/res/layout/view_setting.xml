@@ -111,7 +111,7 @@
 
                         <androidx.appcompat.widget.SwitchCompat
                             style="@style/fieldSwitchLabel"
-                            android:checked="true" />
+                            android:checked="@{model.proxy.autoClose}" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -131,7 +131,7 @@
 
                         <androidx.appcompat.widget.SwitchCompat
                             style="@style/fieldSwitchLabel"
-                            android:checked="true" />
+                            android:checked="@{model.proxy.showOperation}" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -142,14 +142,16 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="大小" />
+                                android:text="圆点尺寸" />
 
                             <TextView
                                 style="@style/fieldDescription"
                                 android:text="设置触摸位置小圆点的半径大小" />
                         </LinearLayout>
 
-                        <TextView style="@style/fieldInputLabel" />
+                        <TextView
+                            style="@style/fieldInputLabel"
+                            android:text="@{StringUtils.format(model.proxy.operationConfig.size)}" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -167,7 +169,9 @@
                                 android:text="调整触摸位置小圆点外边框的线条粗细" />
                         </LinearLayout>
 
-                        <TextView style="@style/fieldInputLabel" />
+                        <TextView
+                            style="@style/fieldInputLabel"
+                            android:text="@{StringUtils.format(model.proxy.operationConfig.lineWidth)}" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -189,7 +193,9 @@
 
                             <TextView
                                 style="@style/fieldColorLabel.InsideColor"
-                                android:background="@color/rainbow_blue"/>
+                                android:background="@{model.proxy.operationConfig.touchColor}"
+                                android:text="@{MixedUtil.colorToHex(model.proxy.operationConfig.touchColor)}"
+                                android:textColor="@{MixedUtil.isColorLight(model.proxy.operationConfig.touchColor)?@color/black:@color/white}" />
                         </LinearLayout>
                     </LinearLayout>
 
@@ -212,7 +218,9 @@
 
                             <TextView
                                 style="@style/fieldColorLabel.InsideColor"
-                                android:background="@color/white" />
+                                android:background="@{model.proxy.operationConfig.idleColor}"
+                                android:text="@{MixedUtil.colorToHex(model.proxy.operationConfig.idleColor)}"
+                                android:textColor="@{MixedUtil.isColorLight(model.proxy.operationConfig.idleColor)?@color/black:@color/white}" />
                         </LinearLayout>
                     </LinearLayout>
 
@@ -239,7 +247,7 @@
 
                         <androidx.appcompat.widget.SwitchCompat
                             style="@style/fieldSwitchLabel"
-                            android:checked="true" />
+                            android:checked="@{model.proxy.autoPlay}" />
                     </LinearLayout>
 
                     <TextView style="@style/dividingLine" />
@@ -249,7 +257,7 @@
                         android:text="Root设置" />
 
                     <LinearLayout
-                        android:id="@+id/root_setting_root_layout"
+                        android:id="@+id/root_ignore_root_layout"
                         style="@style/fieldLayout">
 
                         <LinearLayout style="@style/fieldLeftLayout">
@@ -265,7 +273,7 @@
 
                         <androidx.appcompat.widget.SwitchCompat
                             style="@style/fieldSwitchLabel"
-                            android:checked="true" />
+                            android:checked="@{model.proxy.ignoreFloatingScript}" />
                     </LinearLayout>
 
                     <TextView style="@style/dividingLine" />
@@ -289,7 +297,9 @@
                                 android:text="悬浮窗相对于页面内容的显示X,Y位置" />
                         </LinearLayout>
 
-                        <TextView style="@style/fieldInputLabel" />
+                        <TextView
+                            style="@style/fieldInputLabel"
+                            android:text="@{StringUtils.format(model.proxy.floatPoint.x)+','+StringUtils.format(model.proxy.floatPoint.y)}" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -310,7 +320,7 @@
 
                         <androidx.appcompat.widget.SwitchCompat
                             style="@style/fieldSwitchLabel"
-                            android:checked="true" />
+                            android:checked="@{model.proxy.dynamicUpdate}" />
                     </LinearLayout>
 
                     <TextView style="@style/dividingLine" />
@@ -338,7 +348,7 @@
 
                             <TextView
                                 style="@style/fieldColorLabel.InsideColor"
-                                android:background="@color/frosted_glass"/>
+                                android:background="@color/frosted_glass" />
                         </LinearLayout>
                     </LinearLayout>
 
@@ -417,11 +427,13 @@
 
                         <TextView style="@style/fieldInputLabel" />
                     </LinearLayout>
+
                     <TextView style="@style/dividingLine" />
 
                     <TextView
                         style="@style/unitTitle"
                         android:text="@string/style" />
+
                     <LinearLayout
                         android:id="@+id/style_root_layout"
                         style="@style/fieldLayout">
@@ -439,7 +451,12 @@
 
                         <TextView style="@style/fieldDropDownLabel" />
                     </LinearLayout>
-                    <TextView style="@style/unitTitle" android:text="状态栏" android:textStyle="bold" />
+
+                    <TextView
+                        style="@style/unitTitle"
+                        android:text="状态栏"
+                        android:textStyle="bold" />
+
                     <LinearLayout
                         android:id="@+id/status_bar_background_root_layout"
                         style="@style/fieldLayout">
@@ -449,15 +466,20 @@
                             <TextView
                                 style="@style/fieldLabel"
                                 android:text="背景颜色" />
+
                             <TextView
                                 style="@style/fieldDescription"
                                 android:text="状态栏背景颜色" />
                         </LinearLayout>
 
                         <LinearLayout style="@style/fieldColorLabel">
-                            <TextView style="@style/fieldColorLabel.InsideColor" android:background="@color/black"/>
+
+                            <TextView
+                                style="@style/fieldColorLabel.InsideColor"
+                                android:background="@color/black" />
                         </LinearLayout>
                     </LinearLayout>
+
                     <LinearLayout
                         android:id="@+id/status_bar_dark_root_layout"
                         style="@style/fieldLayout">
@@ -467,32 +489,45 @@
                             <TextView
                                 style="@style/fieldLabel"
                                 android:text="文字亮度" />
+
                             <TextView
                                 style="@style/fieldDescription"
                                 android:text="状态栏文字亮度（深色/浅色）" />
                         </LinearLayout>
 
-                        <androidx.appcompat.widget.SwitchCompat style="@style/fieldSwitchLabel" android:checked="true"/>
+                        <androidx.appcompat.widget.SwitchCompat
+                            style="@style/fieldSwitchLabel"
+                            android:checked="true" />
                     </LinearLayout>
                     <!--设置标题栏背景颜色、文字颜色和图标颜色-->
-                    <TextView style="@style/unitTitle" android:text="标题栏"  android:textStyle="bold" />
+                    <TextView
+                        style="@style/unitTitle"
+                        android:text="标题栏"
+                        android:textStyle="bold" />
+
                     <LinearLayout
                         android:id="@+id/title_background_root_layout"
                         style="@style/fieldLayout">
 
                         <LinearLayout style="@style/fieldLeftLayout">
+
                             <TextView
                                 style="@style/fieldLabel"
                                 android:text="背景颜色" />
+
                             <TextView
                                 style="@style/fieldDescription"
                                 android:text="标题栏背景颜色" />
                         </LinearLayout>
 
                         <LinearLayout style="@style/fieldColorLabel">
-                            <TextView style="@style/fieldColorLabel.InsideColor" android:background="@color/white"/>
+
+                            <TextView
+                                style="@style/fieldColorLabel.InsideColor"
+                                android:background="@color/white" />
                         </LinearLayout>
                     </LinearLayout>
+
                     <LinearLayout
                         android:id="@+id/title_text_color_root_layout"
                         style="@style/fieldLayout">
@@ -502,15 +537,20 @@
                             <TextView
                                 style="@style/fieldLabel"
                                 android:text="文字颜色" />
+
                             <TextView
                                 style="@style/fieldDescription"
                                 android:text="标题栏文字颜色" />
                         </LinearLayout>
 
                         <LinearLayout style="@style/fieldColorLabel">
-                            <TextView style="@style/fieldColorLabel.InsideColor" android:background="@color/white"/>
+
+                            <TextView
+                                style="@style/fieldColorLabel.InsideColor"
+                                android:background="@color/white" />
                         </LinearLayout>
                     </LinearLayout>
+
                     <LinearLayout
                         android:id="@+id/title_image_color_root_layout"
                         style="@style/fieldLayout">
@@ -520,13 +560,17 @@
                             <TextView
                                 style="@style/fieldLabel"
                                 android:text="图标颜色" />
+
                             <TextView
                                 style="@style/fieldDescription"
                                 android:text="标题栏图标颜色" />
                         </LinearLayout>
 
                         <LinearLayout style="@style/fieldColorLabel">
-                            <TextView style="@style/fieldColorLabel.InsideColor" android:background="@color/white"/>
+
+                            <TextView
+                                style="@style/fieldColorLabel.InsideColor"
+                                android:background="@color/white" />
                         </LinearLayout>
                     </LinearLayout>
                     <!--<LinearLayout

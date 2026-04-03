@@ -1,5 +1,7 @@
 package pub.carzy.auto_script.entity;
 
+import android.graphics.Color;
+
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
@@ -28,7 +30,7 @@ public class SettingProxy extends BaseObservable implements Cloneable {
         DEFAULT.setTick(10);
         DEFAULT.setAutoClose(true);
         DEFAULT.setShowOperation(true);
-        DEFAULT.setOperationConfig(new OperationConfig(50, "#1677ff", "#ffffff", 3));
+        DEFAULT.setOperationConfig(new OperationConfig(50, Color.parseColor("#1677ff"), Color.parseColor("#ffffff"), 3));
         DEFAULT.setAutoPlay(true);
         DEFAULT.setIgnoreFloatingScript(true);
         DEFAULT.setFloatPoint(new FloatPoint(200, 200));

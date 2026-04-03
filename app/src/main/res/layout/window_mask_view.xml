@@ -11,5 +11,14 @@
         android:layout_height="match_parent"
         android:background="@color/frosted_glass"
         android:orientation="horizontal">
+        <TextView
+            android:id="@+id/position_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <ImageView
+            android:id="@+id/binding_masker"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:visibility="gone" />
     </LinearLayout>
 </layout>

@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.text.Editable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -22,8 +23,10 @@ import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -604,6 +607,50 @@ public class ActivityUtils {
         listView.setDivider(null);
         listView.setPadding(10, 10, 10, 10);
         return QMUIPopups.popup(context, width).view(listView);
+    }
+
+    public static void requestFocusAndShowInput(Context context, View view) {
+        requestFocusAndShowInput(context, view, null);
+    }
+
+    public static void requestFocusAndShowInput(Context context, View view, Runnable runnable) {
+        if (view == null) {
+            return;
+        }
+
+        // 使用 post 确保 View 已经完成布局并可以接收焦点
+        view.post(() -> {
+            // 1. 请求焦点
+            view.requestFocus();
+            // 2. 类型检查：如果是 EditText，则处理光标位置
+            if (view instanceof EditText) {
+                EditText editText = (EditText) view;
+                Editable text = editText.getText();
+                if (text != null) {
+                    // 将光标移动到文本末尾
+                    editText.setSelection(text.length());
+                }
+            }
+            // 3. 显示软键盘
+            showInput(context, view);
+            if (runnable != null) {
+                runnable.run();
+            }
+        });
+    }
+
+    /**
+     * 辅助方法：只负责呼出键盘
+     */
+    public static void showInput(Context context, View view) {
+        if (context == null || view == null) {
+            return;
+        }
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            // 使用 SHOW_IMPLICIT 是最标准的选择
+            imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+        }
     }
 
     public static void onOpenFail(Context context, int type, int code, Runnable runnable, Object... args) {

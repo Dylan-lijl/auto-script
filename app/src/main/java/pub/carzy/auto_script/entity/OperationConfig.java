@@ -12,7 +12,7 @@ public class OperationConfig extends BaseObservable implements Cloneable {
     public OperationConfig() {
     }
 
-    public OperationConfig(Integer size, String touchColor, String idleColor, Integer lineWidth) {
+    public OperationConfig(Integer size, Integer touchColor, Integer idleColor, Integer lineWidth) {
         this.size = size;
         this.touchColor = touchColor;
         this.idleColor = idleColor;
@@ -26,11 +26,11 @@ public class OperationConfig extends BaseObservable implements Cloneable {
     /**
      * 触摸颜色
      */
-    private String touchColor;
+    private Integer touchColor;
     /**
      * 空闲颜色
      */
-    private String idleColor;
+    private Integer idleColor;
     /**
      * 线宽
      */
@@ -47,21 +47,21 @@ public class OperationConfig extends BaseObservable implements Cloneable {
     }
 
     @Bindable
-    public String getTouchColor() {
+    public Integer getTouchColor() {
         return touchColor;
     }
 
-    public void setTouchColor(String touchColor) {
+    public void setTouchColor(Integer touchColor) {
         this.touchColor = touchColor;
         notifyPropertyChanged(BR.touchColor);
     }
 
     @Bindable
-    public String getIdleColor() {
+    public Integer getIdleColor() {
         return idleColor;
     }
 
-    public void setIdleColor(String idleColor) {
+    public void setIdleColor(Integer idleColor) {
         this.idleColor = idleColor;
         notifyPropertyChanged(BR.idleColor);
     }

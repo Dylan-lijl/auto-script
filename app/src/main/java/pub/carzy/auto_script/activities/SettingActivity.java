@@ -2,7 +2,6 @@ package pub.carzy.auto_script.activities;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
@@ -11,20 +10,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatEditText;
 import androidx.databinding.DataBindingUtil;
 
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
-import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -33,14 +28,13 @@ import com.qmuiteam.qmui.widget.popup.QMUIPopup;
 import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.adapter.SingleSimpleAdapter;
@@ -50,11 +44,13 @@ import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.CommonColorSelectorBinding;
 import pub.carzy.auto_script.databinding.ViewSettingBinding;
-import pub.carzy.auto_script.entity.FloatPoint;
+import pub.carzy.auto_script.entity.MaskConfig;
 import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.entity.Style;
 import pub.carzy.auto_script.model.CommonColorSelectorModel;
 import pub.carzy.auto_script.model.SettingModel;
+import pub.carzy.auto_script.ui.QMUIBottomSheetConfirmBuilder;
+import pub.carzy.auto_script.ui.QMUIBottomSheetInputConfirmBuilder;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
@@ -109,32 +105,80 @@ public class SettingActivity extends BaseActivity {
         //事件片
         binding.tickRootLayout.setOnClickListener(e -> {
             //这里我想弹出一个输入框,然后一个取消和确认按钮
-            final QMUIDialog.EditTextDialogBuilder builder = new QMUIDialog.EditTextDialogBuilder(this);
-            builder.setTitle("时间片")
-                    .setPlaceholder("请输入内容")
-                    .setInputType(InputType.TYPE_CLASS_NUMBER)
-                    .addAction(R.string.cancel, (dialog, index) -> dialog.dismiss())
-                    .addAction(R.string.confirm, (dialog, index) -> {
-                        CharSequence text = builder.getEditText().getText();
-                        if (text==null){
-                            return;
-                        }
-                        try {
-                            int tick = Integer.parseInt(text.toString());
-                            if (tick > 0) {
-                                // 1. 先保存数据
-                                model.getProxy().setTick(tick);
-                                setting.write(SettingKey.TICK, tick);
-                                // 2. 只有成功了才关闭对话框
-                                dialog.dismiss();
-                            } else {
-                                Toast.makeText(this, "请输入大于0的数字", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (NumberFormatException exception) {
-                            Toast.makeText(this, "输入内容无效", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .create(com.qmuiteam.qmui.R.style.QMUI_Dialog).show();
+            builderNumberInputDialog("时间片", model.getProxy().getTick(), v -> {
+                model.getProxy().setTick(v);
+                setting.write(SettingKey.TICK, v);
+            });
+        });
+        Map<View, SettingAction> settingConfigs = new LinkedHashMap<>();
+        //自动关闭
+        settingConfigs.put(binding.autoCloseRootLayout, new SettingAction(SettingKey.AUTO_CLOSE, model.getProxy()::getAutoClose, model.getProxy()::setAutoClose));
+        //显示点按操作
+        settingConfigs.put(binding.showOperationRootLayout, new SettingAction(SettingKey.SHOW_OPERATION, model.getProxy()::getShowOperation, model.getProxy()::setShowOperation));
+        binding.operationSizeRootLayout.setOnClickListener(e -> {
+            //打开弹窗
+            builderNumberInputDialog("圆点尺寸", model.getProxy().getOperationConfig().getSize(), v -> {
+                model.getProxy().getOperationConfig().setSize(v);
+                setting.write(SettingKey.OPERATION_CONFIG, model.getProxy().getOperationConfig());
+            });
+        });
+        //边框线条
+        binding.operationLineWidthRootLayout.setOnClickListener(e -> {
+            //打开弹窗
+            builderNumberInputDialog("边框线条", model.getProxy().getOperationConfig().getLineWidth(), v -> {
+                model.getProxy().getOperationConfig().setLineWidth(v);
+                setting.write(SettingKey.OPERATION_CONFIG, model.getProxy().getOperationConfig());
+            });
+        });
+        //激活颜色
+        binding.operationTouchColorRootLayout.setOnClickListener(e -> {
+            //打开弹窗
+            builderColorInputDialog(model.getProxy().getOperationConfig().getTouchColor(), v -> {
+                model.getProxy().getOperationConfig().setTouchColor(v);
+                setting.write(SettingKey.OPERATION_CONFIG, model.getProxy().getOperationConfig());
+            });
+        });
+        //默认颜色
+        binding.operationIdleColorRootLayout.setOnClickListener(e -> {
+            //打开弹窗
+            builderColorInputDialog(model.getProxy().getOperationConfig().getIdleColor(), v -> {
+                model.getProxy().getOperationConfig().setIdleColor(v);
+                setting.write(SettingKey.OPERATION_CONFIG, model.getProxy().getOperationConfig());
+            });
+        });
+        //自动回放
+        settingConfigs.put(binding.autoPlayRootLayout, new SettingAction(SettingKey.AUTO_PLAY, model.getProxy()::getAutoPlay, model.getProxy()::setAutoPlay));
+        //忽略悬浮窗操作手势
+        settingConfigs.put(binding.rootIgnoreRootLayout, new SettingAction(SettingKey.IGNORE_FLOATING_SCRIPT, model.getProxy()::getIgnoreFloatingScript, model.getProxy()::setIgnoreFloatingScript));
+        //位置
+        binding.floatPointRootLayout.setOnClickListener(createFloatPointListener());
+        //动态更新
+        settingConfigs.put(binding.floatPointUpdateRootLayout, new SettingAction(SettingKey.DYNAMIC_UPDATE, model.getProxy()::getDynamicUpdate, model.getProxy()::setDynamicUpdate));
+        //网格
+        binding.gridRootLayout.setOnClickListener(e -> {
+            MaskConfig config = model.getProxy().getMaskConfig();
+            if (config == null) {
+                return;
+            }
+            config.setGrid(!config.getGrid());
+            setting.write(SettingKey.MASK_CONFIG, config);
+        });
+        //文字亮度 todo
+        // 3. 定义通用监听器
+        View.OnClickListener commonClickListener = v -> {
+            SettingAction action = settingConfigs.get(v);
+            if (action == null) {
+                return;
+            }
+            // 执行逻辑：获取当前值 -> 取反 -> 执行 Proxy 方法 -> 持久化
+            boolean nextValue = !action.getMethod.get();
+            action.setMethod.accept(nextValue);
+            setting.write(action.key, nextValue);
+        };
+        // 4. 遍历配置表：统一绑定监听器 & 初始化 UI 状态
+        settingConfigs.forEach((rootView, action) -> {
+            // 绑定点击事件
+            rootView.setOnClickListener(commonClickListener);
         });
         //创建新样式
         /*binding.styleAddBtn.setOnClickListener(e -> editStyle(true));
@@ -236,6 +280,53 @@ public class SettingActivity extends BaseActivity {
             setting.write(SettingKey.TYPE, model.getProxy().getType());
         });*//*
         binding.autoPlayBtn.setOnCheckedChangeListener((buttonView, isChecked) -> setting.write(SettingKey.AUTO_PLAY, isChecked));*/
+    }
+
+    private View.OnClickListener createFloatPointListener() {
+        return e -> {
+            QMUIBottomSheetConfirmBuilder<?> builder = new QMUIBottomSheetConfirmBuilder<>(this);
+            builder.setTitle("位置")
+                    .setContentView(null);
+        };
+    }
+
+    private void builderNumberInputDialog(String title, Number number, Consumer<Integer> consumer) {
+        QMUIBottomSheetInputConfirmBuilder builder = new QMUIBottomSheetInputConfirmBuilder(this);
+        builder.setTitle(title)
+                .setConfigEditView(v -> {
+                    v.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    if (number != null) {
+                        v.setText(number.toString());
+                    }
+                })
+                .setRadius(QMUIDisplayHelper.dp2px(this, 15))
+                .setCancel((s, views) -> s.dismiss())
+                .setConfirm((dialog, views) -> {
+                    if (views.length < 2) {
+                        return;
+                    }
+                    EditText editText = (EditText) views[1];
+                    if (editText == null) {
+                        return;
+                    }
+                    CharSequence text = editText.getText();
+                    if (text == null) {
+                        return;
+                    }
+                    try {
+                        int tick = Integer.parseInt(text.toString());
+                        if (tick > 0) {
+                            // 1. 先保存数据
+                            consumer.accept(tick);
+                            // 2. 只有成功了才关闭对话框
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(this, "请输入大于0的数字", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (NumberFormatException exception) {
+                        Toast.makeText(this, "输入内容无效", Toast.LENGTH_SHORT).show();
+                    }
+                }).build().show();
     }
 
     /**
@@ -386,7 +477,7 @@ public class SettingActivity extends BaseActivity {
         return binding.topBarLayout.actionBar;
     }
 
-    private void openColorSelector(int defaultColor, Consumer<Integer> callback) {
+    private void builderColorInputDialog(int defaultColor, Consumer<Integer> callback) {
         CommonColorSelectorBinding b = CommonColorSelectorBinding.inflate(LayoutInflater.from(this));
         CommonColorSelectorModel m = new CommonColorSelectorModel();
         m.setColor(defaultColor);
@@ -451,5 +542,17 @@ public class SettingActivity extends BaseActivity {
                 });
         QMUIBottomSheet build = builder.build();
         build.show();
+    }
+
+    static class SettingAction {
+        final SettingKey<Boolean> key;
+        final Consumer<Boolean> setMethod;
+        final Supplier<Boolean> getMethod;
+
+        public SettingAction(SettingKey<Boolean> key, Supplier<Boolean> getMethod, Consumer<Boolean> setMethod) {
+            this.key = key;
+            this.setMethod = setMethod;
+            this.getMethod = getMethod;
+        }
     }
 }
