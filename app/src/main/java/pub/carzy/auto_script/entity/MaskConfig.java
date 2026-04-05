@@ -11,16 +11,16 @@ import pub.carzy.auto_script.BR;
  * @author admin
  */
 public class MaskConfig extends BaseObservable implements Cloneable{
-    private String color;
+    private Integer color;
     private Integer size;
     private Boolean grid;
     private Integer lineWidth;
-    private String gridColor;
+    private Integer gridColor;
 
     public MaskConfig() {
     }
 
-    public MaskConfig(String color, Integer size, Boolean grid, Integer lineWidth, String gridColor) {
+    public MaskConfig(Integer color, Integer size, Boolean grid, Integer lineWidth, Integer gridColor) {
         this.color = color;
         this.size = size;
         this.grid = grid;
@@ -29,11 +29,11 @@ public class MaskConfig extends BaseObservable implements Cloneable{
     }
 
     @Bindable
-    public String getColor() {
+    public Integer getColor() {
         return color;
     }
 
-    public void setColor(String color) {
+    public void setColor(Integer color) {
         this.color = color;
         notifyPropertyChanged(BR.color);
     }
@@ -69,11 +69,11 @@ public class MaskConfig extends BaseObservable implements Cloneable{
     }
 
     @Bindable
-    public String getGridColor() {
+    public Integer getGridColor() {
         return gridColor;
     }
 
-    public void setGridColor(String gridColor) {
+    public void setGridColor(Integer gridColor) {
         this.gridColor = gridColor;
         notifyPropertyChanged(BR.gridColor);
     }

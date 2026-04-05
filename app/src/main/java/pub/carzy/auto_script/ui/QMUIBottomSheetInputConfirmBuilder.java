@@ -35,17 +35,18 @@ public class QMUIBottomSheetInputConfirmBuilder extends QMUIBottomSheetConfirmBu
     }
 
     @Override
-    protected void addButtonListener(View cancelButton, QMUIBottomSheet bottomSheet, View view) {
+    protected void addButtonListener(View cancelButton, QMUIBottomSheet bottomSheet, View view, OnButtonClickListener confirm) {
         cancelButton.setOnClickListener(e -> cancel.onClick(bottomSheet, e, view.findViewById(id)));
     }
 
     @Override
-    protected void addSelfContentView(View view, ViewGroup viewGroup) {
-        EditText editText = createEditText(context);
+    protected void addSelfContentView(View view, ViewGroup viewGroup, View contentView) {
+        super.addSelfContentView(view, viewGroup, contentView);
+        viewGroup = view.findViewById(R.id.dialog_content_view);
         if (viewGroup == null) {
-            ((ViewGroup) view).addView(viewGroup = new LinearLayout(context), 0);
-            viewGroup.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            return;
         }
+        EditText editText = createEditText(context);
         if (configEditView != null) {
             configEditView.config(editText);
         }

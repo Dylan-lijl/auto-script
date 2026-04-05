@@ -330,7 +330,7 @@
                         android:text="蒙层" />
 
                     <LinearLayout
-                        android:id="@+id/mask_root_layout"
+                        android:id="@+id/mask_color_root_layout"
                         style="@style/fieldLayout">
 
                         <LinearLayout style="@style/fieldLeftLayout">
@@ -348,12 +348,14 @@
 
                             <TextView
                                 style="@style/fieldColorLabel.InsideColor"
-                                android:background="@color/frosted_glass" />
+                                android:background="@{model.proxy.maskConfig.color}"
+                                android:text="@{MixedUtil.colorToHex(model.proxy.maskConfig.color)}"
+                                android:textColor="@{MixedUtil.isColorLight(model.proxy.maskConfig.color)?@color/black:@color/white}" />
                         </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/size_root_layout"
+                        android:id="@+id/mask_size_root_layout"
                         style="@style/fieldLayout">
 
                         <LinearLayout style="@style/fieldLeftLayout">
@@ -367,11 +369,11 @@
                                 android:text="在蒙层生成指定条的标尺" />
                         </LinearLayout>
 
-                        <TextView style="@style/fieldInputLabel" />
+                        <TextView style="@style/fieldInputLabel" android:text="@{StringUtils.format(model.proxy.maskConfig.size)}" />
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/grid_root_layout"
+                        android:id="@+id/mask_grid_root_layout"
                         style="@style/fieldLayout">
 
                         <LinearLayout style="@style/fieldLeftLayout">
@@ -391,7 +393,7 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/grid_color_root_layout"
+                        android:id="@+id/mask_grid_color_root_layout"
                         style="@style/fieldLayout">
 
                         <LinearLayout style="@style/fieldLeftLayout">
@@ -406,12 +408,14 @@
 
                             <TextView
                                 style="@style/fieldColorLabel.InsideColor"
-                                android:background="@color/black" />
+                                android:background="@{model.proxy.maskConfig.gridColor}"
+                                android:text="@{MixedUtil.colorToHex(model.proxy.maskConfig.gridColor)}"
+                                android:textColor="@{MixedUtil.isColorLight(model.proxy.maskConfig.gridColor)?@color/black:@color/white}" />
                         </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/grid_size_root_layout"
+                        android:id="@+id/mask_grid_size_root_layout"
                         style="@style/fieldLayout">
 
                         <LinearLayout style="@style/fieldLeftLayout">
@@ -425,7 +429,7 @@
                                 android:text="网格线宽度" />
                         </LinearLayout>
 
-                        <TextView style="@style/fieldInputLabel" />
+                        <TextView style="@style/fieldInputLabel" android:text="@{model.proxy.maskConfig.lineWidth}" />
                     </LinearLayout>
 
                     <TextView style="@style/dividingLine" />

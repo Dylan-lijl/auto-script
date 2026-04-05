@@ -2,6 +2,7 @@ package pub.carzy.auto_script.activities;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
@@ -15,9 +16,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.qmuiteam.qmui.recyclerView.QMUIRVItemSwipeAction;
+import com.qmuiteam.qmui.recyclerView.QMUISwipeAction;
+import com.qmuiteam.qmui.recyclerView.QMUISwipeViewHolder;
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
@@ -28,6 +34,7 @@ import com.qmuiteam.qmui.widget.popup.QMUIPopup;
 import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +42,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.zip.Inflater;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.adapter.SingleSimpleAdapter;
@@ -44,11 +53,13 @@ import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.CommonColorSelectorBinding;
 import pub.carzy.auto_script.databinding.ViewSettingBinding;
+import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.entity.MaskConfig;
 import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.entity.Style;
 import pub.carzy.auto_script.model.CommonColorSelectorModel;
 import pub.carzy.auto_script.model.SettingModel;
+import pub.carzy.auto_script.ui.CoordinateViewWrapper;
 import pub.carzy.auto_script.ui.QMUIBottomSheetConfirmBuilder;
 import pub.carzy.auto_script.ui.QMUIBottomSheetInputConfirmBuilder;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
@@ -154,14 +165,47 @@ public class SettingActivity extends BaseActivity {
         binding.floatPointRootLayout.setOnClickListener(createFloatPointListener());
         //动态更新
         settingConfigs.put(binding.floatPointUpdateRootLayout, new SettingAction(SettingKey.DYNAMIC_UPDATE, model.getProxy()::getDynamicUpdate, model.getProxy()::setDynamicUpdate));
+        //蒙层颜色
+        binding.maskColorRootLayout.setOnClickListener(e -> {
+            builderColorInputDialog(model.getProxy().getMaskConfig().getColor(), v -> {
+                model.getProxy().getMaskConfig().setColor(v);
+                setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+            });
+        });
+        //标尺
+        binding.maskSizeRootLayout.setOnClickListener(e -> {
+            builderNumberInputDialog("标尺", model.getProxy().getMaskConfig().getSize(), v -> {
+                model.getProxy().getMaskConfig().setSize(v);
+                setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+            });
+        });
         //网格
-        binding.gridRootLayout.setOnClickListener(e -> {
+        binding.maskGridSizeRootLayout.setOnClickListener(e -> {
             MaskConfig config = model.getProxy().getMaskConfig();
             if (config == null) {
                 return;
             }
             config.setGrid(!config.getGrid());
             setting.write(SettingKey.MASK_CONFIG, config);
+        });
+        //网格线颜色
+        binding.maskGridColorRootLayout.setOnClickListener(e -> {
+            //打开弹窗
+            builderColorInputDialog(model.getProxy().getMaskConfig().getGridColor(), v -> {
+                model.getProxy().getMaskConfig().setGridColor(v);
+                setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+            });
+        });
+        //线宽
+        binding.maskGridSizeRootLayout.setOnClickListener(e -> {
+            builderNumberInputDialog("网格线宽度", model.getProxy().getMaskConfig().getLineWidth(), v -> {
+                model.getProxy().getMaskConfig().setLineWidth(v);
+                setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+            });
+        });
+        //样式配置
+        binding.styleRootLayout.setOnClickListener(e -> {
+            builderStyleDialog();
         });
         //文字亮度 todo
         // 3. 定义通用监听器
@@ -282,11 +326,81 @@ public class SettingActivity extends BaseActivity {
         binding.autoPlayBtn.setOnCheckedChangeListener((buttonView, isChecked) -> setting.write(SettingKey.AUTO_PLAY, isChecked));*/
     }
 
+    private void builderStyleDialog() {
+        //todo
+        View inflate = LayoutInflater.from(this).inflate(R.layout.dialog_style_change, null, false);
+        ChangeStyleAdapter adapter = new ChangeStyleAdapter(this, new ChangeStyleAdapterCallback() {
+            @Override
+            public Style getCurrentStyle() {
+                return model.getProxy().getCurrentStyle();
+            }
+
+            @Override
+            public List<Style> getData() {
+                return model.getProxy().getStyles();
+            }
+
+            @Override
+            public void onClick(View e, Integer position) {
+                model.getProxy().getStyles().get(position).setCurrentVersion(System.currentTimeMillis());
+            }
+
+            @Override
+            public void onRemove(View e, Integer position) {
+                model.getProxy().getStyles().remove(position.intValue());
+            }
+
+            @Override
+            public void onRename(View e, Integer position) {
+                //todo
+            }
+        });
+        QMUIRVItemSwipeAction swipeAction = new QMUIRVItemSwipeAction(true, new QMUIRVItemSwipeAction.Callback() {
+
+            @Override
+            public int getSwipeDirection(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return QMUIRVItemSwipeAction.SWIPE_LEFT;
+            }
+
+            @Override
+            public void onClickAction(QMUIRVItemSwipeAction swipeAction, RecyclerView.ViewHolder selected, QMUISwipeAction action) {
+                super.onClickAction(swipeAction, selected, action);
+                if (action == adapter.removeAction) {
+                    adapter.callback.onRemove(selected.itemView, selected.getAdapterPosition());
+                } else if (action == adapter.renameAction) {
+                    adapter.callback.onRename(selected.itemView, selected.getAdapterPosition());
+                }
+            }
+        });
+        RecyclerView listView = inflate.findViewById(R.id.style_list);
+        listView.setAdapter(adapter);
+        swipeAction.attachToRecyclerView(listView);
+        QMUIBottomSheetConfirmBuilder<?> builder = new QMUIBottomSheetConfirmBuilder<>(this);
+        builder.setTitle("样式切换")
+                .setCancel((d, v) -> d.dismiss())
+                .setConfirm((d, v) -> {
+                    d.dismiss();
+                })
+                .setContentView(inflate)
+                .build().show();
+    }
+
     private View.OnClickListener createFloatPointListener() {
         return e -> {
+            CoordinateViewWrapper wrapper = new CoordinateViewWrapper(this, null);
+            FloatPoint floatPoint = model.getProxy().getFloatPoint();
+            wrapper.setPoint(floatPoint.getX(), floatPoint.getY());
             QMUIBottomSheetConfirmBuilder<?> builder = new QMUIBottomSheetConfirmBuilder<>(this);
             builder.setTitle("位置")
-                    .setContentView(null);
+                    .setRadius(QMUIDisplayHelper.dp2px(this, 15))
+                    .setContentView(wrapper.getRootView())
+                    .setCancel((s, views) -> s.dismiss())
+                    .setConfirm((s, views) -> {
+                        Point point = wrapper.getPoint();
+                        model.getProxy().setFloatPoint(new FloatPoint(point.x, point.y));
+                        setting.write(SettingKey.FLOAT_POINT, model.getProxy().getFloatPoint());
+                        s.dismiss();
+                    }).build().show();
         };
     }
 
@@ -554,5 +668,58 @@ public class SettingActivity extends BaseActivity {
             this.setMethod = setMethod;
             this.getMethod = getMethod;
         }
+    }
+
+    static class ChangeStyleAdapter extends RecyclerView.Adapter<QMUISwipeViewHolder> {
+        final QMUISwipeAction removeAction;
+        final QMUISwipeAction renameAction;
+        final ChangeStyleAdapterCallback callback;
+
+        public ChangeStyleAdapter(Context context, ChangeStyleAdapterCallback callback) {
+            this.callback = callback;
+            QMUISwipeAction.ActionBuilder builder = new QMUISwipeAction.ActionBuilder()
+                    .textSize(QMUIDisplayHelper.sp2px(context, 14))
+                    .textColor(Color.WHITE)
+                    .paddingStartEnd(QMUIDisplayHelper.dp2px(context, 14));
+            removeAction = builder.text("删除").backgroundColor(Color.RED).build();
+            renameAction = builder.text("重命名").backgroundColor(Color.BLUE).build();
+        }
+
+        @NonNull
+        @Override
+        public QMUISwipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_checked_list_item, parent, false);
+            final QMUISwipeViewHolder vh = new QMUISwipeViewHolder(view);
+            vh.addSwipeAction(removeAction);
+            vh.addSwipeAction(renameAction);
+            view.setOnClickListener(v -> callback.onClick(v, vh.getAdapterPosition()));
+            return vh;
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull QMUISwipeViewHolder holder, int position) {
+            TextView textView = holder.itemView.findViewById(R.id.text);
+            Style style = callback.getData().get(position);
+            textView.setText(style.getName());
+            View view = holder.itemView.findViewById(R.id.checked);
+            view.setVisibility(style == callback.getCurrentStyle() ? View.VISIBLE : View.INVISIBLE);
+        }
+
+        @Override
+        public int getItemCount() {
+            return callback.getData().size();
+        }
+    }
+
+    interface ChangeStyleAdapterCallback {
+        Style getCurrentStyle();
+
+        List<Style> getData();
+
+        void onClick(View e, Integer position);
+
+        void onRemove(View e, Integer position);
+
+        void onRename(View e, Integer position);
     }
 }

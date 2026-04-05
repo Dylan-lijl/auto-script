@@ -6,7 +6,6 @@
     android:orientation="vertical">
 
     <include
-        android:id="@+id/include_dialog_view"
         layout="@layout/common_dialog_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"

@@ -3,8 +3,12 @@ package pub.carzy.auto_script.ui;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Outline;
+import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,34 +17,48 @@ import android.view.ViewOutlineProvider;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-
-import androidx.annotation.NonNull;
-import androidx.databinding.DataBindingUtil;
+import android.widget.TextView;
 
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 
 import java.util.Locale;
 
+import lombok.Getter;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.WindowMaskViewBinding;
+import pub.carzy.auto_script.utils.DefaultTextWatch;
 
 /**
  * @author admin
  */
 public class CoordinateViewWrapper {
-    private final View rootView;
-    private final EditText xInput;
-    private final EditText yInput;
-    private final Button btnDisplay;
-    private final Button btnPick;
+    @Getter
+    private View rootView;
+    private EditText xInput;
+    private EditText yInput;
+    private Button btnDisplay;
+    private Button btnPick;
     private View masker;
-    private View bindingMasker;
     private final WindowManager manager;
-    private final WindowMaskViewBinding binding;
+    private WindowMaskViewBinding binding;
+    private int size;
+    private WindowManager.LayoutParams maskParams;
+    private WindowManager.LayoutParams bindingParams;
+    private final int maxWidth;
+    private final int maxHeight;
 
     public CoordinateViewWrapper(Context context, ViewGroup parent) {
+        int barHeight = QMUIDisplayHelper.getStatusBarHeight(context);
+        maxWidth = QMUIDisplayHelper.getScreenWidth(context);
+        maxHeight = QMUIDisplayHelper.getScreenHeight(context) + barHeight;
+        initView(context, parent);
+        //窗口管理器
+        manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        initListeners();
+    }
+
+    private void initView(Context context, ViewGroup parent) {
         // 加载你提供的 XML
         rootView = LayoutInflater.from(context).inflate(R.layout.dialog_float_point, parent, false);
         // 绑定控件
@@ -48,18 +66,11 @@ public class CoordinateViewWrapper {
         yInput = rootView.findViewById(R.id.y_input);
         btnDisplay = rootView.findViewById(R.id.btn_display);
         btnPick = rootView.findViewById(R.id.btn_pick);
-        createMask(context);
-        //窗口管理器
-        manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         binding = WindowMaskViewBinding.inflate(LayoutInflater.from(context));
-        initDefaultStyles();
-        initListeners();
-    }
-
-    private void createMask(Context context) {
         //初始化标记
-        masker = new ImageView(context);
-        masker.setLayoutParams(new LinearLayout.LayoutParams(QMUIDisplayHelper.dp2px(context, 20), QMUIDisplayHelper.dp2px(context, 20)));
+        masker = new TextView(context);
+        size = QMUIDisplayHelper.dp2px(context, 20);
+        masker.setLayoutParams(new LinearLayout.LayoutParams(size, size));
         masker.setBackgroundColor(context.getColor(R.color.link));
         //设置成圆
         // 1. 定义裁纸刀（OutlineProvider）
@@ -73,13 +84,18 @@ public class CoordinateViewWrapper {
         });
         // 2. 开启裁剪开关（非常重要，不设置这一行没效果）
         masker.setClipToOutline(true);
-        //初始化标记
-        bindingMasker = new ImageView(context);
-        bindingMasker.setLayoutParams(new LinearLayout.LayoutParams(QMUIDisplayHelper.dp2px(context, 20), QMUIDisplayHelper.dp2px(context, 20)));
-        bindingMasker.setBackgroundColor(context.getColor(R.color.link));
-        //设置成圆
-        // 1. 定义裁纸刀（OutlineProvider）
-        bindingMasker.setOutlineProvider(new ViewOutlineProvider() {
+        //参数
+        maskParams = new WindowManager.LayoutParams(
+                size, size
+                , WindowManager.LayoutParams.TYPE_APPLICATION,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT);
+        maskParams.gravity = Gravity.TOP | Gravity.START;
+        bindingParams = new WindowManager.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.TYPE_APPLICATION,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT);
+        binding.bindingMasker.setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View view, Outline outline) {
                 // 设置一个圆角矩形，半径为宽度的一半就是圆
@@ -87,17 +103,77 @@ public class CoordinateViewWrapper {
                 outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), view.getWidth() / 2f);
             }
         });
-        // 2. 开启裁剪开关（非常重要，不设置这一行没效果）
-        bindingMasker.setClipToOutline(true);
+        binding.bindingMasker.setClipToOutline(true);
+    }
+
+    private void updateMaskPosition(Integer x, Integer y) {
+        if (x == null && y == null) {
+            return;
+        }
+        if (x != null && x <= maxWidth) {
+            maskParams.x = x - size / 2;
+        }
+        if (y != null && y <= maxHeight) {
+            maskParams.y = y - size / 2;
+        }
+        if (masker.isAttachedToWindow()) {
+            manager.updateViewLayout(masker, maskParams);
+        }
     }
 
     @SuppressLint({"ClickableViewAccessibility"})
     private void initListeners() {
+        xInput.addTextChangedListener(new DefaultTextWatch() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                String string = s.toString();
+                if (!string.isBlank()) {
+                    try {
+                        int v = Integer.parseInt(string);
+                        if (v>maxWidth){
+                            v = maxWidth;
+                            // 2. 防止死循环：只有当内容真的需要改变时才修改
+                            String outStr = String.valueOf(v);
+                            if (!string.equals(outStr)) {
+                                s.replace(0, s.length(), outStr);
+                                return;
+                            }
+                        }
+                        updateMaskPosition(v, null);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        });
+        yInput.addTextChangedListener(new DefaultTextWatch() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                String string = s.toString();
+                if (!string.isBlank()) {
+                    try {
+                        int v = Integer.parseInt(string);
+                        if (v>maxHeight){
+                            v = maxHeight;
+                            // 2. 防止死循环：只有当内容真的需要改变时才修改
+                            String outStr = String.valueOf(v);
+                            if (!string.equals(outStr)) {
+                                s.replace(0, s.length(), outStr);
+                                return;
+                            }
+                        }
+                        updateMaskPosition(null, v);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        });
         btnDisplay.setOnClickListener(e -> {
             if (masker.isAttachedToWindow()) {
                 manager.removeView(masker);
             } else {
-                manager.addView(masker, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                Point point = getPoint();
+                updateMaskPosition(point.x, point.y);
+                manager.addView(masker, maskParams);
             }
         });
         btnPick.setOnClickListener(e -> {
@@ -106,15 +182,17 @@ public class CoordinateViewWrapper {
             }
             binding.positionText.setText("");
             binding.bindingMasker.setVisibility(View.VISIBLE);
-            manager.addView(binding.getRoot(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            Point point = getPoint();
+            moveMasker(point.x, point.y);
+            manager.addView(binding.getRoot(), bindingParams);
         });
         binding.backgroundRoot.setOnTouchListener((v, event) -> {
             //移动这个bindingMasker
-            float rawX = event.getRawX();
-            float rawY = event.getRawY();
+            int rawX = (int) event.getRawX();
+            int rawY = (int) event.getRawY();
             // 1. 获取相对于当前全屏蒙层的坐标 (最准确)
-            float x = event.getX();
-            float y = event.getY();
+            int x = (int) event.getX();
+            int y = (int) event.getY();
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     binding.bindingMasker.setVisibility(View.VISIBLE);
@@ -124,21 +202,17 @@ public class CoordinateViewWrapper {
 
                 case MotionEvent.ACTION_MOVE:
                     moveMasker(x, y);
-                    binding.positionText.setText(String.format(Locale.getDefault(),"X: %.0f , Y: %.0f", rawX, rawY));
+                    binding.positionText.setText(String.format(Locale.getDefault(), "X: %d , Y: %d", rawX, rawY));
                     break;
 
                 case MotionEvent.ACTION_UP:
                     v.performClick();
                     // 抬起时，将坐标回填到之前的输入框
-                    xInput.setText(String.valueOf((int) rawX));
-                    yInput.setText(String.valueOf((int) rawY));
+                    setPoint(rawX, rawY);
                     // 移除蒙层
                     safeRemove(binding.getRoot());
                     //更新位置
-                    if (masker.isAttachedToWindow()){
-                        //todo 坐标
-                        manager.updateViewLayout(masker,new WindowManager.LayoutParams());
-                    }
+                    updateMaskPosition(x, y);
                     break;
             }
             return true; // 必须为 true
@@ -157,13 +231,6 @@ public class CoordinateViewWrapper {
         }
     }
 
-    private void initDefaultStyles() {
-        // 可以在这里统一处理你之前提到的 AntD Padding 逻辑
-        int ph = dp2px(12);
-        int pv = dp2px(8);
-        xInput.setPadding(ph, pv, ph, pv);
-        yInput.setPadding(ph, pv, ph, pv);
-    }
 
     // 获取当前输入的坐标
     public Point getPoint() {
@@ -178,15 +245,23 @@ public class CoordinateViewWrapper {
 
     // 设置坐标
     public void setPoint(int x, int y) {
-        xInput.setText(String.valueOf(x));
-        yInput.setText(String.valueOf(y));
-        // 顺便把光标移到末尾
-        xInput.setSelection(xInput.getText().length());
-        yInput.setSelection(yInput.getText().length());
+        if (x <= maxWidth) {
+            xInput.setText(String.valueOf(x));
+            xInput.setSelection(xInput.getText().length());
+        }
+        if (y <= maxHeight) {
+            yInput.setText(String.valueOf(y));
+            yInput.setSelection(yInput.getText().length());
+        }
     }
 
     private int dp2px(int dp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
                 rootView.getResources().getDisplayMetrics());
+    }
+
+    public void close() {
+        safeRemove(masker);
+        safeRemove(binding.getRoot());
     }
 }
