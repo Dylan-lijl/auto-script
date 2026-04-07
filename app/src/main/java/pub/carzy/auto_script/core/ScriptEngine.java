@@ -1,5 +1,10 @@
 package pub.carzy.auto_script.core;
 
+import java.util.function.BiConsumer;
+
+import pub.carzy.auto_script.entity.FloatPoint;
+import pub.carzy.auto_script.entity.OperationConfig;
+
 /**
  * @author admin
  */
@@ -11,7 +16,7 @@ public interface ScriptEngine {
     void close();
 
     void reset();
-
+    void savePointCallback(BiConsumer<Integer,Integer> consumer);
     interface ResultCallback {
         /**
          * 异常导致
@@ -50,5 +55,9 @@ public interface ScriptEngine {
             }
             return true;
         }
+    }
+    class ScriptConfig{
+        public FloatPoint floatPoint;
+        public Boolean dynamicUpdate;
     }
 }

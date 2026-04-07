@@ -28,7 +28,7 @@ public interface Setting extends Serializable {
         Map<String, T> map = new LinkedHashMap<>();
         for (String key : keys()) {
             if (key.startsWith(settingKey.getKey())) {
-                T read = read(settingKey, null);
+                T read = read(new SettingKey<>(key, settingKey.getType()), null);
                 if (read != null) {
                     map.put(key, read);
                 }

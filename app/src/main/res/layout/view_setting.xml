@@ -126,15 +126,15 @@
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="支持显示触控位置，并可在无障碍录制、Root录制及Root回放模式下使用" />
+                                android:text="支持显示触控位置" />
                         </LinearLayout>
 
-                        <androidx.appcompat.widget.SwitchCompat
+                        <!--<androidx.appcompat.widget.SwitchCompat
                             style="@style/fieldSwitchLabel"
-                            android:checked="@{model.proxy.showOperation}" />
+                            android:checked="@{model.proxy.showOperation}" />-->
                     </LinearLayout>
-
-                    <LinearLayout
+                    <!--取消点按,开发者工具已经有这个功能了,自己实现麻烦且耗性能-->
+                    <!--<LinearLayout
                         android:id="@+id/operation_size_root_layout"
                         style="@style/fieldLayout">
 
@@ -222,7 +222,7 @@
                                 android:text="@{MixedUtil.colorToHex(model.proxy.operationConfig.idleColor)}"
                                 android:textColor="@{MixedUtil.isColorLight(model.proxy.operationConfig.idleColor)?@color/black:@color/white}" />
                         </LinearLayout>
-                    </LinearLayout>
+                    </LinearLayout>-->
 
                     <TextView style="@style/dividingLine" />
 
@@ -369,7 +369,9 @@
                                 android:text="在蒙层生成指定条的标尺" />
                         </LinearLayout>
 
-                        <TextView style="@style/fieldInputLabel" android:text="@{StringUtils.format(model.proxy.maskConfig.size)}" />
+                        <TextView
+                            style="@style/fieldInputLabel"
+                            android:text="@{StringUtils.format(model.proxy.maskConfig.size)}" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -389,7 +391,7 @@
 
                         <androidx.appcompat.widget.SwitchCompat
                             style="@style/fieldSwitchLabel"
-                            android:checked="true" />
+                            android:checked="@{model.proxy.maskConfig.grid}" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -429,7 +431,9 @@
                                 android:text="网格线宽度" />
                         </LinearLayout>
 
-                        <TextView style="@style/fieldInputLabel" android:text="@{model.proxy.maskConfig.lineWidth}" />
+                        <TextView
+                            style="@style/fieldInputLabel"
+                            android:text="@{StringUtils.format(model.proxy.maskConfig.lineWidth)}" />
                     </LinearLayout>
 
                     <TextView style="@style/dividingLine" />
@@ -450,131 +454,165 @@
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="切换不同样式配置" />
+                                android:text="切换不同主题样式配置(状态栏和标题栏)" />
                         </LinearLayout>
 
-                        <TextView style="@style/fieldDropDownLabel" />
+                        <TextView
+                            style="@style/fieldDropDownLabel"
+                            android:text="@{model.proxy.currentStyle==null?``:model.proxy.currentStyle.name}" />
                     </LinearLayout>
 
-                    <TextView
-                        style="@style/unitTitle"
-                        android:text="状态栏"
-                        android:textStyle="bold" />
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="@{model.proxy.currentStyle==null?View.GONE:View.VISIBLE}">
+
+                        <TextView
+                            style="@style/unitTitle"
+                            android:text="状态栏"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:id="@+id/status_bar_background_root_layout"
+                            style="@style/fieldLayout">
+
+                            <LinearLayout style="@style/fieldLeftLayout">
+
+                                <TextView
+                                    style="@style/fieldLabel"
+                                    android:text="背景颜色" />
+
+                                <TextView
+                                    style="@style/fieldDescription"
+                                    android:text="状态栏背景颜色" />
+                            </LinearLayout>
+
+                            <LinearLayout style="@style/fieldColorLabel">
+
+                                <TextView
+                                    style="@style/fieldColorLabel.InsideColor"
+                                    android:background="@{model.proxy.currentStyle.statusBarBackgroundColor}"
+                                    android:text="@{MixedUtil.colorToHex(model.proxy.currentStyle.statusBarBackgroundColor)}"
+                                    android:textColor="@{MixedUtil.isColorLight(model.proxy.currentStyle.statusBarBackgroundColor)?@color/black:@color/white}" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/status_bar_dark_root_layout"
+                            style="@style/fieldLayout">
+
+                            <LinearLayout style="@style/fieldLeftLayout">
+
+                                <TextView
+                                    style="@style/fieldLabel"
+                                    android:text="文字亮度" />
+
+                                <TextView
+                                    style="@style/fieldDescription"
+                                    android:text="状态栏文字亮度（深色/浅色）" />
+                            </LinearLayout>
+
+                            <androidx.appcompat.widget.SwitchCompat
+                                style="@style/fieldSwitchLabel"
+                                android:checked="@{model.proxy.currentStyle.statusBarMode}" />
+                        </LinearLayout>
+                        <!--设置标题栏背景颜色、文字颜色和图标颜色-->
+                        <TextView
+                            style="@style/unitTitle"
+                            android:text="标题栏"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:id="@+id/top_bar_background_root_layout"
+                            style="@style/fieldLayout">
+
+                            <LinearLayout style="@style/fieldLeftLayout">
+
+                                <TextView
+                                    style="@style/fieldLabel"
+                                    android:text="背景颜色" />
+
+                                <TextView
+                                    style="@style/fieldDescription"
+                                    android:text="标题栏背景颜色" />
+                            </LinearLayout>
+
+                            <LinearLayout style="@style/fieldColorLabel">
+
+                                <TextView
+                                    style="@style/fieldColorLabel.InsideColor"
+                                    android:background="@{model.proxy.currentStyle.topBarBackgroundColor}"
+                                    android:text="@{MixedUtil.colorToHex(model.proxy.currentStyle.topBarBackgroundColor)}"
+                                    android:textColor="@{MixedUtil.isColorLight(model.proxy.currentStyle.topBarBackgroundColor)?@color/black:@color/white}" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/top_bar_text_color_root_layout"
+                            style="@style/fieldLayout">
+
+                            <LinearLayout style="@style/fieldLeftLayout">
+
+                                <TextView
+                                    style="@style/fieldLabel"
+                                    android:text="文字颜色" />
+
+                                <TextView
+                                    style="@style/fieldDescription"
+                                    android:text="标题栏文字颜色" />
+                            </LinearLayout>
+
+                            <LinearLayout style="@style/fieldColorLabel">
+
+                                <TextView
+                                    style="@style/fieldColorLabel.InsideColor"
+                                    android:background="@{model.proxy.currentStyle.topBarTextColor}"
+                                    android:text="@{MixedUtil.colorToHex(model.proxy.currentStyle.topBarTextColor)}"
+                                    android:textColor="@{MixedUtil.isColorLight(model.proxy.currentStyle.topBarTextColor)?@color/black:@color/white}" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/top_bar_image_color_root_layout"
+                            style="@style/fieldLayout">
+
+                            <LinearLayout style="@style/fieldLeftLayout">
+
+                                <TextView
+                                    style="@style/fieldLabel"
+                                    android:text="图标颜色" />
+
+                                <TextView
+                                    style="@style/fieldDescription"
+                                    android:text="标题栏图标颜色" />
+                            </LinearLayout>
+
+                            <LinearLayout style="@style/fieldColorLabel">
+
+                                <TextView
+                                    style="@style/fieldColorLabel.InsideColor"
+                                    android:background="@{model.proxy.currentStyle.topBarImageColor}"
+                                    android:text="@{MixedUtil.colorToHex(model.proxy.currentStyle.topBarImageColor)}"
+                                    android:textColor="@{MixedUtil.isColorLight(model.proxy.currentStyle.topBarImageColor)?@color/black:@color/white}" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/status_bar_background_root_layout"
+                        android:id="@+id/reset_root_layout"
                         style="@style/fieldLayout">
 
                         <LinearLayout style="@style/fieldLeftLayout">
 
                             <TextView
+                                android:textColor="@color/danger"
                                 style="@style/fieldLabel"
-                                android:text="背景颜色" />
+                                android:text="重置" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="状态栏背景颜色" />
-                        </LinearLayout>
-
-                        <LinearLayout style="@style/fieldColorLabel">
-
-                            <TextView
-                                style="@style/fieldColorLabel.InsideColor"
-                                android:background="@color/black" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/status_bar_dark_root_layout"
-                        style="@style/fieldLayout">
-
-                        <LinearLayout style="@style/fieldLeftLayout">
-
-                            <TextView
-                                style="@style/fieldLabel"
-                                android:text="文字亮度" />
-
-                            <TextView
-                                style="@style/fieldDescription"
-                                android:text="状态栏文字亮度（深色/浅色）" />
-                        </LinearLayout>
-
-                        <androidx.appcompat.widget.SwitchCompat
-                            style="@style/fieldSwitchLabel"
-                            android:checked="true" />
-                    </LinearLayout>
-                    <!--设置标题栏背景颜色、文字颜色和图标颜色-->
-                    <TextView
-                        style="@style/unitTitle"
-                        android:text="标题栏"
-                        android:textStyle="bold" />
-
-                    <LinearLayout
-                        android:id="@+id/title_background_root_layout"
-                        style="@style/fieldLayout">
-
-                        <LinearLayout style="@style/fieldLeftLayout">
-
-                            <TextView
-                                style="@style/fieldLabel"
-                                android:text="背景颜色" />
-
-                            <TextView
-                                style="@style/fieldDescription"
-                                android:text="标题栏背景颜色" />
-                        </LinearLayout>
-
-                        <LinearLayout style="@style/fieldColorLabel">
-
-                            <TextView
-                                style="@style/fieldColorLabel.InsideColor"
-                                android:background="@color/white" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/title_text_color_root_layout"
-                        style="@style/fieldLayout">
-
-                        <LinearLayout style="@style/fieldLeftLayout">
-
-                            <TextView
-                                style="@style/fieldLabel"
-                                android:text="文字颜色" />
-
-                            <TextView
-                                style="@style/fieldDescription"
-                                android:text="标题栏文字颜色" />
-                        </LinearLayout>
-
-                        <LinearLayout style="@style/fieldColorLabel">
-
-                            <TextView
-                                style="@style/fieldColorLabel.InsideColor"
-                                android:background="@color/white" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/title_image_color_root_layout"
-                        style="@style/fieldLayout">
-
-                        <LinearLayout style="@style/fieldLeftLayout">
-
-                            <TextView
-                                style="@style/fieldLabel"
-                                android:text="图标颜色" />
-
-                            <TextView
-                                style="@style/fieldDescription"
-                                android:text="标题栏图标颜色" />
-                        </LinearLayout>
-
-                        <LinearLayout style="@style/fieldColorLabel">
-
-                            <TextView
-                                style="@style/fieldColorLabel.InsideColor"
-                                android:background="@color/white" />
+                                android:text="恢复默认配置" />
                         </LinearLayout>
                     </LinearLayout>
                     <!--<LinearLayout

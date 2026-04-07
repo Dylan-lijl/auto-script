@@ -54,7 +54,17 @@ public class PrefsSetting extends AbstractSetting {
         if (!prefs.contains(key)) {
             return defaultValue;
         }
-        String json = prefs.getString(key, null);
+        //兼容之前版本
+        String json = null;
+        try {
+            json = prefs.getString(key, null);
+        } catch (ClassCastException e) {
+            Object object = prefs.getAll().get(key);
+            if (object != null) {
+                json = gson.toJson(object);
+                write(settingKey, (T) object);
+            }
+        }
         if (json == null) {
             return defaultValue;
         }

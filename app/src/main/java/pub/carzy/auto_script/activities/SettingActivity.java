@@ -1,12 +1,18 @@
 package pub.carzy.auto_script.activities;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +24,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.databinding.DataBindingUtil;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.qmuiteam.qmui.recyclerView.QMUIRVItemSwipeAction;
@@ -40,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -60,10 +70,13 @@ import pub.carzy.auto_script.entity.Style;
 import pub.carzy.auto_script.model.CommonColorSelectorModel;
 import pub.carzy.auto_script.model.SettingModel;
 import pub.carzy.auto_script.ui.CoordinateViewWrapper;
+import pub.carzy.auto_script.ui.NormalDividerItemDecoration;
 import pub.carzy.auto_script.ui.QMUIBottomSheetConfirmBuilder;
+import pub.carzy.auto_script.ui.QMUIBottomSheetCustomBuilder;
 import pub.carzy.auto_script.ui.QMUIBottomSheetInputConfirmBuilder;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
+import pub.carzy.auto_script.utils.StringUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.statics.StaticValues;
@@ -125,8 +138,11 @@ public class SettingActivity extends BaseActivity {
         //自动关闭
         settingConfigs.put(binding.autoCloseRootLayout, new SettingAction(SettingKey.AUTO_CLOSE, model.getProxy()::getAutoClose, model.getProxy()::setAutoClose));
         //显示点按操作
-        settingConfigs.put(binding.showOperationRootLayout, new SettingAction(SettingKey.SHOW_OPERATION, model.getProxy()::getShowOperation, model.getProxy()::setShowOperation));
-        binding.operationSizeRootLayout.setOnClickListener(e -> {
+        binding.showOperationRootLayout.setOnClickListener(e -> {
+            jumpDevPage();
+        });
+//        settingConfigs.put(binding.showOperationRootLayout, new SettingAction(SettingKey.SHOW_OPERATION, model.getProxy()::getShowOperation, model.getProxy()::setShowOperation));
+        /*binding.operationSizeRootLayout.setOnClickListener(e -> {
             //打开弹窗
             builderNumberInputDialog("圆点尺寸", model.getProxy().getOperationConfig().getSize(), v -> {
                 model.getProxy().getOperationConfig().setSize(v);
@@ -156,7 +172,7 @@ public class SettingActivity extends BaseActivity {
                 model.getProxy().getOperationConfig().setIdleColor(v);
                 setting.write(SettingKey.OPERATION_CONFIG, model.getProxy().getOperationConfig());
             });
-        });
+        });*/
         //自动回放
         settingConfigs.put(binding.autoPlayRootLayout, new SettingAction(SettingKey.AUTO_PLAY, model.getProxy()::getAutoPlay, model.getProxy()::setAutoPlay));
         //忽略悬浮窗操作手势
@@ -180,7 +196,7 @@ public class SettingActivity extends BaseActivity {
             });
         });
         //网格
-        binding.maskGridSizeRootLayout.setOnClickListener(e -> {
+        binding.maskGridRootLayout.setOnClickListener(e -> {
             MaskConfig config = model.getProxy().getMaskConfig();
             if (config == null) {
                 return;
@@ -203,11 +219,62 @@ public class SettingActivity extends BaseActivity {
                 setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
             });
         });
+        Runnable updateCurrentStyle = () -> {
+            Style currentStyle = model.getProxy().getCurrentStyle();
+            if (currentStyle == null) {
+                return;
+            }
+            model.getProxy().updateCurrentStyle();
+            updateGlobalStyle(currentStyle);
+            setting.write(new SettingKey<>(SettingKey.STYLE.getKey() + currentStyle.getId(), Style.class), model.getProxy().getCurrentStyle());
+        };
         //样式配置
         binding.styleRootLayout.setOnClickListener(e -> {
             builderStyleDialog();
         });
-        //文字亮度 todo
+        binding.statusBarBackgroundRootLayout.setOnClickListener(e -> {
+            Style currentStyle = model.getProxy().getCurrentStyle();
+            builderColorInputDialog(currentStyle.getStatusBarBackgroundColor(), v -> {
+                currentStyle.setStatusBarBackgroundColor(v);
+                updateCurrentStyle.run();
+            });
+        });
+        binding.statusBarDarkRootLayout.setOnClickListener(e -> {
+            Style currentStyle = model.getProxy().getCurrentStyle();
+            currentStyle.setStatusBarMode(!currentStyle.isStatusBarMode());
+            updateCurrentStyle.run();
+        });
+        binding.topBarBackgroundRootLayout.setOnClickListener(e -> {
+            Style currentStyle = model.getProxy().getCurrentStyle();
+            builderColorInputDialog(currentStyle.getTopBarBackgroundColor(), v -> {
+                currentStyle.setTopBarBackgroundColor(v);
+                updateCurrentStyle.run();
+            });
+        });
+        binding.topBarTextColorRootLayout.setOnClickListener(e -> {
+            Style currentStyle = model.getProxy().getCurrentStyle();
+            builderColorInputDialog(currentStyle.getTopBarTextColor(), v -> {
+                currentStyle.setTopBarTextColor(v);
+                updateCurrentStyle.run();
+            });
+        });
+        binding.topBarImageColorRootLayout.setOnClickListener(e -> {
+            Style currentStyle = model.getProxy().getCurrentStyle();
+            builderColorInputDialog(currentStyle.getTopBarImageColor(), v -> {
+                currentStyle.setTopBarImageColor(v);
+                updateCurrentStyle.run();
+            });
+        });
+        binding.resetRootLayout.setOnClickListener(e -> {
+            QMUIBottomSheetConfirmBuilder<?> builder = new QMUIBottomSheetConfirmBuilder<>(this);
+            builder.setTitle("重置确认")
+                    .setConfirm((sheet, views) -> {
+                        reset();
+                        updateCurrentStyle.run();
+                        sheet.dismiss();
+                    }).setCancel(((sheet, views) -> sheet.dismiss()))
+                    .build().show();
+        });
         // 3. 定义通用监听器
         View.OnClickListener commonClickListener = v -> {
             SettingAction action = settingConfigs.get(v);
@@ -224,139 +291,133 @@ public class SettingActivity extends BaseActivity {
             // 绑定点击事件
             rootView.setOnClickListener(commonClickListener);
         });
-        //创建新样式
-        /*binding.styleAddBtn.setOnClickListener(e -> editStyle(true));
-        //展示全部样式
-        binding.styleBtn.setOnClickListener(this::showAllStyle);
-        //移除样式
-        binding.styleRemoveBtn.setOnClickListener((e) -> ActivityUtils.createDeleteViewDialog(this, null, (qmuiDialog, integer) -> {
-            qmuiDialog.dismiss();
-            Style style = model.getProxy().getCurrentStyle();
-            if (style == null) {
-                return;
+    }
+
+    private void jumpDevPage() {
+        boolean isDevMode = Settings.Global.getInt(
+                getContentResolver(),
+                Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,
+                0
+        ) != 0;
+        if (isDevMode) {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS);
+            // 某些系统支持通过这几个 key 来实现高亮定位
+            intent.putExtra(":settings:fragment_args_key", "show_touches");
+            intent.putExtra(":settings:show_fragment_args_key", "show_touches");
+            // 甚至有些厂商支持搜索模式的高亮（粉红色闪烁效果）
+            Bundle bundle = new Bundle();
+            bundle.putString(":settings:fragment_args_key", "show_touches");
+            intent.putExtra("SHOW_FRAGMENT_BUNDLE", bundle);
+
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                startActivity(intent);
+            } catch (Exception e) {
+                // 退而求其次，只跳转页面
+                Log.d("error", "ssss", e);
             }
-            ThreadUtil.runOnCpu(() -> {
-                setting.remove(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null));
-                //选择其他样式
-                ThreadUtil.runOnUi(() -> {
-                    model.getProxy().getStyles().remove(style);
-                    model.getProxy().updateCurrentStyle();
-                    updateGlobalStyle(model.getProxy().getCurrentStyle());
-                });
-            });
-        }).show());
-        //编辑当前样式
-        binding.styleEditBtn.setOnClickListener(e -> {
-            editStyle(false);
-        });
-        //打开系统栏背景颜色选择器
-        binding.statusBarBgcBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getStatusBarBackgroundColor(),
-                color -> {
-                    model.getProxy().getCurrentStyle().setStatusBarBackgroundColor(color);
-                    ActivityUtils.setWindowsStatusBarColor(this, color);
-                    Style style = model.getProxy().getCurrentStyle();
-                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
-                    updateGlobalStyle(model.getProxy().getCurrentStyle());
-                }));
-        //切换系统栏亮色和暗色
-        binding.statusBarModeBtn.setOnClickListener(e -> {
-            model.getProxy().getCurrentStyle().setStatusBarMode(!model.getProxy().getCurrentStyle().isStatusBarMode());
-            ActivityUtils.setWindowsStatusLight(this, model.getProxy().getCurrentStyle().isStatusBarMode());
-            updateGlobalStyle(model.getProxy().getCurrentStyle());
-            Style style = model.getProxy().getCurrentStyle();
-            ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
-        });
-        //标题栏背景颜色
-        binding.topBarBgcBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarBackgroundColor(),
-                color -> {
-                    model.getProxy().getCurrentStyle().setTopBarBackgroundColor(color);
-                    binding.topBarLayout.actionBar.setBackgroundColor(color);
-                    updateGlobalStyle(model.getProxy().getCurrentStyle());
-                    Style style = model.getProxy().getCurrentStyle();
-                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
-                }));
-        //标题栏文字颜色
-        binding.topBarTxtBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarTextColor(),
-                color -> {
-                    model.getProxy().getCurrentStyle().setTopBarTextColor(color);
-                    if (binding.topBarLayout.actionBar.getTitleView() != null) {
-                        binding.topBarLayout.actionBar.getTitleView().setTextColor(color);
-                    }
-                    updateGlobalStyle(model.getProxy().getCurrentStyle());
-                    Style style = model.getProxy().getCurrentStyle();
-                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
-                }));
-        //标题栏图片颜色
-        binding.topBarImgBtn.setOnClickListener(e -> openColorSelector(model.getProxy().getCurrentStyle().getTopBarImageColor(),
-                color -> {
-                    model.getProxy().getCurrentStyle().setTopBarImageColor(color);
-                    QMUITopBar topBar = binding.topBarLayout.actionBar.getTopBar();
-                    if (topBar != null) {
-                        for (int i = 0; i < topBar.getChildCount(); i++) {
-                            View child = topBar.getChildAt(i);
-                            if (child == null) {
-                                continue;
-                            }
-                            //判断是否是图片组件
-                            if (child instanceof ImageView) {
-                                ImageView iv = (ImageView) child;
-                                Drawable d = iv.getDrawable();
-                                if (d != null) {
-                                    d.mutate().setTint(color);
-                                    iv.setImageDrawable(d);
-                                }
-                            }
-                        }
-                    }
-                    updateGlobalStyle(model.getProxy().getCurrentStyle());
-                    Style style = model.getProxy().getCurrentStyle();
-                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class, null), style));
-                }));
-        //模式切换
-        *//*binding.typeGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.auto_btn) {
-                model.getProxy().setType(SettingProxy.AUTO);
-            } else if (checkedId == R.id.accessibility_btn) {
-                model.getProxy().setType(SettingProxy.ACCESSIBILITY);
-            } else if (checkedId == R.id.root_btn) {
-                model.getProxy().setType(SettingProxy.ROOT);
+        } else {
+            //跳转到版本界面
+            Intent intent = new Intent(Settings.ACTION_DEVICE_INFO_SETTINGS);
+            // 尝试高亮“版本号”条目 (Build Number)
+            // 注意：不同系统的 Key 可能不同，常见的有 "build_number" 或 "model_info"
+            intent.putExtra(":settings:fragment_args_key", "model_info");
+            intent.putExtra(":settings:show_fragment_args_key", "model_info");
+            // 某些系统支持传递一个 Bundle 来实现高亮闪烁效果
+            Bundle bundle = new Bundle();
+            bundle.putString(":settings:fragment_args_key", "model_info");
+            intent.putExtra("SHOW_FRAGMENT_BUNDLE", bundle);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            String message = "点击操作系统版本4次开启开发者模式";
+            try {
+                startActivity(intent);
+            } catch (Exception e) {
+                message = "请到关于手机的版本页面," + message;
+                //回退
+                intent = new Intent(Settings.ACTION_SETTINGS);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                try {
+                    startActivity(intent);
+                } catch (Exception i) {
+                    message = "打开设置界面失败,请手动打开!";
+                }
             }
-            setting.write(SettingKey.TYPE, model.getProxy().getType());
-        });*//*
-        binding.autoPlayBtn.setOnCheckedChangeListener((buttonView, isChecked) -> setting.write(SettingKey.AUTO_PLAY, isChecked));*/
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        }
     }
 
     private void builderStyleDialog() {
-        //todo
+        //实例化选择样式页面
         View inflate = LayoutInflater.from(this).inflate(R.layout.dialog_style_change, null, false);
-        ChangeStyleAdapter adapter = new ChangeStyleAdapter(this, new ChangeStyleAdapterCallback() {
+        QMUISwipeAction.ActionBuilder actionBuilder = new QMUISwipeAction.ActionBuilder()
+                .textSize(QMUIDisplayHelper.sp2px(this, 14))
+                .textColor(Color.WHITE)
+                .paddingStartEnd(QMUIDisplayHelper.dp2px(this, 14));
+        //创建删除按钮和重命名按钮
+        Drawable d = AppCompatResources.getDrawable(this, R.drawable.delete);
+        d.setTint(getColor(R.color.danger));
+        QMUISwipeAction removeAction = actionBuilder.icon(d).build();
+        Drawable e = AppCompatResources.getDrawable(this, R.drawable.edit);
+        e.setTint(getColor(R.color.link));
+        QMUISwipeAction renameAction = actionBuilder.icon(e).build();
+        //保存样式回调
+        Consumer<Style> saveStyle = (s) -> setting.write(new SettingKey<>(SettingKey.STYLE.getKey() + s.getId(), Style.class), s);
+        //删除样式回调
+        Consumer<Style> removeStyle = (s) -> setting.remove(new SettingKey<>(SettingKey.STYLE.getKey() + s.getId(), Style.class));
+        View view = inflate.findViewById(R.id.style_add_btn);
+        //列表适配器
+        RecyclerView.Adapter<QMUISwipeViewHolder> adapter = new RecyclerView.Adapter<>() {
+
+            @NonNull
             @Override
-            public Style getCurrentStyle() {
-                return model.getProxy().getCurrentStyle();
+            public QMUISwipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_checked_list_item, parent, false);
+                final QMUISwipeViewHolder vh = new QMUISwipeViewHolder(view);
+                vh.addSwipeAction(removeAction);
+                vh.addSwipeAction(renameAction);
+                view.setOnClickListener(e -> {
+                    int position = vh.getAdapterPosition();
+                    Style style = model.getProxy().getStyles().get(position);
+                    if (style == null) {
+                        return;
+                    }
+                    style.setCurrentVersion(System.currentTimeMillis());
+                    model.getProxy().updateCurrentStyle();
+                    updateGlobalStyle(style);
+                    notifyDataSetChanged();
+                });
+                return vh;
             }
 
             @Override
-            public List<Style> getData() {
-                return model.getProxy().getStyles();
+            public void onBindViewHolder(@NonNull QMUISwipeViewHolder holder, int position) {
+                TextView textView = holder.itemView.findViewById(R.id.text);
+                Style style = model.getProxy().getStyles().get(position);
+                textView.setText(style.getName());
+                View view = holder.itemView.findViewById(R.id.checked);
+                view.setVisibility(style == model.getProxy().getCurrentStyle() ? View.VISIBLE : View.INVISIBLE);
             }
 
             @Override
-            public void onClick(View e, Integer position) {
-                model.getProxy().getStyles().get(position).setCurrentVersion(System.currentTimeMillis());
+            public int getItemCount() {
+                return model.getProxy().getStyles().size();
             }
-
-            @Override
-            public void onRemove(View e, Integer position) {
-                model.getProxy().getStyles().remove(position.intValue());
-            }
-
-            @Override
-            public void onRename(View e, Integer position) {
-                //todo
-            }
+        };
+        //点击切换选中的样式
+        view.setOnClickListener(e1 -> {
+            String string = getString(R.string.add);
+            Style style = Style.DEFAULT_STYLE.clone();
+            style.setId(idGenerator.nextId());
+            style.setName(string + (model.getProxy().getStyles().size() + 1));
+            style.setCurrentVersion(System.currentTimeMillis());
+            model.getProxy().getStyles().add(style);
+            model.getProxy().updateCurrentStyle();
+            updateGlobalStyle(style);
+            saveStyle.accept(style);
+            adapter.notifyDataSetChanged();
         });
+        //左划逻辑和点击逻辑
         QMUIRVItemSwipeAction swipeAction = new QMUIRVItemSwipeAction(true, new QMUIRVItemSwipeAction.Callback() {
-
             @Override
             public int getSwipeDirection(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
                 return QMUIRVItemSwipeAction.SWIPE_LEFT;
@@ -365,25 +426,66 @@ public class SettingActivity extends BaseActivity {
             @Override
             public void onClickAction(QMUIRVItemSwipeAction swipeAction, RecyclerView.ViewHolder selected, QMUISwipeAction action) {
                 super.onClickAction(swipeAction, selected, action);
-                if (action == adapter.removeAction) {
-                    adapter.callback.onRemove(selected.itemView, selected.getAdapterPosition());
-                } else if (action == adapter.renameAction) {
-                    adapter.callback.onRename(selected.itemView, selected.getAdapterPosition());
+                int position = selected.getAdapterPosition();
+                Style style = model.getProxy().getStyles().get(position);
+                if (action == removeAction) {
+                    //移除
+                    ActivityUtils.createDeleteMessageDialog(SettingActivity.this, (dialog, which) -> {
+                        Style currentStyle = model.getProxy().getCurrentStyle();
+                        model.getProxy().getStyles().remove(style);
+                        updateGlobalStyle(model.getProxy().getCurrentStyle());
+                        if (currentStyle == style) {
+                            model.getProxy().updateCurrentStyle();
+                        }
+                        adapter.notifyDataSetChanged();
+                        removeStyle.accept(style);
+                        dialog.dismiss();
+                    }, (dialog, which) -> dialog.dismiss()).show();
+                } else if (action == renameAction) {
+                    //弹窗修改
+                    QMUIBottomSheetInputConfirmBuilder b = new QMUIBottomSheetInputConfirmBuilder(SettingActivity.this);
+                    b.setTitle("修改样式名称")
+                            .setCancel((sheet, views) -> sheet.dismiss()).setConfirm((sheet, views) -> {
+                                if (views.length == 2) {
+                                    String s = ((EditText) views[1]).getText().toString();
+                                    if (!StringUtils.isEmpty(s)) {
+                                        model.getProxy().getCurrentStyle().setName(s);
+                                        adapter.notifyItemChanged(position);
+                                        saveStyle.accept(model.getProxy().getCurrentStyle());
+                                    }
+                                }
+                                sheet.dismiss();
+                            })
+                            .setConfigEditView(view -> {
+                                Style currentStyle = model.getProxy().getCurrentStyle();
+                                view.setInputType(InputType.TYPE_CLASS_TEXT);
+                                if (currentStyle != null) {
+                                    view.setText(currentStyle.getName());
+                                }
+                            }).build().show();
                 }
             }
         });
         RecyclerView listView = inflate.findViewById(R.id.style_list);
+        // 创建一个带边框的分割线
+        DividerItemDecoration divider = new NormalDividerItemDecoration(this, DividerItemDecoration.VERTICAL);
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setSize(1, QMUIDisplayHelper.dp2px(this, 1));
+        drawable.setColor(getColor(R.color.secondary2));
+        divider.setDrawable(drawable);
+        listView.addItemDecoration(divider);
+        listView.setLayoutManager(new LinearLayoutManager(this));
+        //设置适配器
         listView.setAdapter(adapter);
+        //挂载到RecyclerView
         swipeAction.attachToRecyclerView(listView);
-        QMUIBottomSheetConfirmBuilder<?> builder = new QMUIBottomSheetConfirmBuilder<>(this);
+        //构建显示选择样式弹窗
+        QMUIBottomSheetCustomBuilder<?> builder = new QMUIBottomSheetCustomBuilder<>(this);
         builder.setTitle("样式切换")
-                .setCancel((d, v) -> d.dismiss())
-                .setConfirm((d, v) -> {
-                    d.dismiss();
-                })
                 .setContentView(inflate)
                 .build().show();
     }
+
 
     private View.OnClickListener createFloatPointListener() {
         return e -> {
@@ -613,20 +715,34 @@ public class SettingActivity extends BaseActivity {
      * 读取配置
      */
     private void readConfig() {
-        ThreadUtil.runOnCpu(() -> {
-            //如果读取的不是null就覆盖值
-            Optional.ofNullable(setting.read(SettingKey.TYPE)).ifPresent(model.getProxy()::setType);
-            Optional.ofNullable(setting.read(SettingKey.TICK)).ifPresent(model.getProxy()::setTick);
-            Optional.ofNullable(setting.read(SettingKey.AUTO_CLOSE)).ifPresent(model.getProxy()::setAutoClose);
-            Optional.ofNullable(setting.read(SettingKey.SHOW_OPERATION)).ifPresent(model.getProxy()::setShowOperation);
-            Optional.ofNullable(setting.read(SettingKey.OPERATION_CONFIG)).ifPresent(model.getProxy()::setOperationConfig);
-            Optional.ofNullable(setting.read(SettingKey.AUTO_PLAY)).ifPresent(model.getProxy()::setAutoPlay);
-            Optional.ofNullable(setting.read(SettingKey.IGNORE_FLOATING_SCRIPT)).ifPresent(model.getProxy()::setIgnoreFloatingScript);
-            Optional.ofNullable(setting.read(SettingKey.FLOAT_POINT)).ifPresent(model.getProxy()::setFloatPoint);
-            Optional.ofNullable(setting.read(SettingKey.DYNAMIC_UPDATE)).ifPresent(model.getProxy()::setDynamicUpdate);
-            Optional.ofNullable(setting.read(SettingKey.MASK_CONFIG)).ifPresent(model.getProxy()::setMaskConfig);
-            Optional.ofNullable(setting.getAll(SettingKey.STYLE)).ifPresent(a -> model.getProxy().setStyles(new ArrayList<>(a.values())));
-        });
+        //如果读取的不是null就覆盖值
+        Optional.ofNullable(setting.read(SettingKey.TYPE)).ifPresent(model.getProxy()::setType);
+        Optional.ofNullable(setting.read(SettingKey.TICK)).ifPresent(model.getProxy()::setTick);
+        Optional.ofNullable(setting.read(SettingKey.AUTO_CLOSE)).ifPresent(model.getProxy()::setAutoClose);
+        Optional.ofNullable(setting.read(SettingKey.SHOW_OPERATION)).ifPresent(model.getProxy()::setShowOperation);
+        Optional.ofNullable(setting.read(SettingKey.OPERATION_CONFIG)).ifPresent(model.getProxy()::setOperationConfig);
+        Optional.ofNullable(setting.read(SettingKey.AUTO_PLAY)).ifPresent(model.getProxy()::setAutoPlay);
+        Optional.ofNullable(setting.read(SettingKey.IGNORE_FLOATING_SCRIPT)).ifPresent(model.getProxy()::setIgnoreFloatingScript);
+        Optional.ofNullable(setting.read(SettingKey.FLOAT_POINT)).ifPresent(model.getProxy()::setFloatPoint);
+        Optional.ofNullable(setting.read(SettingKey.DYNAMIC_UPDATE)).ifPresent(model.getProxy()::setDynamicUpdate);
+        Optional.ofNullable(setting.read(SettingKey.MASK_CONFIG)).ifPresent(model.getProxy()::setMaskConfig);
+        Optional.ofNullable(setting.getAll(SettingKey.STYLE)).ifPresent(a -> model.getProxy().setStyles(new ArrayList<>(a.values())));
+    }
+
+    private void reset() {
+        model.getProxy().getStyles().forEach(item -> setting.remove(new SettingKey<>(SettingKey.STYLE.getKey() + item.getId(), Style.class)));
+        model.setProxy(SettingProxy.DEFAULT.clone());
+        setting.write(SettingKey.TYPE, model.getProxy().getType());
+        setting.write(SettingKey.TICK, model.getProxy().getTick());
+        setting.write(SettingKey.AUTO_CLOSE, model.getProxy().getAutoClose());
+        setting.write(SettingKey.SHOW_OPERATION, model.getProxy().getShowOperation());
+        setting.write(SettingKey.OPERATION_CONFIG, model.getProxy().getOperationConfig());
+        setting.write(SettingKey.AUTO_PLAY, model.getProxy().getAutoPlay());
+        setting.write(SettingKey.IGNORE_FLOATING_SCRIPT, model.getProxy().getIgnoreFloatingScript());
+        setting.write(SettingKey.FLOAT_POINT, model.getProxy().getFloatPoint());
+        setting.write(SettingKey.DYNAMIC_UPDATE, model.getProxy().getDynamicUpdate());
+        setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+        model.getProxy().getStyles().forEach(item -> setting.write(new SettingKey<>(SettingKey.STYLE.getKey() + item.getId(), Style.class), item));
     }
 
     /**
@@ -668,58 +784,5 @@ public class SettingActivity extends BaseActivity {
             this.setMethod = setMethod;
             this.getMethod = getMethod;
         }
-    }
-
-    static class ChangeStyleAdapter extends RecyclerView.Adapter<QMUISwipeViewHolder> {
-        final QMUISwipeAction removeAction;
-        final QMUISwipeAction renameAction;
-        final ChangeStyleAdapterCallback callback;
-
-        public ChangeStyleAdapter(Context context, ChangeStyleAdapterCallback callback) {
-            this.callback = callback;
-            QMUISwipeAction.ActionBuilder builder = new QMUISwipeAction.ActionBuilder()
-                    .textSize(QMUIDisplayHelper.sp2px(context, 14))
-                    .textColor(Color.WHITE)
-                    .paddingStartEnd(QMUIDisplayHelper.dp2px(context, 14));
-            removeAction = builder.text("删除").backgroundColor(Color.RED).build();
-            renameAction = builder.text("重命名").backgroundColor(Color.BLUE).build();
-        }
-
-        @NonNull
-        @Override
-        public QMUISwipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_checked_list_item, parent, false);
-            final QMUISwipeViewHolder vh = new QMUISwipeViewHolder(view);
-            vh.addSwipeAction(removeAction);
-            vh.addSwipeAction(renameAction);
-            view.setOnClickListener(v -> callback.onClick(v, vh.getAdapterPosition()));
-            return vh;
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull QMUISwipeViewHolder holder, int position) {
-            TextView textView = holder.itemView.findViewById(R.id.text);
-            Style style = callback.getData().get(position);
-            textView.setText(style.getName());
-            View view = holder.itemView.findViewById(R.id.checked);
-            view.setVisibility(style == callback.getCurrentStyle() ? View.VISIBLE : View.INVISIBLE);
-        }
-
-        @Override
-        public int getItemCount() {
-            return callback.getData().size();
-        }
-    }
-
-    interface ChangeStyleAdapterCallback {
-        Style getCurrentStyle();
-
-        List<Style> getData();
-
-        void onClick(View e, Integer position);
-
-        void onRemove(View e, Integer position);
-
-        void onRename(View e, Integer position);
     }
 }

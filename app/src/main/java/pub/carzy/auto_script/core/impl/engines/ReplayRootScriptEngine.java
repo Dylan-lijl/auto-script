@@ -9,11 +9,13 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ObservableInt;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.WindowReplayFloatingButtonBinding;
 import pub.carzy.auto_script.entity.EventDevice;
+import pub.carzy.auto_script.entity.OperationConfig;
 import pub.carzy.auto_script.model.PreviewFloatingStatus;
 import pub.carzy.auto_script.core.data.ReplayModel;
 import pub.carzy.auto_script.core.impl.ReplayScriptEngine;
@@ -24,6 +26,7 @@ import pub.carzy.auto_script.core.sub.AbstractReplay;
 import pub.carzy.auto_script.utils.EventDeviceUtil;
 import pub.carzy.auto_script.utils.OverlayInputDialog;
 import pub.carzy.auto_script.utils.Shell;
+import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
  * @author admin
@@ -64,9 +67,21 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
         for (Object arg : args) {
             if (arg instanceof ReplayModel) {
                 dataWrapper.replay.setModel((ReplayModel) arg);
+            } else if (arg instanceof ReplayConfig) {
+                ReplayConfig config = (ReplayConfig) arg;
+                dataWrapper.replay.setTick(config.tick);
+                viewWrapper.dynamicUpdate = config.dynamicUpdate;
+                if (config.floatPoint != null) {
+                    viewWrapper.moveView(config.floatPoint.getX(), config.floatPoint.getY());
+                }
             }
         }
         viewWrapper.showView();
+    }
+
+    @Override
+    protected boolean invokePointCallback() {
+        return viewWrapper.dynamicUpdate;
     }
 
     private void replayCallback() {
@@ -176,6 +191,11 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
         }
     }
 
+    @Override
+    public void savePointCallback(BiConsumer<Integer, Integer> consumer) {
+        this.pointCallback = consumer;
+    }
+
     private static class DataWrapper {
         final ObservableInt count;
         final Replay replay;
@@ -197,6 +217,12 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
         final WindowManager.LayoutParams bindingParams;
         final OverlayInputDialog dialog;
         final int count;
+
+        boolean dynamicUpdate;
+        boolean showOperation;
+
+        OperationConfig operationConfig;
+        private Runnable runnable;
 
         public ViewWrapper(WindowManager windowManager, WindowReplayFloatingButtonBinding binding, WindowManager.LayoutParams bindingParams, OverlayInputDialog dialog) {
             this.binding = binding;
@@ -222,6 +248,14 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
             PreviewFloatingStatus status = binding.getStatus();
             status.setStatus(PreviewFloatingStatus.NONE);
             binding.getCount().set(count);
+        }
+
+        public void moveView(int x, int y) {
+            bindingParams.x = x;
+            bindingParams.y = y;
+            if (binding.getRoot().isAttachedToWindow()) {
+                windowManager.updateViewLayout(binding.getRoot(), bindingParams);
+            }
         }
     }
 }

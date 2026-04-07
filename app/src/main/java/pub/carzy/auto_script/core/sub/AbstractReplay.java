@@ -58,8 +58,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
      * 时间片
      */
     @Getter
-    @Setter
-    protected AtomicLong tick = new AtomicLong(10);
+    protected final AtomicLong tick = new AtomicLong(10);
     /**
      * 开始时间,开始时这个时间等于当前时间,,恢复时startTime += 当前时间-暂停时间
      */
@@ -76,6 +75,13 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
      * 回调
      */
     private final Set<ResultListener> callback = new LinkedHashSet<>();
+
+    @Override
+    public void setTick(Integer tick) {
+        if (tick != null) {
+            this.tick.set(tick);
+        }
+    }
 
     @Override
     public void clearCallback() {

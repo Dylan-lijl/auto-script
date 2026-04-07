@@ -95,7 +95,7 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
     private void addListenerByView() {
         WindowRecordFloatingButtonBinding binding = viewWrapper.binding;
         //添加长按拖动功能
-        addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.params, () -> {
+        addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.params, (x,y) -> {
                     if (binding.getRecordState().getState() != RecordStateModel.STATE_RECORDING) {
                         return;
                     }

@@ -16,6 +16,7 @@ import android.view.WindowMetrics;
 import androidx.appcompat.app.AlertDialog;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
@@ -39,6 +40,7 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 public abstract class AbstractScriptEngine implements ScriptEngine {
     protected volatile boolean initialized;
     protected Runnable closeBack;
+    protected BiConsumer<Integer, Integer> pointCallback;
 
     @Override
     public void start(Object... args) {
@@ -58,6 +60,15 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
 
     protected int getOverlayFlag() {
         return WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+    }
+
+    protected boolean invokePointCallback() {
+        return false;
+    }
+
+    @Override
+    public void savePointCallback(BiConsumer<Integer, Integer> consumer) {
+        this.pointCallback = consumer;
     }
 
     @Override
@@ -199,7 +210,7 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
         return createMoveListener(view, params, null);
     }
 
-    protected View.OnTouchListener createMoveListener(View view, WindowManager.LayoutParams params, Runnable runnable) {
+    protected View.OnTouchListener createMoveListener(View view, WindowManager.LayoutParams params, BiConsumer<Integer, Integer> runnable) {
         final int dragThreshold = 10;
         WindowManager windowManager = (WindowManager) getContext().getSystemService(AccessibilityService.WINDOW_SERVICE);
         return new View.OnTouchListener() {
@@ -239,8 +250,13 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
                         if (!isDragging) {
                             // 手指未移动超过阈值，触发点击事件
                             v.performClick();
-                        } else if (runnable != null) {
-                            runnable.run();
+                        } else {
+                            if (runnable != null) {
+                                runnable.accept(lastX, lastY);
+                            }
+                            if (pointCallback != null && invokePointCallback()) {
+                                pointCallback.accept(lastX, lastY);
+                            }
                         }
                         return true;
                 }

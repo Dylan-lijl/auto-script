@@ -78,6 +78,7 @@ import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
+import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.model.MacroInfoRefreshModel;
 import pub.carzy.auto_script.model.ScriptVoEntityModel;
@@ -217,7 +218,12 @@ public class MacroInfoActivity extends BaseActivity {
                         ((ReplayAccScriptEngine) replayScriptEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
                     }
                     ReplayModel replayModel = ReplayModel.create(model.getRoot(), model.getActionData(), model.getPointData());
-                    replayScriptEngine.start(replayModel);
+                    replayScriptEngine.savePointCallback((x, y) -> setting.write(SettingKey.FLOAT_POINT, new FloatPoint(x, y)));
+                    ReplayScriptEngine.ReplayConfig replayConfig = new ReplayScriptEngine.ReplayConfig();
+                    replayConfig.tick = setting.read(SettingKey.TICK, SettingProxy.DEFAULT.getTick());
+                    replayConfig.dynamicUpdate = setting.read(SettingKey.DYNAMIC_UPDATE, SettingProxy.DEFAULT.getDynamicUpdate());
+                    replayConfig.floatPoint = setting.read(SettingKey.FLOAT_POINT, SettingProxy.DEFAULT.getFloatPoint().clone());
+                    replayScriptEngine.start(replayModel, replayConfig);
                 }
             });
         });

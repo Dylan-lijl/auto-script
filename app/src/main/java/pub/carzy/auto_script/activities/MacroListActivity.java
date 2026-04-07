@@ -73,6 +73,7 @@ import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.entity.ExportScriptEntity;
+import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.model.DialogScriptImportModel;
 import pub.carzy.auto_script.model.MacroListModel;
@@ -677,7 +678,12 @@ public class MacroListActivity extends BaseActivity {
                         if (replayEngine instanceof AccScriptEngine) {
                             ((AccScriptEngine) replayEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
                         }
-                        replayEngine.start(replayModel);
+                        replayEngine.savePointCallback((x, y) -> setting.write(SettingKey.FLOAT_POINT, new FloatPoint(x, y)));
+                        ReplayScriptEngine.ReplayConfig replayConfig = new ReplayScriptEngine.ReplayConfig();
+                        replayConfig.tick = setting.read(SettingKey.TICK, SettingProxy.DEFAULT.getTick());
+                        replayConfig.dynamicUpdate = setting.read(SettingKey.DYNAMIC_UPDATE, SettingProxy.DEFAULT.getDynamicUpdate());
+                        replayConfig.floatPoint = setting.read(SettingKey.FLOAT_POINT, SettingProxy.DEFAULT.getFloatPoint().clone());
+                        replayEngine.start(replayModel, replayConfig);
                         runnable.run();
                     }
                 });
@@ -750,9 +756,13 @@ public class MacroListActivity extends BaseActivity {
                 if (recordEngine instanceof RecordAccScriptEngine) {
                     ((AccScriptEngine) recordEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
                 }
-//                recordEngine.setCloseBack(() -> recordEngine = null);
+                recordEngine.savePointCallback((x, y) -> setting.write(SettingKey.FLOAT_POINT, new FloatPoint(x, y)));
+                RecordScriptEngine.RecordConfig config = new RecordScriptEngine.RecordConfig();
+                config.dynamicUpdate = setting.read(SettingKey.DYNAMIC_UPDATE, SettingProxy.DEFAULT.getDynamicUpdate());
+                config.floatPoint = setting.read(SettingKey.FLOAT_POINT, SettingProxy.DEFAULT.getFloatPoint().clone());
+                config.maskConfig = setting.read(SettingKey.MASK_CONFIG, SettingProxy.DEFAULT.getMaskConfig().clone());
                 //打开
-                recordEngine.start();
+                recordEngine.start(config);
             }
         });
         GlobalSingletonScriptEngineController.getInstance().open(recordEngine, reference.get());

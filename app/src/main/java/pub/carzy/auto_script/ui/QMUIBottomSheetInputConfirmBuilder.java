@@ -35,8 +35,8 @@ public class QMUIBottomSheetInputConfirmBuilder extends QMUIBottomSheetConfirmBu
     }
 
     @Override
-    protected void addButtonListener(View cancelButton, QMUIBottomSheet bottomSheet, View view, OnButtonClickListener confirm) {
-        cancelButton.setOnClickListener(e -> cancel.onClick(bottomSheet, e, view.findViewById(id)));
+    protected void addButtonListener(View button, QMUIBottomSheet bottomSheet, View view, OnButtonClickListener c) {
+        button.setOnClickListener(e -> c.onClick(bottomSheet, e, view.findViewById(id)));
     }
 
     @Override

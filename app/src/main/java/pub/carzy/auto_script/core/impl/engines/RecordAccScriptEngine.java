@@ -1,5 +1,7 @@
 package pub.carzy.auto_script.core.impl.engines;
 
+import static com.google.android.material.internal.ViewUtils.getOverlay;
+
 import android.accessibilityservice.AccessibilityService;
 import android.graphics.PixelFormat;
 import android.view.Gravity;
@@ -7,6 +9,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.databinding.DataBindingUtil;
@@ -22,10 +25,12 @@ import pub.carzy.auto_script.config.BeanFactory;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
+import pub.carzy.auto_script.core.impl.ReplayScriptEngine;
 import pub.carzy.auto_script.databinding.WindowMaskViewBinding;
 import pub.carzy.auto_script.databinding.WindowRecordFloatingButtonBinding;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
 import pub.carzy.auto_script.entity.KeyEntity;
+import pub.carzy.auto_script.entity.MaskConfig;
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
 import pub.carzy.auto_script.model.RecordStateModel;
@@ -36,6 +41,7 @@ import pub.carzy.auto_script.core.impl.RecordScriptEngine;
 import pub.carzy.auto_script.core.sub.AccessibilityReplay;
 import pub.carzy.auto_script.core.sub.Replay;
 import pub.carzy.auto_script.core.sub.AbstractReplay;
+import pub.carzy.auto_script.ui.GridDrawable;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.Stopwatch;
 
@@ -82,8 +88,33 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
                 }
             }
         }
+        for (Object arg : args) {
+            if (arg instanceof RecordConfig) {
+                RecordConfig config = (RecordConfig) arg;
+                viewWrapper.dynamicUpdate = config.dynamicUpdate;
+                if (config.floatPoint != null) {
+                    viewWrapper.moveView(config.floatPoint.getX(), config.floatPoint.getY());
+                }
+                if (config.maskConfig != null) {
+                    MaskConfig maskConfig = config.maskConfig;
+                    GridDrawable gridDrawable = new GridDrawable();
+                    gridDrawable.setConfig(maskConfig.getColor(),maskConfig.getSize(), maskConfig.getGrid(), maskConfig.getLineWidth(), maskConfig.getGridColor());
+                    FrameLayout root = viewWrapper.maskViewBinding.backgroundRoot;
+                    root.getOverlay().add(gridDrawable);
+                    root.post(() -> {
+                        gridDrawable.setBounds(0, 0, root.getWidth(), root.getHeight());
+                    });
+                    root.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> gridDrawable.setBounds(0, 0, v.getWidth(), v.getHeight()));
+                }
+            }
+        }
         //显示控制按钮
         viewWrapper.showControlView();
+    }
+
+    @Override
+    protected boolean invokePointCallback() {
+        return viewWrapper.dynamicUpdate;
     }
 
     private void setUpAccessibleCallback() {
@@ -119,7 +150,8 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
         addMaskViewListener();
         //添加长按拖动功能
         addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.bindingParams),
-                binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop,binding.btnFloatingClose);
+                binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun,
+                binding.btnFloatingStop, binding.btnFloatingClose, binding.autoPlayBtn);
         //自动回放切换
         listenAutoReplay();
         //点击录制按钮
@@ -353,6 +385,7 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
          */
         boolean tint = false;
         final WindowManager windowManager;
+        boolean dynamicUpdate;
 
         public ViewWrapper(WindowManager windowManager, WindowRecordFloatingButtonBinding binding, WindowManager.LayoutParams bindingParams, WindowMaskViewBinding maskViewBinding) {
             this.windowManager = windowManager;
@@ -399,6 +432,15 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
         public void reset() {
             removeMaskView();
             binding.getRecordState().setState(RecordStateModel.STATE_IDLE);
+        }
+
+        public void moveView(int x, int y) {
+            bindingParams.x = x;
+            bindingParams.y = y;
+            if (binding.getRoot().isAttachedToWindow()) {
+                removeControlView();
+                showControlView();
+            }
         }
     }
 

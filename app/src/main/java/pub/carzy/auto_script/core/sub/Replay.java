@@ -18,6 +18,7 @@ public interface Replay {
     void addCallback(Replay.ResultListener listener);
 
     void setRepeatCount(int repeatCount);
+    void setTick(Integer tick);
 
     void start();
 
