@@ -11,7 +11,6 @@ import androidx.databinding.ObservableInt;
 
 import java.util.function.Consumer;
 
-import lombok.Getter;
 import pub.carzy.auto_script.databinding.WindowDialogEditCountBinding;
 
 /**
@@ -21,7 +20,7 @@ public class OverlayInputDialog {
 
     private final WindowManager wm;
     private final WindowDialogEditCountBinding view;
-    private int overlayFlag;
+    private final int overlayFlag;
 
     public OverlayInputDialog(Context context, int overlayFlag) {
         wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);

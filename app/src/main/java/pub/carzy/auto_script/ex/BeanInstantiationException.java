@@ -16,7 +16,7 @@ public class BeanInstantiationException extends RuntimeException {
     private final Method constructingMethod;
 
     public BeanInstantiationException(Class<?> beanClass, String msg) {
-        this((Class)beanClass, msg, (Throwable)null);
+        this(beanClass, msg, null);
     }
 
     public BeanInstantiationException(Class<?> beanClass, String msg, @Nullable Throwable cause) {
@@ -38,10 +38,6 @@ public class BeanInstantiationException extends RuntimeException {
         this.beanClass = constructingMethod.getReturnType();
         this.constructor = null;
         this.constructingMethod = constructingMethod;
-    }
-
-    public Class<?> getBeanClass() {
-        return this.beanClass;
     }
 
     @Nullable

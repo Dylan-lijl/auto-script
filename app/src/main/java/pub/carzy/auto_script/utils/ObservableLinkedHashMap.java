@@ -18,7 +18,7 @@ import java.util.Set;
  */
 public class ObservableLinkedHashMap<K, V> implements ObservableMap<K, V> {
     private final LinkedHashMap<K, V> backing = new LinkedHashMap<>();
-    private transient MapChangeRegistry mCallbacks = new MapChangeRegistry();
+    private final transient MapChangeRegistry mCallbacks = new MapChangeRegistry();
 
     @Override
     public void addOnMapChangedCallback(OnMapChangedCallback<? extends ObservableMap<K, V>, K, V> callback) {
@@ -72,6 +72,7 @@ public class ObservableLinkedHashMap<K, V> implements ObservableMap<K, V> {
 
     @Nullable
     @Override
+    @SuppressWarnings("unchecked")
     public V remove(@Nullable Object key) {
         V prev = backing.remove(key);
         notifyChange((K) key, prev);
@@ -189,8 +190,17 @@ public class ObservableLinkedHashMap<K, V> implements ObservableMap<K, V> {
     /* -------- equals & hashCode -------- */
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(@Nullable Object o) {
-        return backing.equals(o);
+        // 1. 同一性检查
+        if (this == o) return true;
+
+        // 2. 核心修复：检查 o 是否为当前类的实例
+        if (o == null || getClass() != o.getClass()) return false;
+
+        // 3. 转型并比较内部字段
+        ObservableLinkedHashMap<K,V> that = (ObservableLinkedHashMap<K,V>) o;
+        return Objects.equals(backing, that.backing);
     }
 
     @Override

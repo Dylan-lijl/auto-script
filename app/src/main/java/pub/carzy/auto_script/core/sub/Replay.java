@@ -3,7 +3,6 @@ package pub.carzy.auto_script.core.sub;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 
 import pub.carzy.auto_script.core.data.ReplayModel;
 

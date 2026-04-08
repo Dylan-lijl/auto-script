@@ -11,6 +11,9 @@ import androidx.databinding.ObservableList;
 import java.util.List;
 
 import pub.carzy.auto_script.BR;
+import pub.carzy.auto_script.R;
+import pub.carzy.auto_script.Startup;
+import pub.carzy.auto_script.activities.MainActivity;
 
 /**
  * 录制设置和播放设置等写完root模式之后再决定怎么配置
@@ -192,13 +195,13 @@ public class SettingProxy extends BaseObservable implements Cloneable {
     public String getTypeString() {
         switch (type) {
             case ROOT:
-                return "root模式";
+                return Startup.CURRENT.getString(R.string.root_mode);
             case ACCESSIBILITY:
-                return "无障碍模式";
+                return Startup.CURRENT.getString(R.string.accessibility_mode);
             case AUTO:
-                return "自动";
+                return Startup.CURRENT.getString(R.string.auto);
             default:
-                return "错误";
+                return Startup.CURRENT.getString(R.string.unknown);
         }
     }
 
@@ -268,6 +271,7 @@ public class SettingProxy extends BaseObservable implements Cloneable {
         notifyPropertyChanged(BR.maskConfig);
     }
 
+    @NonNull
     @Override
     public SettingProxy clone() {
         try {

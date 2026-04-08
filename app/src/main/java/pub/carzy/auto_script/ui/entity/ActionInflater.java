@@ -1,11 +1,8 @@
 package pub.carzy.auto_script.ui.entity;
 
-import static com.google.android.material.internal.ViewUtils.parseTintMode;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -23,7 +20,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import lombok.Getter;
 

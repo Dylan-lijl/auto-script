@@ -21,7 +21,7 @@ import java.util.function.BiConsumer;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.activities.MacroInfoActivity;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
@@ -55,7 +55,7 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
     }
 
     protected boolean hasFloating() {
-        return Settings.canDrawOverlays(BeanFactory.getInstance().get(Startup.class));
+        return Settings.canDrawOverlays(BeanContainer.getInstance().get(Startup.class));
     }
 
     protected int getOverlayFlag() {
@@ -115,7 +115,7 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
     }
 
     public Context getContext() {
-        return BeanFactory.getInstance().get(Startup.class).getApplicationContext();
+        return BeanContainer.getInstance().get(Startup.class).getApplicationContext();
     }
 
     public WindowManager getWindowManager() {
@@ -235,7 +235,8 @@ public abstract class AbstractScriptEngine implements ScriptEngine {
 
                         if (!isDragging) {
                             if (Math.sqrt(dx * dx + dy * dy) > dragThreshold) {
-                                isDragging = true; // 超过阈值才认为是拖动
+                                // 超过阈值才认为是拖动
+                                isDragging = true;
                             }
                         }
 

@@ -8,6 +8,8 @@ import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 /**
  * @author admin
  */
@@ -18,7 +20,7 @@ public class DraggableDotView extends View {
     private final Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     /** 半径 */
-    private int r;
+    private final int r;
 
     /** 父容器在屏幕上的位置 */
     private int parentLeft;
@@ -62,7 +64,7 @@ public class DraggableDotView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
 
         // 填充圆
@@ -71,6 +73,7 @@ public class DraggableDotView extends View {
         canvas.drawCircle(r, r, r - 1, strokePaint);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {

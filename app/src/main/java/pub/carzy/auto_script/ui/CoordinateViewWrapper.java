@@ -6,7 +6,6 @@ import android.graphics.Outline;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;

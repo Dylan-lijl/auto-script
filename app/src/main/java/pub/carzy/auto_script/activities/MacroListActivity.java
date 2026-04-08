@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.activities;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
@@ -13,8 +14,6 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,7 +62,7 @@ import java.util.stream.Collectors;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.adapter.BasicRecyclerViewAdapter;
 import pub.carzy.auto_script.adapter.BasicSwipeActionCallback;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.DialogScriptImportBinding;
@@ -388,8 +387,8 @@ public class MacroListActivity extends BaseActivity {
     }
 
     private void initBase() {
-        db = BeanFactory.getInstance().get(AppDatabase.class);
-        idWorker = BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
+        db = BeanContainer.getInstance().get(AppDatabase.class);
+        idWorker = BeanContainer.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
         });
         model = new MacroListModel();
         binding = DataBindingUtil.setContentView(this, R.layout.view_macro_list);
@@ -575,7 +574,7 @@ public class MacroListActivity extends BaseActivity {
         addActionByXml(builder, this, R.xml.actions_macro_list,
                 (b, m, item) -> {
                     if (item.getId() == R.id.delete_script || item.getId() == R.id.export_script) {
-                        if (!adapter.hasMultipleData()) {
+                        if (adapter.isSingleData()) {
                             return;
                         }
                         m.setText(item.getTitle() + "(" + adapter.checkedSize() + ")");
@@ -613,7 +612,7 @@ public class MacroListActivity extends BaseActivity {
      * 导出json格式选中的脚本
      */
     private void exportSelectScript() {
-        if (!adapter.hasMultipleData()) {
+        if (adapter.isSingleData()) {
             return;
         }
         Toast.makeText(this, R.string.message_exporting, Toast.LENGTH_SHORT).show();
@@ -676,7 +675,7 @@ public class MacroListActivity extends BaseActivity {
                     @Override
                     public void onFail(int code, Object... args) {
                         ActivityUtils.onOpenFail(MacroListActivity.this, type, code, () -> {
-                            Toast.makeText(MacroListActivity.this, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MacroListActivity.this, R.string.change_acc_msg, Toast.LENGTH_SHORT).show();
                             replayEngine = new ReplayAccScriptEngine();
                             ThreadUtil.runOnUi(() -> GlobalSingletonScriptEngineController.getInstance().open(replayEngine, reference.get()));
                         }, args);
@@ -685,7 +684,7 @@ public class MacroListActivity extends BaseActivity {
                     @Override
                     public void onSuccess() {
                         if (replayEngine instanceof AccScriptEngine) {
-                            ((AccScriptEngine) replayEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                            ((AccScriptEngine) replayEngine).setAccessibilityService(BeanContainer.getInstance().get(MyAccessibilityService.class));
                         }
                         replayEngine.savePointCallback((x, y) -> setting.write(SettingKey.FLOAT_POINT, new FloatPoint(x, y)));
                         ReplayScriptEngine.ReplayConfig replayConfig = new ReplayScriptEngine.ReplayConfig();
@@ -754,7 +753,7 @@ public class MacroListActivity extends BaseActivity {
             @Override
             public void onFail(int code, Object... args) {
                 ActivityUtils.onOpenFail(MacroListActivity.this, type, code, () -> {
-                    Toast.makeText(MacroListActivity.this, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MacroListActivity.this, R.string.change_acc_msg, Toast.LENGTH_SHORT).show();
                     recordEngine = new RecordAccScriptEngine();
                     ThreadUtil.runOnUi(() -> GlobalSingletonScriptEngineController.getInstance().open(recordEngine, reference.get()));
                 }, args);
@@ -763,7 +762,7 @@ public class MacroListActivity extends BaseActivity {
             @Override
             public void onSuccess() {
                 if (recordEngine instanceof RecordAccScriptEngine) {
-                    ((AccScriptEngine) recordEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                    ((AccScriptEngine) recordEngine).setAccessibilityService(BeanContainer.getInstance().get(MyAccessibilityService.class));
                 }
                 recordEngine.savePointCallback((x, y) -> setting.write(SettingKey.FLOAT_POINT, new FloatPoint(x, y)));
                 RecordScriptEngine.RecordConfig config = new RecordScriptEngine.RecordConfig();
@@ -852,6 +851,7 @@ public class MacroListActivity extends BaseActivity {
             this.data.addAll(model.getData());
             //添加监听model列表数据一变化就同步变化data
             ObservableList.OnListChangedCallback<ObservableList<ScriptEntity>> callback = new ObservableList.OnListChangedCallback<>() {
+                @SuppressLint("NotifyDataSetChanged")
                 @Override
                 public void onChanged(ObservableList<ScriptEntity> sender) {
                     // 1. 同步数据源
@@ -952,8 +952,8 @@ public class MacroListActivity extends BaseActivity {
             };
         }
 
-        public boolean hasMultipleData() {
-            return multiple.get() && !checkedIds.isEmpty();
+        public boolean isSingleData() {
+            return !multiple.get() || checkedIds.isEmpty();
         }
 
         public int checkedSize() {
@@ -996,7 +996,7 @@ public class MacroListActivity extends BaseActivity {
             return data.size();
         }
 
-        public class VH extends RecyclerView.ViewHolder {
+        public static class VH extends RecyclerView.ViewHolder {
             TextView textView;
 
             VH(@NonNull View itemView) {

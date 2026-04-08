@@ -1,7 +1,6 @@
 package pub.carzy.auto_script.adapter;
 
 import android.annotation.SuppressLint;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -10,11 +9,14 @@ import androidx.databinding.ObservableArrayList;
 import androidx.databinding.ObservableList;
 import androidx.recyclerview.widget.RecyclerView;
 
+import lombok.Getter;
+
 
 /**
  * 基础适配器,管理无数据和有数据切换
  * @author admin
  */
+@Getter
 public abstract class BasicRecyclerViewAdapter<V extends RecyclerView.ViewHolder, D>
         extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     /**
@@ -84,6 +86,7 @@ public abstract class BasicRecyclerViewAdapter<V extends RecyclerView.ViewHolder
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (getItemViewType(position) == TYPE_EMPTY) {
             //绑定空组件
@@ -108,7 +111,4 @@ public abstract class BasicRecyclerViewAdapter<V extends RecyclerView.ViewHolder
     protected void onBindEmpty(RecyclerView.ViewHolder holder) {
     }
 
-    public ObservableList<D> getData() {
-        return data;
-    }
 }

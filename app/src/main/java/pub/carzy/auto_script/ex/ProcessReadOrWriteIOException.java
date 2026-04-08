@@ -61,6 +61,7 @@ public class ProcessReadOrWriteIOException extends RuntimeException{
     }
 
     @Override
+    @SuppressWarnings("CallToPrintStackTrace")
     public void printStackTrace() {
         super.printStackTrace();
     }

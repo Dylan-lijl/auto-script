@@ -4,7 +4,6 @@ import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
 import java.util.List;
-import java.util.Objects;
 
 import pub.carzy.auto_script.BR;
 import pub.carzy.auto_script.entity.FAQEntity;

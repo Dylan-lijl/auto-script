@@ -9,7 +9,6 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.WindowManager;
@@ -25,7 +24,7 @@ import java.util.List;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.entity.FloatPoint;
@@ -64,7 +63,7 @@ public abstract class AccScriptEngine extends AbstractScriptEngine {
     public void init(ResultCallback callback) {
         boolean enabled = false;
         try {
-            Startup context = BeanFactory.getInstance().get(Startup.class);
+            Startup context = BeanContainer.getInstance().get(Startup.class);
             AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
             if (am != null) {
                 // 2. 获取当前【已启用】的所有无障碍服务列表
@@ -206,21 +205,6 @@ public abstract class AccScriptEngine extends AbstractScriptEngine {
         int[] screenSize = getScreenSize();
         params.x = screenSize[0] - binding.getRoot().getWidth() - QMUIDisplayHelper.dp2px(getContext(), 56);
         params.y = screenSize[1] - binding.getRoot().getHeight() - QMUIDisplayHelper.dp2px(getContext(), 56);
-        //如果设置里面有位置则设置
-        Setting setting = BeanFactory.getInstance().get(Setting.class);
-        if (setting != null) {
-            ThreadUtil.runOnCpu(() -> {
-                try {
-                    FloatPoint point = setting.read(SettingKey.FLOAT_POINT, null);
-                    if (point != null) {
-                        params.x = point.getX();
-                        params.y = point.getY();
-                    }
-                } catch (Exception e) {
-                    Log.w("Setting", "获取point失败:" + e.getMessage());
-                }
-            });
-        }
         return params;
     }
 }

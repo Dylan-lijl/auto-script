@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.Optional;
 
 import pub.carzy.auto_script.ex.DeviceNotRootedException;
 import pub.carzy.auto_script.ex.ProcessReadOrWriteIOException;

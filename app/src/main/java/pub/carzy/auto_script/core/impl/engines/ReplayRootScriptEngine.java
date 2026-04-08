@@ -15,7 +15,6 @@ import cn.hutool.core.lang.Pair;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.WindowReplayFloatingButtonBinding;
 import pub.carzy.auto_script.entity.EventDevice;
-import pub.carzy.auto_script.entity.OperationConfig;
 import pub.carzy.auto_script.model.PreviewFloatingStatus;
 import pub.carzy.auto_script.core.data.ReplayModel;
 import pub.carzy.auto_script.core.impl.ReplayScriptEngine;
@@ -26,9 +25,9 @@ import pub.carzy.auto_script.core.sub.AbstractReplay;
 import pub.carzy.auto_script.utils.EventDeviceUtil;
 import pub.carzy.auto_script.utils.OverlayInputDialog;
 import pub.carzy.auto_script.utils.Shell;
-import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
+ * root回放引擎
  * @author admin
  */
 public class ReplayRootScriptEngine extends RootScriptEngine implements ReplayScriptEngine {
@@ -219,10 +218,6 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
         final int count;
 
         boolean dynamicUpdate;
-        boolean showOperation;
-
-        OperationConfig operationConfig;
-        private Runnable runnable;
 
         public ViewWrapper(WindowManager windowManager, WindowReplayFloatingButtonBinding binding, WindowManager.LayoutParams bindingParams, OverlayInputDialog dialog) {
             this.binding = binding;

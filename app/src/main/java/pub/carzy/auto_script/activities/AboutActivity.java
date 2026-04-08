@@ -3,7 +3,6 @@ package pub.carzy.auto_script.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,9 +15,6 @@ import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 
 import com.google.gson.Gson;
-import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
-import com.qmuiteam.qmui.util.QMUIViewHelper;
-import com.qmuiteam.qmui.widget.QMUIProgressBar;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -34,13 +30,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -52,7 +46,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.databinding.ComAboutUpdateVersionBinding;
 import pub.carzy.auto_script.databinding.DownloadProgressBinding;
 import pub.carzy.auto_script.databinding.ViewAboutBinding;
@@ -70,6 +64,7 @@ import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
  * 关于
+ *
  * @author admin
  */
 public class AboutActivity extends BaseActivity {
@@ -82,7 +77,7 @@ public class AboutActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.view_about);
-        markwon = BeanFactory.getInstance().get(Markwon.class);
+        markwon = BeanContainer.getInstance().get(Markwon.class);
         model = new AboutModel();
         binding.setModel(model);
         initTopBar();
@@ -305,6 +300,11 @@ public class AboutActivity extends BaseActivity {
 
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    /**
+     * 更新
+     * @param url 路径
+     * @param success 成功回调
+     */
     private void updateSoftware(String url, Consumer<File> success) {
         if (url == null) {
             return;
@@ -316,7 +316,7 @@ public class AboutActivity extends BaseActivity {
         inflate.setModel(m);
         AtomicReference<Future<?>> future = new AtomicReference<>();
         QMUIDialog qmuiDialog = new QMUIDialog.CustomDialogBuilder(this) {
-            @Nullable
+            @NonNull
             @Override
             protected View onCreateContent(QMUIDialog dialog, QMUIDialogView parent, Context context) {
                 return inflate.getRoot();
@@ -346,27 +346,24 @@ public class AboutActivity extends BaseActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // Android 7.0+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Uri apkUri = FileProvider.getUriForFile(
-                    context,
-                    context.getPackageName() + ".fileProvider",
-                    file
-            );
-            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        } else {
-            intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
-        }
+        Uri apkUri = FileProvider.getUriForFile(
+                context,
+                context.getPackageName() + ".fileProvider",
+                file
+        );
+        intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         context.startActivity(intent);
     }
 
     /**
      * 下载文件
-     * @param url 路径
-     * @param setMaxValue 设置文件最大值回调
+     *
+     * @param url           路径
+     * @param setMaxValue   设置文件最大值回调
      * @param updateProcess 更新进度回调
-     * @param success 成功回调
+     * @param success       成功回调
      */
     private void downloadFile(String url, Consumer<Long> setMaxValue, Consumer<Long> updateProcess, Consumer<File> success) {
         OkHttpClient client = new OkHttpClient();

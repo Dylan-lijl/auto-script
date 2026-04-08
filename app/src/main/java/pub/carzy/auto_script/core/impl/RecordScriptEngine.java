@@ -4,6 +4,7 @@ import pub.carzy.auto_script.core.ScriptEngine;
 import pub.carzy.auto_script.entity.MaskConfig;
 
 /**
+ * 录制脚本引擎
  * @author admin
  */
 public interface RecordScriptEngine extends ScriptEngine {

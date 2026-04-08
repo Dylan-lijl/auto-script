@@ -12,7 +12,7 @@ import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import java.util.function.Consumer;
 
 import pub.carzy.auto_script.Startup;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.entity.FloatPoint;
@@ -23,6 +23,7 @@ import pub.carzy.auto_script.utils.Shell;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
+ * root脚本引擎
  * @author admin
  */
 public abstract class RootScriptEngine extends AbstractScriptEngine {
@@ -47,7 +48,7 @@ public abstract class RootScriptEngine extends AbstractScriptEngine {
     @Override
     protected void authorizeFloating(ResultCallback callback) {
         //发送adb命令静默授权
-        Shell.grantOverlayPermissionSilently(cmdProcess, BeanFactory.getInstance().get(Startup.class).getPackageName());
+        Shell.grantOverlayPermissionSilently(cmdProcess, BeanContainer.getInstance().get(Startup.class).getPackageName());
         final int[] retryCount = {19};
         Consumer<ResultCallback> supperBack = super::authorizeFloating;
         // 使用匿名的 Runnable 避免数组引用带来的视觉混乱
@@ -82,7 +83,7 @@ public abstract class RootScriptEngine extends AbstractScriptEngine {
         params.x = screenSize[0] - binding.getRoot().getWidth() - QMUIDisplayHelper.dp2px(getContext(), 56);
         params.y = screenSize[1] - binding.getRoot().getHeight() - QMUIDisplayHelper.dp2px(getContext(), 56);
         //如果设置里面有位置则设置
-        Setting setting = BeanFactory.getInstance().get(Setting.class);
+        Setting setting = BeanContainer.getInstance().get(Setting.class);
         if (setting != null) {
             ThreadUtil.runOnCpu(() -> {
                 try {

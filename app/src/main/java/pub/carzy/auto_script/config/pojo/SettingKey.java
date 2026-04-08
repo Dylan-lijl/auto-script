@@ -28,6 +28,7 @@ public class SettingKey<T> {
     public static final SettingKey<Boolean> DYNAMIC_UPDATE = new SettingKey<>("dynamicUpdate", Boolean.class);
     public static final SettingKey<MaskConfig> MASK_CONFIG = new SettingKey<>("maskConfig", MaskConfig.class);
     public static final SettingKey<Integer> TICK = new SettingKey<>("tick", Integer.class);
+    public static final SettingKey<Integer> PROHIBITED = new SettingKey<>("prohibited", Integer.class);
     public static final SettingKey<String> LANGUAGE = new SettingKey<>("language", String.class);
     public static final SettingKey<String> UUID = new SettingKey<>("uuid", String.class);
     public static final SettingKey<FloatPoint> FLOAT_POINT = new SettingKey<>("floatPoint", FloatPoint.class);

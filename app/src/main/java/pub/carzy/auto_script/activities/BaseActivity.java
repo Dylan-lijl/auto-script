@@ -25,8 +25,7 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.config.BeanFactory;
-import pub.carzy.auto_script.config.ControllerCallback;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.entity.Style;
@@ -59,7 +58,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected long styleVersion = StaticValues.EMPTY_DEFAULT_LONG_VALUE;
 
     public BaseActivity() {
-        setting = BeanFactory.getInstance().get(Setting.class);
+        setting = BeanContainer.getInstance().get(Setting.class);
     }
 
     private void init(Context context) {
@@ -71,10 +70,9 @@ public abstract class BaseActivity extends AppCompatActivity {
      * 添加默认菜单
      *
      * @param builder b
-     * @return 实例
      */
-    protected QMUIBottomSheet.BottomListSheetBuilder addDefaultMenu(QMUIBottomSheet.BottomListSheetBuilder builder) {
-        return addActionByXml(builder, this, R.xml.actions_common);
+    protected void addDefaultMenu(QMUIBottomSheet.BottomListSheetBuilder builder) {
+        addActionByXml(builder, this, R.xml.actions_common);
     }
 
     /**
@@ -83,11 +81,10 @@ public abstract class BaseActivity extends AppCompatActivity {
      * @param builder b
      * @param context c
      * @param xmlId   资源id
-     * @return 实例
      */
-    public QMUIBottomSheet.BottomListSheetBuilder addActionByXml(QMUIBottomSheet.BottomListSheetBuilder builder, Context context, int xmlId) {
+    public void addActionByXml(QMUIBottomSheet.BottomListSheetBuilder builder, Context context, int xmlId) {
         //默认回调:添加
-        return addActionByXml(builder, context, xmlId, (builder1, model, actionItem) -> {
+        addActionByXml(builder, context, xmlId, (builder1, model, actionItem) -> {
             builder.addItem(model);
         });
     }
@@ -99,9 +96,8 @@ public abstract class BaseActivity extends AppCompatActivity {
      * @param context  c
      * @param xmlId    资源id
      * @param callback 回调
-     * @return 实例
      */
-    public QMUIBottomSheet.BottomListSheetBuilder addActionByXml(QMUIBottomSheet.BottomListSheetBuilder builder, Context context, int xmlId, TriConsumer<QMUIBottomSheet.BottomListSheetBuilder, QMUIBottomSheetListItemModelExt, ActionInflater.ActionItem> callback) {
+    public void addActionByXml(QMUIBottomSheet.BottomListSheetBuilder builder, Context context, int xmlId, TriConsumer<QMUIBottomSheet.BottomListSheetBuilder, QMUIBottomSheetListItemModelExt, ActionInflater.ActionItem> callback) {
         //使用资源类加载
         List<ActionInflater.ActionItem> list = ActionInflater.inflate(context, xmlId);
         for (ActionInflater.ActionItem item : list) {
@@ -119,7 +115,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                 callback.accept(builder, model, item);
             }
         }
-        return builder;
     }
 
     /**
@@ -178,27 +173,22 @@ public abstract class BaseActivity extends AppCompatActivity {
                 SupportLocaleResult result = new SupportLocaleResult();
                 //获取支持的语言
                 result.getLocales().putAll(ActivityUtils.getLocaleMap(getApplicationContext()));
-                Setting setting = BeanFactory.getInstance().get(Setting.class, false);
+                Setting setting = BeanContainer.getInstance().get(Setting.class, false);
                 if (setting == null) {
                     return;
                 }
-                //获取已配置的语言
+                // 获取已配置语言
                 String language = setting.read(SettingKey.LANGUAGE, null);
+
                 if (language == null) {
-                    //没有配置就尝试使用系统地区
+                    // 使用系统语言
                     Configuration config = new Configuration(getResources().getConfiguration());
                     config.setLocale(Locale.getDefault());
                     Context localizedContext = createConfigurationContext(config);
-                    //查看有没有对应本地化资源
-                    int resId = localizedContext.getResources().getIdentifier("language", "string", getPackageName());
-                    if (resId != 0) {
-                        //存在就使用该语言
-                        language = localizedContext.getString(resId);
-                    }
+                    // ⭐ 直接用 R.string
+                    language = localizedContext.getString(R.string.language);
                 }
-                if (language != null) {
-                    result.setCurrentLocale(language);
-                }
+                result.setCurrentLocale(language);
                 ThreadUtil.runOnUi(() -> {
                     if (result.getLocales().isEmpty()) {
                         Toast.makeText(this, R.string.no_language_support, Toast.LENGTH_SHORT).show();
@@ -208,8 +198,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     if (result.getCurrentLocale() == null) {
                         String l = result.getLocales().keySet().iterator().next();
                         //如果没有选中的语言,则先保存一个默认语言
-                        changeLanguage((v) -> {
-                        }, l);
+                        changeLanguage(l);
                         result.setCurrentLocale(l);
                     }
                     //构建弹窗
@@ -282,15 +271,13 @@ public abstract class BaseActivity extends AppCompatActivity {
                         return;
                     }
                     //更新配置信息并改变语言,重新加载当前页面
-                    changeLanguage(v -> {
-                        Resources res = getResources();
-                        Configuration config =
-                                new Configuration(res.getConfiguration());
-                        config.setLocale(
-                                result.getLocales().get(keys.get(i))
-                        );
-                        recreate();
-                    }, keys.get(i));
+                    changeLanguage(keys.get(i));
+                    Resources res = getResources();
+                    Configuration config = new Configuration(res.getConfiguration());
+                    config.setLocale(
+                            result.getLocales().get(keys.get(i))
+                    );
+                    recreate();
                     dialog.dismiss();
                 }
         );
@@ -325,17 +312,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         build.show();
     }
 
-    public void changeLanguage(ControllerCallback<Void> callback, String language) {
-        ThreadUtil.runOnCpu(() -> {
-            setting.write(SettingKey.LANGUAGE,language);
-            try {
-                ThreadUtil.runOnUi(() -> callback.complete(null));
-            } catch (Exception e) {
-                ThreadUtil.runOnUi(() -> callback.catchMethod(e));
-            } finally {
-                ThreadUtil.runOnUi(callback::finallyMethod);
-            }
-        });
+    public void changeLanguage(String language) {
+        setting.write(SettingKey.LANGUAGE, language);
     }
 
     /**
@@ -347,9 +325,9 @@ public abstract class BaseActivity extends AppCompatActivity {
         QMUITopBarLayout topBar = getTopBar();
         if (topBar != null) {
             //获取全局样式版本
-            Long globalStyleVersion = BeanFactory.getInstance().get(StaticValues.STYLE_VERSION, false);
+            Long globalStyleVersion = BeanContainer.getInstance().get(StaticValues.STYLE_VERSION, false);
             //获取全局使用的样式
-            Style style = BeanFactory.getInstance().get(StaticValues.STYLE_CURRENT, false);
+            Style style = BeanContainer.getInstance().get(StaticValues.STYLE_CURRENT, false);
             if (style == null) {
                 //没有就使用默认样式
                 style = Style.DEFAULT_STYLE;
@@ -369,8 +347,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (topBar == null) {
             return;
         }
-        Long globalStyleVersion = BeanFactory.getInstance().get(StaticValues.STYLE_VERSION, false);
-        Style style = BeanFactory.getInstance().get(StaticValues.STYLE_CURRENT, false);
+        Long globalStyleVersion = BeanContainer.getInstance().get(StaticValues.STYLE_VERSION, false);
+        Style style = BeanContainer.getInstance().get(StaticValues.STYLE_CURRENT, false);
         if (style == null) {
             style = Style.DEFAULT_STYLE;
         }

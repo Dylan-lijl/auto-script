@@ -175,11 +175,9 @@ public abstract class Assert {
 
     public static void noNullElements(@Nullable Object[] array, String message) {
         if (array != null) {
-            Object[] var2 = array;
             int var3 = array.length;
 
-            for (int var4 = 0; var4 < var3; ++var4) {
-                Object element = var2[var4];
+            for (Object element : array) {
                 if (element == null) {
                     throw new IllegalArgumentException(message);
                 }
@@ -190,11 +188,9 @@ public abstract class Assert {
 
     public static void noNullElements(@Nullable Object[] array, Supplier<String> messageSupplier) {
         if (array != null) {
-            Object[] var2 = array;
             int var3 = array.length;
 
-            for (int var4 = 0; var4 < var3; ++var4) {
-                Object element = var2[var4];
+            for (Object element : array) {
                 if (element == null) {
                     throw new IllegalArgumentException(nullSafeGet(messageSupplier));
                 }
@@ -233,10 +229,7 @@ public abstract class Assert {
 
     public static void noNullElements(@Nullable Collection<?> collection, String message) {
         if (collection != null) {
-            Iterator var2 = collection.iterator();
-
-            while (var2.hasNext()) {
-                Object element = var2.next();
+            for (Object element : collection) {
                 if (element == null) {
                     throw new IllegalArgumentException(message);
                 }
@@ -247,10 +240,7 @@ public abstract class Assert {
 
     public static void noNullElements(@Nullable Collection<?> collection, Supplier<String> messageSupplier) {
         if (collection != null) {
-            Iterator var2 = collection.iterator();
-
-            while (var2.hasNext()) {
-                Object element = var2.next();
+            for (Object element : collection) {
                 if (element == null) {
                     throw new IllegalArgumentException(nullSafeGet(messageSupplier));
                 }

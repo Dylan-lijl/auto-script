@@ -34,11 +34,13 @@ public class PointAddActivity extends BaseActivity {
     private ViewPointAddBinding binding;
     private DraggableDotView dotView;
     private ViewGroup overlay;
-    private int r = 20;
+    private final int r = 40;
+
     @Override
     protected QMUITopBarLayout getTopBar() {
         return binding.topBarLayout.actionBar;
     }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +58,10 @@ public class PointAddActivity extends BaseActivity {
         }
         if (data == null) {
             //报错
+            Toast.makeText(this, R.string.unknown_error, Toast.LENGTH_SHORT).show();
+            setResult(RESULT_CANCELED, null);
+            finish();
+            return;
         }
         index = (index = intent.getIntExtra("index", -1)) == -1 ? null : index;
         minOrder = (minOrder = intent.getFloatExtra("minOrder", -1)) == -1 ? null : minOrder;

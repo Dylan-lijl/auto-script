@@ -4,25 +4,9 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.Nullable;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Deque;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 public abstract class StringUtils {
@@ -86,24 +70,6 @@ public abstract class StringUtils {
 
     public static boolean containsWhitespace(@Nullable String str) {
         return containsWhitespace((CharSequence) str);
-    }
-
-    public static String trimWhitespace(String str) {
-        if (!hasLength(str)) {
-            return str;
-        } else {
-            int beginIndex = 0;
-
-            int endIndex;
-            for (endIndex = str.length() - 1; beginIndex <= endIndex && Character.isWhitespace(str.charAt(beginIndex)); ++beginIndex) {
-            }
-
-            while (endIndex > beginIndex && Character.isWhitespace(str.charAt(endIndex))) {
-                --endIndex;
-            }
-
-            return str.substring(beginIndex, endIndex + 1);
-        }
     }
 
     public static String trimAllWhitespace(String str) {
@@ -318,7 +284,7 @@ public abstract class StringUtils {
             } else {
                 char[] chars = str.toCharArray();
                 chars[0] = updatedChar;
-                return new String(chars, 0, chars.length);
+                return new String(chars);
             }
         }
     }
@@ -393,7 +359,7 @@ public abstract class StringUtils {
             country = "";
         }
 
-        return language.length() > 0 ? new Locale(language, country, variant) : null;
+        return !language.isEmpty() ? new Locale(language, country, variant) : null;
     }
 
     private static void validateLocalePart(String localePart) {

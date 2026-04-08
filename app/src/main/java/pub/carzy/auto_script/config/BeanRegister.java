@@ -25,6 +25,7 @@ import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
+ * 注册器
  * @author admin
  */
 public class BeanRegister {
@@ -41,13 +42,13 @@ public class BeanRegister {
      * 初始化检查
      */
     private static void init() {
-        Setting setting = BeanFactory.getInstance().get(Setting.class);
+        Setting setting = BeanContainer.getInstance().get(Setting.class);
         if (setting.read(SettingKey.UUID, null) == null) {
             //设置用户标识
             setting.write(SettingKey.UUID,UUID.randomUUID().toString().replace("-", ""));
         }
         //设置QMUI皮肤
-        QMUISkinManager manager = BeanFactory.getInstance().get(QMUISkinManager.class);
+        QMUISkinManager manager = BeanContainer.getInstance().get(QMUISkinManager.class);
         manager.addSkin(1, R.style.Theme_Auto_Script);
         //获取样式
         ThreadUtil.runOnCpu(() -> {
@@ -67,8 +68,8 @@ public class BeanRegister {
             }
             //将最大版本号的样式注册到全局中
             if (currentStyle != null) {
-                BeanFactory.getInstance().register(StaticValues.STYLE_VERSION, System.currentTimeMillis());
-                BeanFactory.getInstance().register(StaticValues.STYLE_CURRENT, currentStyle);
+                BeanContainer.getInstance().register(StaticValues.STYLE_VERSION, System.currentTimeMillis());
+                BeanContainer.getInstance().register(StaticValues.STYLE_CURRENT, currentStyle);
             }
         });
     }
@@ -78,7 +79,7 @@ public class BeanRegister {
      * @param context c
      */
     private static void registerBeans(Application context) {
-        BeanFactory register = BeanFactory.getInstance()
+        BeanContainer register = BeanContainer.getInstance()
                 //Setting
                 .register(new PrefsSetting(context))
                 //ApplicationContext

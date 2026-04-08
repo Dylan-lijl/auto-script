@@ -11,10 +11,10 @@ import pub.carzy.auto_script.utils.MyTypeToken;
 /**
  * @author admin
  */
-public class BeanFactory {
+public class BeanContainer {
 
     @Getter
-    private static final BeanFactory instance = new BeanFactory();
+    private static final BeanContainer instance = new BeanContainer();
 
     /**
      * 名字 -> bean 对象
@@ -27,20 +27,20 @@ public class BeanFactory {
     private final Map<Class<?>, Set<String>> typeMap = new ConcurrentHashMap<>();
     private final Map<Type, Object> genericTypeMap = new ConcurrentHashMap<>();
 
-    private BeanFactory() {
+    private BeanContainer() {
     }
 
     /**
      * 注册对象（自动使用类名作为默认名字）
      */
-    public <T> BeanFactory register(T instance) {
+    public <T> BeanContainer register(T instance) {
         return register(instance.getClass().getName(), instance);
     }
 
     /**
      * 注册对象（指定名字）
      */
-    public <T> BeanFactory register(String name, T instance) {
+    public <T> BeanContainer register(String name, T instance) {
         Objects.requireNonNull(name, "Bean name cannot be null");
         Objects.requireNonNull(instance, "Bean instance cannot be null");
 
@@ -53,7 +53,7 @@ public class BeanFactory {
         return this;
     }
 
-    public <T> BeanFactory register(MyTypeToken<T> type, Object instance) {
+    public <T> BeanContainer register(MyTypeToken<T> type, Object instance) {
         Objects.requireNonNull(type, "Generic type cannot be null");
         Objects.requireNonNull(instance, "Instance cannot be null");
         genericTypeMap.put(type.getType(), instance);
@@ -221,9 +221,7 @@ public class BeanFactory {
         Set<Class<?>> types = new HashSet<>();
         while (clazz != null && clazz != Object.class) {
             types.add(clazz);
-            for (Class<?> i : clazz.getInterfaces()) {
-                types.add(i);
-            }
+            types.addAll(Arrays.asList(clazz.getInterfaces()));
             clazz = clazz.getSuperclass();
         }
         return types;

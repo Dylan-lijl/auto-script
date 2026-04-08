@@ -6,13 +6,15 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 /**
  * @author admin
  */
 public class GridBackgroundView extends View {
 
-    private Paint paint;
-    private float cellSize;
+    private final Paint paint;
+    private final float cellSize;
 
     public GridBackgroundView(Context context) {
         this(context, null);
@@ -24,12 +26,11 @@ public class GridBackgroundView extends View {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(0x33000000);
         paint.setStrokeWidth(1f);
-
-        cellSize = dp(context, 20);
+        cellSize = dp(context);
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
 
         int w = getWidth();
@@ -44,8 +45,8 @@ public class GridBackgroundView extends View {
         }
     }
 
-    private float dp(Context ctx, float value) {
-        return value * ctx.getResources().getDisplayMetrics().density;
+    private float dp(Context ctx) {
+        return (float) 20 * ctx.getResources().getDisplayMetrics().density;
     }
 }
 

@@ -3,7 +3,6 @@ package pub.carzy.auto_script.core;
 import java.util.function.BiConsumer;
 
 import pub.carzy.auto_script.entity.FloatPoint;
-import pub.carzy.auto_script.entity.OperationConfig;
 
 /**
  * @author admin

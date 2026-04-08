@@ -12,6 +12,7 @@ import java.util.List;
 import pub.carzy.auto_script.db.config.ConvertManager;
 
 /**
+ * 动态sql
  * @author admin
  */
 public class DynamicSqlBuilder {

@@ -1,7 +1,5 @@
 package pub.carzy.auto_script.core.impl.engines;
 
-import static com.google.android.material.internal.ViewUtils.getOverlay;
-
 import android.accessibilityservice.AccessibilityService;
 import android.graphics.PixelFormat;
 import android.view.Gravity;
@@ -21,11 +19,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.IdGenerator;
-import pub.carzy.auto_script.config.Setting;
-import pub.carzy.auto_script.config.pojo.SettingKey;
-import pub.carzy.auto_script.core.impl.ReplayScriptEngine;
 import pub.carzy.auto_script.databinding.WindowMaskViewBinding;
 import pub.carzy.auto_script.databinding.WindowRecordFloatingButtonBinding;
 import pub.carzy.auto_script.db.view.ScriptVoEntity;
@@ -33,7 +28,6 @@ import pub.carzy.auto_script.entity.KeyEntity;
 import pub.carzy.auto_script.entity.MaskConfig;
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
-import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.model.RecordStateModel;
 import pub.carzy.auto_script.core.MyAccessibilityService;
 import pub.carzy.auto_script.core.data.ReplayModel;
@@ -63,7 +57,7 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
             synchronized (this) {
                 if (!this.initialized) {
                     //数据包装器
-                    dataWrapper = new DataWrapper(BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
+                    dataWrapper = new DataWrapper(BeanContainer.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
                     }), service);
                     WindowRecordFloatingButtonBinding binding = DataBindingUtil.inflate(
                             LayoutInflater.from(service),

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -21,6 +20,7 @@
     </data>
 
     <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
+        tools:ignore="TooManyViews"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -51,7 +51,7 @@
 
                     <TextView
                         style="@style/unitTitle"
-                        android:text="脚本设置" />
+                        android:text="@string/script_settings" />
 
                     <LinearLayout
                         android:id="@+id/type_root_layout"
@@ -61,11 +61,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="模式" />
+                                android:text="@string/mode" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="对应录制和回放时使用的引擎,自动是优先使用root,如果不能使用则使用无障碍模式" />
+                                android:text="@string/mode_desc" />
                         </LinearLayout>
 
                         <TextView
@@ -82,11 +82,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="时间片" />
+                                android:text="@string/time_quantum" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="单位是毫秒,时间片越小，手势回放越精确，但 CPU 消耗越高。默认值为 10 毫秒，建议不要设置得过大或过小。" />
+                                android:text="@string/time_quantum_desc" />
                         </LinearLayout>
 
                         <TextView
@@ -102,11 +102,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="自动退出悬浮窗" />
+                                android:text="@string/auto_exit_floating_window" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="停止录制并进入详情页时，自动关闭悬浮窗。" />
+                                android:text="@string/auto_exit_floating_window_desc" />
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
@@ -123,11 +123,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="显示点按操作" />
+                                android:text="@string/show_tap_actions" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="支持显示触控位置" />
+                                android:text="@string/show_tap_actions_desc" />
                         </LinearLayout>
 
                         <!--<androidx.appcompat.widget.SwitchCompat
@@ -230,7 +230,7 @@
 
                     <TextView
                         style="@style/unitTitle"
-                        android:text="无障碍设置" />
+                        android:text="@string/accessibility_settings" />
 
                     <LinearLayout
                         android:id="@+id/auto_play_root_layout"
@@ -240,11 +240,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="自动回放" />
+                                android:text="@string/auto_playback" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="暂停录制后关闭蒙层，并回放蒙层期间收集的手势操作。" />
+                                android:text="@string/auto_playback_desc" />
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
@@ -257,7 +257,7 @@
 
                     <TextView
                         style="@style/unitTitle"
-                        android:text="Root设置" />
+                        android:text="@string/root_settings" />
 
                     <LinearLayout
                         android:id="@+id/root_ignore_root_layout"
@@ -267,11 +267,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="忽略悬浮窗操作手势" />
+                                android:text="@string/ig_float_win_ge_ac" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="录制过程中，移除悬浮窗控制操作产生的手势。" />
+                                android:text="@string/ig_float_win_ge_ac_desc" />
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
@@ -298,7 +298,7 @@
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="悬浮窗相对于页面内容的显示X,Y位置" />
+                                android:text="@string/position_desc" />
                         </LinearLayout>
 
                         <TextView
@@ -314,12 +314,12 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="动态更新"
+                                android:text="@string/dynamic_update"
                                 tools:ignore="TooManyViews" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="打开悬浮窗会回到上次关闭时的位置" />
+                                android:text="@string/dynamic_update_desc" />
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
@@ -332,7 +332,7 @@
 
                     <TextView
                         style="@style/unitTitle"
-                        android:text="蒙层" />
+                        android:text="@string/mask_layer" />
 
                     <LinearLayout
                         android:id="@+id/mask_color_root_layout"
@@ -342,11 +342,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="颜色" />
+                                android:text="@string/mask_color" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="蒙层背景颜色" />
+                                android:text="@string/mask_color_desc" />
                         </LinearLayout>
 
                         <LinearLayout style="@style/fieldColorLabel">
@@ -367,11 +367,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="标尺" />
+                                android:text="@string/ruler" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="在蒙层生成指定条的标尺" />
+                                android:text="@string/ruler_desc" />
                         </LinearLayout>
 
                         <TextView
@@ -387,11 +387,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="网格" />
+                                android:text="@string/grid" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="展示网格线" />
+                                android:text="@string/grid_desc" />
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
@@ -409,7 +409,8 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="网格线颜色" />
+                                android:text="@string/grid_line_color"
+                                />
 
                         </LinearLayout>
 
@@ -432,11 +433,8 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="网格线线条" />
+                                android:text="@string/grid_line_width" />
 
-                            <TextView
-                                style="@style/fieldDescription"
-                                android:text="网格线宽度" />
                         </LinearLayout>
 
                         <TextView
@@ -452,11 +450,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="刻度" />
+                                android:text="@string/scale" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="x轴和y轴坐标信息" />
+                                android:text="@string/scale_desc" />
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
@@ -474,7 +472,7 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="刻度文字颜色" />
+                                android:text="@string/scale_text_color" />
 
                         </LinearLayout>
 
@@ -497,7 +495,7 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="刻度文字大小" />
+                                android:text="@string/scale_text_size" />
 
                         </LinearLayout>
 
@@ -520,11 +518,11 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="样式配置" />
+                                android:text="@string/style_config" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="切换不同主题样式配置(状态栏和标题栏)" />
+                                android:text="@string/style_config_desc" />
                         </LinearLayout>
 
                         <TextView
@@ -540,7 +538,7 @@
 
                         <TextView
                             style="@style/unitTitle"
-                            android:text="状态栏"
+                            android:text="@string/status_bar"
                             android:textStyle="bold" />
 
                         <LinearLayout
@@ -551,11 +549,11 @@
 
                                 <TextView
                                     style="@style/fieldLabel"
-                                    android:text="背景颜色" />
+                                    android:text="@string/status_bar_bg_color" />
 
                                 <TextView
                                     style="@style/fieldDescription"
-                                    android:text="状态栏背景颜色" />
+                                    android:text="@string/status_bar_bg_color_desc" />
                             </LinearLayout>
 
                             <LinearLayout style="@style/fieldColorLabel">
@@ -576,11 +574,11 @@
 
                                 <TextView
                                     style="@style/fieldLabel"
-                                    android:text="文字亮度" />
+                                    android:text="@string/status_bar_dark" />
 
                                 <TextView
                                     style="@style/fieldDescription"
-                                    android:text="状态栏文字亮度（深色/浅色）" />
+                                    android:text="@string/status_bar_dark_desc" />
                             </LinearLayout>
 
                             <androidx.appcompat.widget.SwitchCompat
@@ -591,7 +589,7 @@
                         <!--设置标题栏背景颜色、文字颜色和图标颜色-->
                         <TextView
                             style="@style/unitTitle"
-                            android:text="标题栏"
+                            android:text="@string/title_bar"
                             android:textStyle="bold" />
 
                         <LinearLayout
@@ -602,11 +600,11 @@
 
                                 <TextView
                                     style="@style/fieldLabel"
-                                    android:text="背景颜色" />
+                                    android:text="@string/title_bar_bg_color" />
 
                                 <TextView
                                     style="@style/fieldDescription"
-                                    android:text="标题栏背景颜色" />
+                                    android:text="@string/title_bar_bg_color_desc" />
                             </LinearLayout>
 
                             <LinearLayout style="@style/fieldColorLabel">
@@ -627,11 +625,11 @@
 
                                 <TextView
                                     style="@style/fieldLabel"
-                                    android:text="文字颜色" />
+                                    android:text="@string/title_bar_text_color" />
 
                                 <TextView
                                     style="@style/fieldDescription"
-                                    android:text="标题栏文字颜色" />
+                                    android:text="@string/title_bar_text_color_desc" />
                             </LinearLayout>
 
                             <LinearLayout style="@style/fieldColorLabel">
@@ -652,11 +650,11 @@
 
                                 <TextView
                                     style="@style/fieldLabel"
-                                    android:text="图标颜色" />
+                                    android:text="@string/title_bar_icon_color" />
 
                                 <TextView
                                     style="@style/fieldDescription"
-                                    android:text="标题栏图标颜色" />
+                                    android:text="@string/title_bar_icon_color_desc" />
                             </LinearLayout>
 
                             <LinearLayout style="@style/fieldColorLabel">
@@ -678,12 +676,12 @@
 
                             <TextView
                                 style="@style/fieldLabel"
-                                android:text="重置"
+                                android:text="@string/reset_setting"
                                 android:textColor="@color/danger" />
 
                             <TextView
                                 style="@style/fieldDescription"
-                                android:text="恢复默认配置" />
+                                android:text="@string/reset_setting_desc" />
                         </LinearLayout>
                     </LinearLayout>
                     <!--<LinearLayout

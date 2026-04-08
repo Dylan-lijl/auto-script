@@ -1,6 +1,7 @@
 package pub.carzy.auto_script.config;
 
 /**
+ * id生成器
  * @author admin
  */
 public interface IdGenerator<T> {

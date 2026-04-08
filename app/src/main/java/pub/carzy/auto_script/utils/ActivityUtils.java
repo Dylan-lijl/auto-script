@@ -2,6 +2,7 @@ package pub.carzy.auto_script.utils;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -13,9 +14,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.Settings;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +37,6 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
@@ -61,15 +59,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.Startup;
-import pub.carzy.auto_script.config.BeanFactory;
-import pub.carzy.auto_script.config.ControllerCallback;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.ex.DeviceNotRootedException;
 import pub.carzy.auto_script.ex.UnauthorizedRootAccessException;
-import pub.carzy.auto_script.core.MyAccessibilityService;
 import pub.carzy.auto_script.core.ScriptEngine;
 
 
@@ -77,7 +71,7 @@ import pub.carzy.auto_script.core.ScriptEngine;
  * @author admin
  */
 public class ActivityUtils {
-    private static Map<String, Locale> LOCALE_MAP = null;
+    private static volatile Map<String, Locale> LOCALE_MAP = null;
 
     public static View reinstatedView(View root) {
         //复用
@@ -190,7 +184,7 @@ public class ActivityUtils {
                             config.setLocale(locale);
                             Context localizedContext = context.createConfigurationContext(config);
                             //读取本地化language字段-->strings.xml-->language
-                            int resId = localizedContext.getResources().getIdentifier("language", "string", context.getPackageName());
+                            @SuppressLint("DiscouragedApi") int resId = localizedContext.getResources().getIdentifier("language", "string", context.getPackageName());
                             if (resId != 0) {
                                 String name = localizedContext.getString(resId);
                                 //放入map
@@ -272,111 +266,6 @@ public class ActivityUtils {
         if (regA.isEmpty() || regB.isEmpty()) return true;
 
         return regA.equalsIgnoreCase(regB);
-    }
-
-    public static void checkAccessibilityServicePermission(Activity activity) {
-        checkAccessibilityServicePermission(activity, null);
-    }
-
-    /**
-     * 检查无障碍权限(无障碍和悬浮窗)
-     *
-     * @param callback 成功回调
-     * @param activity activity
-     */
-    public static void checkAccessibilityServicePermission(Activity activity, Consumer<Boolean> callback) {
-        checkOpenAccessibility((enabled) -> {
-            if (!enabled) {
-                //打开提示
-                promptAccessibility(activity);
-                return;
-            }
-            //检查悬浮窗权限
-            checkOpenFloatWindow((e) -> {
-                if (!e) {
-                    promptOverlay(activity);
-                    return;
-                }
-                if (callback != null) {
-                    callback.accept(true);
-                }
-            });
-        });
-    }
-
-    private static void promptAccessibility(Activity activity) {
-        new AlertDialog.Builder(activity)
-                .setTitle(R.string.permission_prompt)
-                .setMessage(R.string.permission_content)
-                .setPositiveButton(R.string.go_to_open, (dialog, which) -> {
-                    Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                    activity.startActivity(intent);
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
-    }
-
-    private static void promptOverlay(Activity activity) {
-        new AlertDialog.Builder(activity)
-                .setTitle(R.string.permission_prompt)
-                .setMessage(R.string.float_button_permission)
-                .setPositiveButton(R.string.go_to_open, (dialog, which) -> {
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                    activity.startActivity(intent);
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
-    }
-
-    public static void checkOpenAccessibility(ControllerCallback<Boolean> callback) {
-        ThreadUtil.runOnCpu(() -> {
-            boolean enabled = false;
-            try {
-                Startup context = BeanFactory.getInstance().get(Startup.class);
-                int accessibilityEnabled = 0;
-                final String service = context.getPackageName() + "/" + MyAccessibilityService.class.getCanonicalName();
-                try {
-                    accessibilityEnabled = Settings.Secure.getInt(context.getContentResolver(),
-                            Settings.Secure.ACCESSIBILITY_ENABLED);
-                } catch (Settings.SettingNotFoundException e) {
-                    Log.e("accessibility", "Error finding setting, default accessibility to not found", e);
-                }
-
-                TextUtils.SimpleStringSplitter colonSplitter = new TextUtils.SimpleStringSplitter(':');
-                if (accessibilityEnabled == 1) {
-                    String settingValue = Settings.Secure.getString(context.getContentResolver(),
-                            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-                    if (settingValue != null) {
-                        colonSplitter.setString(settingValue);
-                        while (colonSplitter.hasNext()) {
-                            String componentName = colonSplitter.next();
-                            if (componentName.equalsIgnoreCase(service)) {
-                                enabled = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                final boolean tmp = enabled;
-                ThreadUtil.runOnUi(() -> callback.complete(tmp));
-            } catch (Exception e) {
-                ThreadUtil.runOnUi(() -> callback.catchMethod(e));
-            } finally {
-                ThreadUtil.runOnUi(callback::finallyMethod);
-            }
-        });
-    }
-
-    public static void checkOpenFloatWindow(ControllerCallback<Boolean> callback) {
-        ThreadUtil.runOnCpu(() -> {
-            try {
-                ThreadUtil.runOnUi(() -> callback.complete(Settings.canDrawOverlays(BeanFactory.getInstance().get(Startup.class))));
-            } catch (Exception e) {
-                ThreadUtil.runOnUi(() -> callback.catchMethod(e));
-            } finally {
-                ThreadUtil.runOnUi(callback::finallyMethod);
-            }
-        });
     }
 
     public static String getVersionName(Context context) {
@@ -468,7 +357,7 @@ public class ActivityUtils {
         cm.setPrimaryClip(ClipData.newPlainText(label, text));
     }
 
-    public static Runnable setOnBackPressed(AppCompatActivity activity, Consumer<Boolean> callback) {
+    public static void setOnBackPressed(AppCompatActivity activity, Consumer<Boolean> callback) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             OnBackInvokedDispatcher dispatcher = activity.getOnBackInvokedDispatcher();
             // 使用数组或 AtomicReference 来绕过 lambda 内部对自身的引用限制
@@ -483,12 +372,6 @@ public class ActivityUtils {
             };
             dispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callbackWrapper[0]);
             // 返回手动注销逻辑
-            return () -> {
-                if (callbackWrapper[0] != null) {
-                    dispatcher.unregisterOnBackInvokedCallback(callbackWrapper[0]);
-                    callbackWrapper[0] = null;
-                }
-            };
         } else {
             OnBackPressedCallback backStackCallback = new OnBackPressedCallback(true) {
                 @Override
@@ -501,7 +384,6 @@ public class ActivityUtils {
 
             activity.getOnBackPressedDispatcher().addCallback(activity, backStackCallback);
 
-            return backStackCallback::remove;
         }
     }
 
@@ -513,18 +395,12 @@ public class ActivityUtils {
      */
     public static void setWindowsStatusBarColor(Activity activity, @ColorInt int color) {
         Window window = activity.getWindow();
+        // 允许绘制系统栏背景
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        // 取消半透明，否则颜色不会正确覆盖
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // 允许绘制系统栏背景
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            // 取消半透明，否则颜色不会正确覆盖
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-
-            window.setStatusBarColor(color);
-            return;
-        }
-
-        // Android < 21 无法改变状态栏颜色，忽略即可
+        window.setStatusBarColor(color);
     }
 
 
@@ -556,21 +432,14 @@ public class ActivityUtils {
             return;
         }
 
-        // Android 6.0 - Android 10 (API 23 ~ 29)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            View decor = window.getDecorView();
-            int flags = decor.getSystemUiVisibility();
-            if (light) {
-                flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            } else {
-                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            }
-            decor.setSystemUiVisibility(flags);
-            return;
+        View decor = window.getDecorView();
+        int flags = decor.getSystemUiVisibility();
+        if (light) {
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        } else {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
         }
-
-        // Android 5.1 及以下无支持
-        // 状态栏图标默认白色，无法更改
+        decor.setSystemUiVisibility(flags);
     }
 
     public static QMUIPopup showMessagePopup(View view, Context context, String message) {

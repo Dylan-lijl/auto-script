@@ -1,12 +1,10 @@
 package pub.carzy.auto_script.adapter;
 
-import android.graphics.Color;
 import android.util.Log;
 import android.widget.EditText;
 
 import androidx.databinding.BindingAdapter;
 
-import com.skydoves.colorpickerview.ColorEnvelope;
 import com.skydoves.colorpickerview.ColorPickerView;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 import com.skydoves.colorpickerview.sliders.AlphaSlideBar;

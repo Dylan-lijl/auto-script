@@ -2,13 +2,10 @@ package pub.carzy.auto_script.ui.adapter;
 
 import android.graphics.Canvas;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 
 import com.github.mikephil.charting.animation.ChartAnimator;
 import com.github.mikephil.charting.buffer.BarBuffer;
-import com.github.mikephil.charting.buffer.HorizontalBarBuffer;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.dataprovider.BarDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.renderer.HorizontalBarChartRenderer;
@@ -24,7 +21,7 @@ import java.util.List;
  */
 public class SingleStackRender extends HorizontalBarChartRenderer {
 
-    private RectF mBarShadowRectBuffer = new RectF();
+    private final RectF mBarShadowRectBuffer = new RectF();
 
     public SingleStackRender(BarDataProvider chart, ChartAnimator animator,
                              ViewPortHandler viewPortHandler) {

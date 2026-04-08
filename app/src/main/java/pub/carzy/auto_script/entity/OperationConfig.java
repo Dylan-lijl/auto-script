@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.entity;
 
+import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
@@ -76,12 +77,12 @@ public class OperationConfig extends BaseObservable implements Cloneable {
         notifyPropertyChanged(BR.lineWidth);
     }
 
+    @NonNull
     @Override
     public OperationConfig clone() {
         try {
-            OperationConfig clone = (OperationConfig) super.clone();
             //基础对象
-            return clone;
+            return (OperationConfig) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }

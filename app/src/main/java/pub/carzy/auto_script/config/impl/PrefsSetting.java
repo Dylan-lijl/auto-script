@@ -16,6 +16,7 @@ import pub.carzy.auto_script.config.AbstractSetting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 
 /**
+ * pref配置方式
  * @author admin
  */
 public class PrefsSetting extends AbstractSetting {
@@ -48,6 +49,7 @@ public class PrefsSetting extends AbstractSetting {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T read(SettingKey<T> settingKey, T defaultValue) {
         String key = settingKey.getKey();
         Class<T> clazz = settingKey.getType();

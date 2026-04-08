@@ -4,24 +4,20 @@ import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import androidx.databinding.ObservableArrayList;
 import androidx.databinding.ObservableBoolean;
-import androidx.databinding.ObservableInt;
 import androidx.databinding.ObservableList;
-import androidx.sqlite.db.SupportSQLiteQuery;
 
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import lombok.Getter;
 import pub.carzy.auto_script.BR;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.DynamicSqlBuilder;
 import pub.carzy.auto_script.db.AppDatabase;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.utils.ThreadUtil;
-import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
  * @author admin
@@ -50,7 +46,7 @@ public class MacroListModel extends BaseObservable {
 
     public MacroListModel() {
         super();
-        database = BeanFactory.getInstance().get(AppDatabase.class);
+        database = BeanContainer.getInstance().get(AppDatabase.class);
     }
 
     private final AtomicReference<Date> lastTime = new AtomicReference<>();

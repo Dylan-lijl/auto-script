@@ -1,13 +1,11 @@
 package pub.carzy.auto_script;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-
-import com.qmuiteam.qmui.skin.QMUISkinManager;
 
 import pub.carzy.auto_script.config.BeanRegister;
 
@@ -16,6 +14,7 @@ import pub.carzy.auto_script.config.BeanRegister;
  * @author admin
  */
 public class Startup extends Application {
+    @SuppressLint("StaticFieldLeak")
     public static Activity CURRENT;
 
     @Override

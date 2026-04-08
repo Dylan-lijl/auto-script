@@ -66,7 +66,7 @@ import java.util.stream.Collectors;
 
 import lombok.Getter;
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.DialogActionInfoBinding;
@@ -206,7 +206,7 @@ public class MacroInfoActivity extends BaseActivity {
                 public void onFail(int code, Object... args) {
                     ActivityUtils.onOpenFail(MacroInfoActivity.this, type, code, () -> {
                         //切换到无障碍模式
-                        Toast.makeText(MacroInfoActivity.this, "已切换到无障碍模式!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MacroInfoActivity.this, R.string.change_acc_msg, Toast.LENGTH_SHORT).show();
                         replayScriptEngine = new ReplayAccScriptEngine();
                         ThreadUtil.runOnUi(() -> GlobalSingletonScriptEngineController.getInstance().open(replayScriptEngine, reference.get()));
                     }, args);
@@ -215,7 +215,7 @@ public class MacroInfoActivity extends BaseActivity {
                 @Override
                 public void onSuccess() {
                     if (replayScriptEngine instanceof ReplayAccScriptEngine) {
-                        ((ReplayAccScriptEngine) replayScriptEngine).setAccessibilityService(BeanFactory.getInstance().get(MyAccessibilityService.class));
+                        ((ReplayAccScriptEngine) replayScriptEngine).setAccessibilityService(BeanContainer.getInstance().get(MyAccessibilityService.class));
                     }
                     ReplayModel replayModel = ReplayModel.create(model.getRoot(), model.getActionData(), model.getPointData());
                     replayScriptEngine.savePointCallback((x, y) -> setting.write(SettingKey.FLOAT_POINT, new FloatPoint(x, y)));
@@ -230,9 +230,9 @@ public class MacroInfoActivity extends BaseActivity {
     }
 
     private void init() {
-        idWorker = BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
+        idWorker = BeanContainer.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
         });
-        db = BeanFactory.getInstance().get(AppDatabase.class);
+        db = BeanContainer.getInstance().get(AppDatabase.class);
         binding = DataBindingUtil.setContentView(this, R.layout.view_macro_info);
         model = new ScriptVoEntityModel();
         //加载颜色
@@ -262,13 +262,13 @@ public class MacroInfoActivity extends BaseActivity {
         ActivityUtils.setOnBackPressed(this, r -> {
             if (model.getUnsaved()) {
                 new QMUIDialog.MessageDialogBuilder(this)
-                        .setTitle("提醒")
-                        .setMessage("内容未保存，确定退出吗？")
-                        .addAction("取消", (dialog, index) -> {
+                        .setTitle(R.string.warning)
+                        .setMessage(R.string.unsaved_warning_msg)
+                        .addAction(R.string.cancel, (dialog, index) -> {
                             dialog.dismiss();
                             bindBackLogic();
                         })
-                        .addAction("确定", (dialog, index) -> {
+                        .addAction(R.string.confirm, (dialog, index) -> {
                             dialog.dismiss();
                             finish();
                         })
@@ -445,15 +445,27 @@ public class MacroInfoActivity extends BaseActivity {
         if (!ids.isEmpty() && point != null) {
             int index = ids.indexOf(point.getKey());
             if (!model.getPoints().isEmpty()) {
-                intent.putExtra("minOrder", model.getPoints().get(ids.get(0)).getOrder());
-                intent.putExtra("maxOrder", model.getPoints().get(ids.get(ids.size() - 1)).getOrder());
+                ScriptPointEntity pointEntity = model.getPoints().get(ids.get(0));
+                if (pointEntity != null) {
+                    intent.putExtra("minOrder", pointEntity.getOrder());
+                }
+                pointEntity = model.getPoints().get(ids.get(ids.size() - 1));
+                if (pointEntity != null) {
+                    intent.putExtra("maxOrder", pointEntity.getOrder());
+                }
             }
             if (index != -1) {
-                if (index > 0) {
-                    intent.putExtra("beforeOrder", calculatedOrder(model.getPoints().get(ids.get(index - 1)).getOrder(), point.getData().getOrder()));
+                if (index > 0 && model.getPoints().get(ids.get(index - 1)) != null) {
+                    ScriptPointEntity scriptPoint = model.getPoints().get(ids.get(index - 1));
+                    if (scriptPoint != null) {
+                        intent.putExtra("beforeOrder", calculatedOrder(scriptPoint.getOrder(), point.getData().getOrder()));
+                    }
                 }
-                if (index < ids.size() - 1) {
-                    intent.putExtra("afterOrder", calculatedOrder(point.getData().getOrder(), model.getPoints().get(ids.get(index + 1)).getOrder()));
+                if (index < ids.size() - 1 && model.getPoints().get(ids.get(index + 1)) != null) {
+                    ScriptPointEntity scriptPoint = model.getPoints().get(ids.get(index + 1));
+                    if (scriptPoint != null) {
+                        intent.putExtra("afterOrder", calculatedOrder(point.getData().getOrder(), scriptPoint.getOrder()));
+                    }
                 }
             }
             entity.setX(point.getData().getX());

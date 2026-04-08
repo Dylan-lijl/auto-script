@@ -1,24 +1,20 @@
 package pub.carzy.auto_script.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,31 +29,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.qmuiteam.qmui.recyclerView.QMUIRVItemSwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeAction;
 import com.qmuiteam.qmui.recyclerView.QMUISwipeViewHolder;
-import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogView;
 import com.qmuiteam.qmui.widget.popup.QMUIPopup;
-import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.zip.Inflater;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.adapter.SingleSimpleAdapter;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
@@ -77,7 +66,6 @@ import pub.carzy.auto_script.ui.QMUIBottomSheetInputConfirmBuilder;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.StringUtils;
-import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.statics.StaticValues;
 
@@ -96,8 +84,8 @@ public class SettingActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.view_setting);
-        setting = BeanFactory.getInstance().get(Setting.class);
-        idGenerator = BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
+        setting = BeanContainer.getInstance().get(Setting.class);
+        idGenerator = BeanContainer.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
         });
         model = new SettingModel();
         model.setProxy(SettingProxy.DEFAULT.clone());
@@ -129,7 +117,7 @@ public class SettingActivity extends BaseActivity {
         //事件片
         binding.tickRootLayout.setOnClickListener(e -> {
             //这里我想弹出一个输入框,然后一个取消和确认按钮
-            builderNumberInputDialog("时间片", model.getProxy().getTick(), v -> {
+            builderNumberInputDialog(getString(R.string.time_quantum), model.getProxy().getTick(), v -> {
                 model.getProxy().setTick(v);
                 setting.write(SettingKey.TICK, v);
             });
@@ -182,19 +170,15 @@ public class SettingActivity extends BaseActivity {
         //动态更新
         settingConfigs.put(binding.floatPointUpdateRootLayout, new SettingAction(SettingKey.DYNAMIC_UPDATE, model.getProxy()::getDynamicUpdate, model.getProxy()::setDynamicUpdate));
         //蒙层颜色
-        binding.maskColorRootLayout.setOnClickListener(e -> {
-            builderColorInputDialog(model.getProxy().getMaskConfig().getColor(), v -> {
-                model.getProxy().getMaskConfig().setColor(v);
-                setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
-            });
-        });
+        binding.maskColorRootLayout.setOnClickListener(e -> builderColorInputDialog(model.getProxy().getMaskConfig().getColor(), v -> {
+            model.getProxy().getMaskConfig().setColor(v);
+            setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+        }));
         //标尺
-        binding.maskSizeRootLayout.setOnClickListener(e -> {
-            builderNumberInputDialog("标尺", model.getProxy().getMaskConfig().getSize(), v -> {
-                model.getProxy().getMaskConfig().setSize(v);
-                setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
-            });
-        });
+        binding.maskSizeRootLayout.setOnClickListener(e -> builderNumberInputDialog(getString(R.string.ruler), model.getProxy().getMaskConfig().getSize(), v -> {
+            model.getProxy().getMaskConfig().setSize(v);
+            setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+        }));
         //网格
         binding.maskGridRootLayout.setOnClickListener(e -> {
             MaskConfig config = model.getProxy().getMaskConfig();
@@ -213,12 +197,10 @@ public class SettingActivity extends BaseActivity {
             });
         });
         //线宽
-        binding.maskGridSizeRootLayout.setOnClickListener(e -> {
-            builderNumberInputDialog("网格线宽度", model.getProxy().getMaskConfig().getLineWidth(), v -> {
-                model.getProxy().getMaskConfig().setLineWidth(v);
-                setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
-            });
-        });
+        binding.maskGridSizeRootLayout.setOnClickListener(e -> builderNumberInputDialog(getString(R.string.grid_line_width), model.getProxy().getMaskConfig().getLineWidth(), v -> {
+            model.getProxy().getMaskConfig().setLineWidth(v);
+            setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+        }));
         //刻度
         binding.maskScaleLayout.setOnClickListener(e -> {
             MaskConfig config = model.getProxy().getMaskConfig();
@@ -238,7 +220,7 @@ public class SettingActivity extends BaseActivity {
         });
         //刻度文字大小
         binding.maskFontSizeRootLayout.setOnClickListener(e ->
-                builderNumberInputDialog("刻度文字大小", model.getProxy().getMaskConfig().getFontSize(), v -> {
+                builderNumberInputDialog(getString(R.string.scale_text_size), model.getProxy().getMaskConfig().getFontSize(), v -> {
                     model.getProxy().getMaskConfig().setFontSize(v);
                     setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
                 }));
@@ -290,7 +272,7 @@ public class SettingActivity extends BaseActivity {
         });
         binding.resetRootLayout.setOnClickListener(e -> {
             QMUIBottomSheetConfirmBuilder<?> builder = new QMUIBottomSheetConfirmBuilder<>(this);
-            builder.setTitle("重置确认")
+            builder.setTitle(getString(R.string.confirm_reset))
                     .setConfirm((sheet, views) -> {
                         reset();
                         updateCurrentStyle.run();
@@ -323,52 +305,49 @@ public class SettingActivity extends BaseActivity {
                 0
         ) != 0;
         if (isDevMode) {
-            Intent intent = new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS);
-            // 某些系统支持通过这几个 key 来实现高亮定位
-            intent.putExtra(":settings:fragment_args_key", "show_touches");
-            intent.putExtra(":settings:show_fragment_args_key", "show_touches");
-            // 甚至有些厂商支持搜索模式的高亮（粉红色闪烁效果）
-            Bundle bundle = new Bundle();
-            bundle.putString(":settings:fragment_args_key", "show_touches");
-            intent.putExtra("SHOW_FRAGMENT_BUNDLE", bundle);
-
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Intent intent = getSettingHightIntent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS, "show_touches");
             try {
                 startActivity(intent);
+                return;
             } catch (Exception e) {
                 // 退而求其次，只跳转页面
                 Log.d("error", "ssss", e);
             }
-        } else {
-            //跳转到版本界面
-            Intent intent = new Intent(Settings.ACTION_DEVICE_INFO_SETTINGS);
-            // 尝试高亮“版本号”条目 (Build Number)
-            // 注意：不同系统的 Key 可能不同，常见的有 "build_number" 或 "model_info"
-            intent.putExtra(":settings:fragment_args_key", "model_info");
-            intent.putExtra(":settings:show_fragment_args_key", "model_info");
-            // 某些系统支持传递一个 Bundle 来实现高亮闪烁效果
-            Bundle bundle = new Bundle();
-            bundle.putString(":settings:fragment_args_key", "model_info");
-            intent.putExtra("SHOW_FRAGMENT_BUNDLE", bundle);
+        }
+        //跳转到版本界面
+        Intent intent = getSettingHightIntent(Settings.ACTION_DEVICE_INFO_SETTINGS, "build_number");
+        String message = getString(R.string.open_dev_msg);
+        try {
+            startActivity(intent);
+        } catch (Exception e) {
+            message = getString(R.string.open_about_msg) + "," + message;
+            //回退
+            intent = new Intent(Settings.ACTION_SETTINGS);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            String message = "点击操作系统版本4次开启开发者模式";
             try {
                 startActivity(intent);
-            } catch (Exception e) {
-                message = "请到关于手机的版本页面," + message;
-                //回退
-                intent = new Intent(Settings.ACTION_SETTINGS);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                try {
-                    startActivity(intent);
-                } catch (Exception i) {
-                    message = "打开设置界面失败,请手动打开!";
-                }
+            } catch (Exception i) {
+                message = getString(R.string.error_to_open_setting_msg);
             }
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
+    @NonNull
+    private static Intent getSettingHightIntent(String flags, String key) {
+        Intent intent = new Intent(flags);
+        // 某些系统支持通过这几个 key 来实现高亮定位
+        intent.putExtra(":settings:fragment_args_key", key);
+        intent.putExtra(":settings:show_fragment_args_key", key);
+        // 甚至有些厂商支持搜索模式的高亮（粉红色闪烁效果）
+        Bundle bundle = new Bundle();
+        bundle.putString(":settings:fragment_args_key", key);
+        intent.putExtra("SHOW_FRAGMENT_BUNDLE", bundle);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return intent;
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     private void builderStyleDialog() {
         //实例化选择样式页面
         View inflate = LayoutInflater.from(this).inflate(R.layout.dialog_style_change, binding.topBarLayout.actionBar, false);
@@ -378,9 +357,11 @@ public class SettingActivity extends BaseActivity {
                 .paddingStartEnd(QMUIDisplayHelper.dp2px(this, 14));
         //创建删除按钮和重命名按钮
         Drawable d = AppCompatResources.getDrawable(this, R.drawable.delete);
+        assert d != null;
         d.setTint(getColor(R.color.danger));
         QMUISwipeAction removeAction = actionBuilder.icon(d).build();
         Drawable e = AppCompatResources.getDrawable(this, R.drawable.edit);
+        assert e != null;
         e.setTint(getColor(R.color.link));
         QMUISwipeAction renameAction = actionBuilder.icon(e).build();
         //保存样式回调
@@ -391,6 +372,7 @@ public class SettingActivity extends BaseActivity {
         //列表适配器
         RecyclerView.Adapter<QMUISwipeViewHolder> adapter = new RecyclerView.Adapter<>() {
 
+            @SuppressLint("NotifyDataSetChanged")
             @NonNull
             @Override
             public QMUISwipeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -504,7 +486,7 @@ public class SettingActivity extends BaseActivity {
         swipeAction.attachToRecyclerView(listView);
         //构建显示选择样式弹窗
         QMUIBottomSheetCustomBuilder<?> builder = new QMUIBottomSheetCustomBuilder<>(this);
-        builder.setTitle("样式切换")
+        builder.setTitle(getString(R.string.change_style))
                 .setContentView(inflate)
                 .build().show();
     }
@@ -516,7 +498,7 @@ public class SettingActivity extends BaseActivity {
             FloatPoint floatPoint = model.getProxy().getFloatPoint();
             wrapper.setPoint(floatPoint.getX(), floatPoint.getY());
             QMUIBottomSheetConfirmBuilder<?> builder = new QMUIBottomSheetConfirmBuilder<>(this);
-            builder.setTitle("位置")
+            builder.setTitle(getString(R.string.position))
                     .setRadius(QMUIDisplayHelper.dp2px(this, 15))
                     .setContentView(wrapper.getRootView())
                     .setCancel((s, views) -> s.dismiss())
@@ -553,17 +535,17 @@ public class SettingActivity extends BaseActivity {
                         return;
                     }
                     try {
-                        int tick = Integer.parseInt(text.toString());
-                        if (tick > 0) {
+                        int i = Integer.parseInt(text.toString());
+                        if (i > 0) {
                             // 1. 先保存数据
-                            consumer.accept(tick);
+                            consumer.accept(i);
                             // 2. 只有成功了才关闭对话框
                             dialog.dismiss();
                         } else {
-                            Toast.makeText(this, "请输入大于0的数字", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, R.string.greater_than_0, Toast.LENGTH_SHORT).show();
                         }
                     } catch (NumberFormatException exception) {
-                        Toast.makeText(this, "输入内容无效", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.invalid_input, Toast.LENGTH_SHORT).show();
                     }
                 }).build().show();
     }
@@ -575,140 +557,13 @@ public class SettingActivity extends BaseActivity {
      */
     private void updateGlobalStyle(Style currentStyle) {
         long version = System.currentTimeMillis();
-        BeanFactory.getInstance().register(StaticValues.STYLE_VERSION, version);
+        BeanContainer.getInstance().register(StaticValues.STYLE_VERSION, version);
         if (currentStyle == null) {
-            BeanFactory.getInstance().unregister(StaticValues.STYLE_CURRENT);
+            BeanContainer.getInstance().unregister(StaticValues.STYLE_CURRENT);
         } else {
-            BeanFactory.getInstance().register(StaticValues.STYLE_CURRENT, currentStyle);
+            BeanContainer.getInstance().register(StaticValues.STYLE_CURRENT, currentStyle);
         }
         updateStyle(currentStyle, getTopBar(), version);
-    }
-
-    /**
-     * 展示所有样式
-     *
-     * @param e
-     */
-    private void showAllStyle(View e) {
-        List<SingleSimpleAdapter.Data> data = new ArrayList<>();
-        //设置选择的样式
-        Style currentStyle = model.getProxy().getCurrentStyle();
-        for (Style style : model.getProxy().getStyles()) {
-            data.add(new SingleSimpleAdapter.Data(style.getName(), style == currentStyle));
-        }
-        QMUIPopup[] popups = new QMUIPopup[]{null};
-        //切换回调
-        AdapterView.OnItemClickListener onItemClickListener = (adapterView, view, i, l) -> {
-            Style style = model.getProxy().getStyles().get(i);
-            if (style != null && style != currentStyle) {
-                style.setCurrentVersion(System.currentTimeMillis());
-                model.getProxy().updateCurrentStyle();
-                updateGlobalStyle(style);
-                ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class), style));
-            }
-            if (popups[0] != null) {
-                popups[0].dismiss();
-            }
-        };
-        popups[0] = QMUIPopups.listPopup(this,
-                        QMUIDisplayHelper.dp2px(this, 250),
-                        QMUIDisplayHelper.dp2px(this, 300),
-                        new SingleSimpleAdapter(data),
-                        onItemClickListener)
-                .animStyle(QMUIPopup.ANIM_GROW_FROM_CENTER)
-                .preferredDirection(QMUIPopup.DIRECTION_BOTTOM)
-                .shadow(true)
-                .offsetYIfTop(QMUIDisplayHelper.dp2px(this, 5))
-                .skinManager(QMUISkinManager.defaultInstance(this))
-                .show(e);
-    }
-
-    /**
-     * 编辑样式
-     *
-     * @param add 是否新增
-     */
-    private void editStyle(boolean add) {
-        AtomicReference<String> name = new AtomicReference<>(getString(R.string.unknown));
-        new QMUIDialog.CustomDialogBuilder(this) {
-            @Nullable
-            @Override
-            protected View onCreateContent(QMUIDialog dialog, QMUIDialogView parent, Context context) {
-                LinearLayout root = new LinearLayout(context);
-                root.setOrientation(LinearLayout.HORIZONTAL);
-                root.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                TextView view = new TextView(context);
-                view.setTextColor(Color.BLACK);
-                view.setText(R.string.name);
-                LinearLayout.LayoutParams lpText = new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT);
-                view.setLayoutParams(lpText);
-                EditText text = new EditText(context);
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                        0,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        1.0f
-                );
-                if (!add) {
-                    Style style = model.getProxy().getCurrentStyle();
-                    if (style != null) {
-                        text.setText(style.getName());
-                    }
-                }
-                text.setLayoutParams(params);
-                text.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        name.set(s.toString());
-                    }
-                });
-                text.setTextColor(Color.BLACK);
-                root.addView(view);
-                root.addView(text);
-                return root;
-            }
-        }.setTitle(add ? R.string.add_new_style : R.string.rename)
-                .addAction(R.string.cancel, (dialog, index) -> {
-                    dialog.dismiss();
-                })
-                .addAction(R.string.confirm, (d, i) -> {
-                    d.dismiss();
-                    if (name.get().isEmpty()) {
-                        name.set(getString(R.string.unknown));
-                    }
-                    Style style;
-                    if (add) {
-                        style = new Style();
-                        style.setId(idGenerator.nextId());
-                        style.setName(name.get());
-                        style.setTopBarImageColor(getColor(R.color.black));
-                        style.setTopBarTextColor(getColor(R.color.white));
-                        style.setTopBarBackgroundColor(getColor(R.color.teal_200));
-                        style.setStatusBarBackgroundColor(getColor(R.color.teal_200));
-                        style.setStatusBarMode(true);
-                        style.setCurrentVersion(System.currentTimeMillis());
-                        model.getProxy().getStyles().add(style);
-                        model.getProxy().updateCurrentStyle();
-                        updateGlobalStyle(style);
-                    } else {
-                        style = model.getProxy().getCurrentStyle();
-                        style.setName(name.get());
-                        if (style == null) {
-                            return;
-                        }
-                    }
-                    ThreadUtil.runOnCpu(() -> setting.update(new SettingKey<>(SettingKey.STYLE.getKey() + style.getId(), Style.class), style));
-                })
-                .create().show();
     }
 
     @Override
@@ -724,7 +579,7 @@ public class SettingActivity extends BaseActivity {
         m.setColorListener(callback);
         //打开一个弹窗
         QMUIDialog dialog = new QMUIDialog.CustomDialogBuilder(this) {
-            @Nullable
+            @NonNull
             @Override
             protected View onCreateContent(QMUIDialog dialog, QMUIDialogView parent, Context context) {
                 return b.getRoot();

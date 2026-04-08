@@ -7,6 +7,7 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RawRes;
 
 import com.google.gson.Gson;
@@ -39,16 +40,7 @@ public class MixedUtil {
             return;
         }
         Gson gson = new Gson();
-        ExportScriptEntity exportScript = new ExportScriptEntity();
-        //基础数据
-        exportScript.setVersion(StaticValues.DATA_VERSION);
-        exportScript.setTime(new Date());
-        exportScript.setDevice(Build.BRAND + "_" + Build.MODEL);
-        exportScript.setAndroidVersion(Build.VERSION.RELEASE);
-        exportScript.setSdkVersion(Build.VERSION.SDK_INT);
-        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        exportScript.setScreenWidth(metrics.widthPixels);
-        exportScript.setScreenHeight(metrics.heightPixels);
+        ExportScriptEntity exportScript = createEntity(context);
         //脚本数据
         exportScript.getData().addAll(entities);
         //调用报错文件api
@@ -60,6 +52,21 @@ public class MixedUtil {
                         callback.accept(result);
                     }
                 });
+    }
+
+    @NonNull
+    private static ExportScriptEntity createEntity(Context context) {
+        ExportScriptEntity exportScript = new ExportScriptEntity();
+        //基础数据
+        exportScript.setVersion(StaticValues.DATA_VERSION);
+        exportScript.setTime(new Date());
+        exportScript.setDevice(Build.BRAND + "_" + Build.MODEL);
+        exportScript.setAndroidVersion(Build.VERSION.RELEASE);
+        exportScript.setSdkVersion(Build.VERSION.SDK_INT);
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        exportScript.setScreenWidth(metrics.widthPixels);
+        exportScript.setScreenHeight(metrics.heightPixels);
+        return exportScript;
     }
 
     public static String githubSourceRepositoryUrl() {

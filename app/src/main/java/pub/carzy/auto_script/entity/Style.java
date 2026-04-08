@@ -2,6 +2,7 @@ package pub.carzy.auto_script.entity;
 
 import android.graphics.Color;
 
+import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
@@ -132,12 +133,12 @@ public class Style extends BaseObservable implements Cloneable{
         notifyPropertyChanged(BR.topBarImageColor);
     }
 
+    @NonNull
     @Override
     public Style clone() {
         try {
-            Style clone = (Style) super.clone();
             //都是基本对象
-            return clone;
+            return (Style) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }

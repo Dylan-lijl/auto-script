@@ -12,23 +12,14 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Comparator;
-import java.util.Objects;
 
 import io.noties.markwon.Markwon;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.databinding.ComAboutTroubleshootingBinding;
-import pub.carzy.auto_script.entity.BasicFileImport;
-import pub.carzy.auto_script.entity.FAQEntity;
 import pub.carzy.auto_script.entity.TroubleshootingEntity;
 import pub.carzy.auto_script.entity.WrapperEntity;
 import pub.carzy.auto_script.model.AboutTroubleshootingModel;
@@ -50,7 +41,7 @@ public class AboutTroubleshootingActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.com_about_troubleshooting);
-        markwon = BeanFactory.getInstance().get(Markwon.class);
+        markwon = BeanContainer.getInstance().get(Markwon.class);
         model = new AboutTroubleshootingModel();
         binding.setModel(model);
         initTopBar();

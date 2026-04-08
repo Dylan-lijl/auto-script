@@ -10,7 +10,7 @@ import android.view.accessibility.AccessibilityEvent;
 
 import java.util.Locale;
 import lombok.Setter;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.utils.ActivityUtils;
 
@@ -24,8 +24,8 @@ public class MyAccessibilityService extends AccessibilityService {
     private final BroadcastReceiver screenReceiver;
 
     public MyAccessibilityService() {
-        BeanFactory.getInstance().register(this);
-        setting = BeanFactory.getInstance().get(Setting.class);
+        BeanContainer.getInstance().register(this);
+        setting = BeanContainer.getInstance().get(Setting.class);
         screenReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {

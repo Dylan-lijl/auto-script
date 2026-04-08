@@ -1,9 +1,5 @@
 package pub.carzy.auto_script.utils;
 
-/**
- * @author admin
- */
-
 import androidx.annotation.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
@@ -20,7 +16,10 @@ import lombok.Setter;
 import pub.carzy.auto_script.ex.BeanInstantiationException;
 import pub.carzy.auto_script.ex.BeansException;
 import pub.carzy.auto_script.ex.FatalBeanException;
-
+/**
+ * bean工具
+ * @author admin
+ */
 public class BeanHandler {
     public static final Map<Class<?>, PropertyDescriptor[]> CACHED_PROPERTY_DESCRIPTORS = new ConcurrentHashMap<>();
 

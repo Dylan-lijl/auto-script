@@ -5,9 +5,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,7 +14,6 @@ import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheetBaseBuilder;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheetRootLayout;
-import com.qmuiteam.qmui.widget.textview.QMUISpanTouchFixTextView;
 
 import java.util.ArrayList;
 import java.util.List;

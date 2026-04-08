@@ -7,21 +7,16 @@ import android.widget.Toast;
 
 import androidx.databinding.DataBindingUtil;
 
-import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
-import com.qmuiteam.qmui.util.QMUIViewHelper;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.config.AbstractSetting;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.databinding.ViewDisclaimerBinding;
-import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.model.DisclaimerModel;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
-import pub.carzy.auto_script.utils.MixedUtil;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
@@ -47,7 +42,7 @@ public class DisclaimerActivity extends BaseActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.view_disclaimer);
         model = new DisclaimerModel();
         binding.setModel(model);
-        setting = BeanFactory.getInstance().get(Setting.class);
+        setting = BeanContainer.getInstance().get(Setting.class);
         initTopBar();
         init();
     }
@@ -73,9 +68,7 @@ public class DisclaimerActivity extends BaseActivity {
                         return;
                     }
                     int id = ActionInflater.ActionItem.stringToId(tag);
-                    if (defaultProcessMenu(id)) {
-                        return;
-                    }
+                    defaultProcessMenu(id);
                 });
         if (model.isView()) {
             //如果只是参观模式则不过滤菜单
@@ -117,7 +110,7 @@ public class DisclaimerActivity extends BaseActivity {
     private void startCountDown() {
         //倒计时
         ThreadUtil.runOnCpu(() -> {
-            Integer tick = setting.read(SettingKey.TICK, SettingProxy.DEFAULT.getTick());
+            Integer tick = setting.read(SettingKey.PROHIBITED, 10);
             ThreadUtil.runOnUi(() -> {
                 model.setTick(tick);
                 timer = new CountDownTimer(tick * 1000, 1000) {
@@ -169,7 +162,7 @@ public class DisclaimerActivity extends BaseActivity {
      * 跳回到主页面
      */
     private void jump() {
-        Intent intent = new Intent(DisclaimerActivity.this, MainActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();
     }

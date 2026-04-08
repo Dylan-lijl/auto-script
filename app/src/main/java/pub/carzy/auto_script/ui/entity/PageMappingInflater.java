@@ -23,7 +23,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import lombok.Data;
-import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.about.DefaultEmptyAboutActivity;
 import pub.carzy.auto_script.activities.about.ErrorAboutActivity;
 

@@ -1,9 +1,9 @@
 package pub.carzy.auto_script.entity;
 
+import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
-import lombok.Data;
 import pub.carzy.auto_script.BR;
 
 /**
@@ -41,12 +41,12 @@ public class FloatPoint extends BaseObservable implements Cloneable {
         notifyPropertyChanged(BR.y);
     }
 
+    @NonNull
     @Override
     public FloatPoint clone() {
         try {
-            FloatPoint clone = (FloatPoint) super.clone();
             //都是基础对象
-            return clone;
+            return (FloatPoint) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }

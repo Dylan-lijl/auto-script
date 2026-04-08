@@ -58,6 +58,7 @@ public class BeanNotFoundException extends RuntimeException{
     }
 
     @Override
+    @SuppressWarnings("CallToPrintStackTrace")
     public void printStackTrace() {
         super.printStackTrace();
     }

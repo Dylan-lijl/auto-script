@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
-import com.google.gson.Gson;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 
 import java.io.BufferedReader;
@@ -56,8 +55,8 @@ public class AboutLicensesActivity extends BaseActivity {
             } finally {
                 try {
                     is.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                } catch (IOException ignored) {
+
                 }
             }
             if (builder.length() > 0) {

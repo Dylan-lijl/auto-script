@@ -13,12 +13,11 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import pub.carzy.auto_script.R;
-import pub.carzy.auto_script.config.BeanFactory;
+import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.IdGenerator;
 import pub.carzy.auto_script.databinding.WindowRecordFloatingButtonBinding;
 import pub.carzy.auto_script.entity.EventDevice;
@@ -40,6 +39,7 @@ import pub.carzy.auto_script.utils.Stopwatch;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
+ * root录制引擎
  * @author admin
  */
 public class RecordRootScriptEngine extends RootScriptEngine implements RecordScriptEngine {
@@ -73,7 +73,7 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
         if (!this.initialized) {
             synchronized (this) {
                 if (!this.initialized) {
-                    dataWrapper = new DataWrapper(BeanFactory.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
+                    dataWrapper = new DataWrapper(BeanContainer.getInstance().get(new MyTypeToken<IdGenerator<Long>>() {
                     }));
                     WindowRecordFloatingButtonBinding binding = DataBindingUtil.inflate(
                             LayoutInflater.from(getContext()),

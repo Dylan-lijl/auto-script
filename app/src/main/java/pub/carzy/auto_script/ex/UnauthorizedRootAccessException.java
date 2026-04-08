@@ -62,6 +62,7 @@ public class UnauthorizedRootAccessException extends RuntimeException{
     }
 
     @Override
+    @SuppressWarnings("CallToPrintStackTrace")
     public void printStackTrace() {
         super.printStackTrace();
     }
