@@ -172,13 +172,13 @@ public class EventDeviceUtil {
                 for (EventContent content : device.getEvents()) {
                     if (content instanceof AbsEventContent) {
                         AbsEventContent absEventContent = (AbsEventContent) content;
-                        if (absEventContent.getName().equals("ABS_MT_SLOT")) {
+                        if ("ABS_MT_SLOT".equals(absEventContent.getName())) {
                             marks[0] = true;
-                        } else if (absEventContent.getName().equals("ABS_MT_POSITION_X")) {
+                        } else if ("ABS_MT_POSITION_X".equals(absEventContent.getName())) {
                             marks[1] = true;
-                        } else if (absEventContent.getName().equals("ABS_MT_POSITION_Y")) {
+                        } else if ("ABS_MT_POSITION_Y".equals(absEventContent.getName())) {
                             marks[2] = true;
-                        } else if (absEventContent.getName().equals("ABS_MT_TRACKING_ID")) {
+                        } else if ("ABS_MT_TRACKING_ID".equals(absEventContent.getName())) {
                             marks[3] = true;
                         }
                     }

@@ -121,6 +121,7 @@
                     android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
 
                 <EditText
+                    android:background="@drawable/input"
                     android:id="@+id/down_time_input"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -144,6 +145,7 @@
                     android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_duration))}" />
 
                 <EditText
+                    android:background="@drawable/input"
                     android:id="@+id/duration_input"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -167,6 +169,7 @@
                     android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_index))}" />
 
                 <EditText
+                    android:background="@drawable/input"
                     android:id="@+id/index_input"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -185,8 +188,7 @@
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/auto_adjust_input"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    style="@style/fieldSwitchLabel"
                     android:checked="true"
                     android:text="@{context.getString(R.string.label_format,context.getString(R.string.auto_adjust))}" />
 
@@ -203,6 +205,7 @@
                     android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_code))}" />
 
                 <AutoCompleteTextView
+                    android:background="@drawable/input"
                     android:id="@+id/dropdown"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -1,4 +1,4 @@
-<resources>
+<resources tools:locale="en" xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Auto Sprite</string>
     <string name="btn_accept">Accept</string>
     <string name="btn_decline">Decline</string>

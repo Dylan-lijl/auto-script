@@ -2,7 +2,6 @@ package pub.carzy.auto_script.ui_components.components;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.transition.TransitionManager;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.Getter;
 import pub.carzy.auto_script.ui_components.R;
 
 /**
@@ -121,8 +119,8 @@ public class FormField extends LinearLayout {
 
         public SlotLayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);
-            try (TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.FormField_Child)) {
-                slot = a.getString(R.styleable.FormField_Child_slot);
+            try (TypedArray a = c.obtainStyledAttributes(attrs, R.styleable.FormField_Layout)) {
+                slot = a.getString(R.styleable.FormField_Layout_slot);
             }
         }
     }

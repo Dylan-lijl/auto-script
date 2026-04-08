@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -28,6 +29,7 @@ import androidx.databinding.Observable;
 import androidx.databinding.ObservableArrayList;
 import androidx.databinding.ObservableBoolean;
 import androidx.databinding.ObservableList;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -89,6 +91,7 @@ import pub.carzy.auto_script.core.impl.engines.RecordRootScriptEngine;
 import pub.carzy.auto_script.core.impl.engines.ReplayAccScriptEngine;
 import pub.carzy.auto_script.core.impl.engines.ReplayRootScriptEngine;
 import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
+import pub.carzy.auto_script.ui.NormalDividerItemDecoration;
 import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.BeanHandler;
@@ -433,6 +436,12 @@ public class MacroListActivity extends BaseActivity {
                 }
             }
         });
+        DividerItemDecoration divider = new NormalDividerItemDecoration(this, DividerItemDecoration.VERTICAL);
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setSize(1, QMUIDisplayHelper.dp2px(this, 1));
+        drawable.setColor(getColor(R.color.secondary2));
+        divider.setDrawable(drawable);
+        binding.dataList.addItemDecoration(divider);
         action.attachToRecyclerView(binding.dataList);
     }
 

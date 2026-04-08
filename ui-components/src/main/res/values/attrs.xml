@@ -3,7 +3,7 @@
     <declare-styleable name="FormField">
         <attr name="edit" format="boolean"/>
     </declare-styleable>
-    <declare-styleable name="FormField_Child">
+    <declare-styleable name="FormField_Layout">
         <attr name="slot" format="string">
             <enum name="viewer" value="0"/>
             <enum name="editor" value="1"/>

@@ -90,6 +90,7 @@
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
 
                     <EditText
+                        android:background="@drawable/input"
                         android:id="@+id/down_time_input"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -119,6 +120,7 @@
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_x))}" />
 
                     <EditText
+                        android:background="@drawable/input"
                         android:id="@+id/x_input"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -139,6 +141,7 @@
                         android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_y))}" />
 
                     <EditText
+                        android:background="@drawable/input"
                         android:id="@+id/y_input"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"

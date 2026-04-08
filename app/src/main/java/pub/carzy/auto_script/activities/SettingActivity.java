@@ -371,7 +371,7 @@ public class SettingActivity extends BaseActivity {
 
     private void builderStyleDialog() {
         //实例化选择样式页面
-        View inflate = LayoutInflater.from(this).inflate(R.layout.dialog_style_change, null, false);
+        View inflate = LayoutInflater.from(this).inflate(R.layout.dialog_style_change, binding.topBarLayout.actionBar, false);
         QMUISwipeAction.ActionBuilder actionBuilder = new QMUISwipeAction.ActionBuilder()
                 .textSize(QMUIDisplayHelper.sp2px(this, 14))
                 .textColor(Color.WHITE)
