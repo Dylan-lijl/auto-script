@@ -18,6 +18,7 @@ import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.ex.DeviceNotRootedException;
 import pub.carzy.auto_script.ex.ProcessReadOrWriteIOException;
+import pub.carzy.auto_script.ex.UnauthorizedRootAccessException;
 import pub.carzy.auto_script.utils.Shell;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
@@ -33,7 +34,8 @@ public abstract class RootScriptEngine extends AbstractScriptEngine {
             cmdProcess = Shell.getRootProcess();
             doSubInit(callback);
             super.init(callback);
-        } catch (DeviceNotRootedException | ProcessReadOrWriteIOException e) {
+        } catch (DeviceNotRootedException | ProcessReadOrWriteIOException |
+                 UnauthorizedRootAccessException e) {
             callback.onFail(ResultCallback.EXCEPTION | ResultCallback.ROOT, e);
         }
     }

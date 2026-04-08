@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.ui;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -11,6 +12,8 @@ import android.graphics.drawable.Drawable;
 
 import androidx.annotation.NonNull;
 
+import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+
 /**
  * 绘制网格层
  *
@@ -20,37 +23,38 @@ public class GridDrawable extends Drawable {
 
     private final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private int size;
     private boolean grid;
-    private int lineWidth;
-    private int color;
-    private int gridColor;
+    private boolean scale;
 
-    public void setConfig(Integer color, Integer size, Boolean grid, Integer lineWidth, Integer gridColor) {
-        this.color = color;
-        this.size = size;
-        this.grid = grid;
-        this.lineWidth = lineWidth;
-        this.gridColor = gridColor;
-
+    public void setConfig(Context context, Integer color, Integer size, Boolean grid, Integer lineWidth, Integer gridColor, Boolean scale, Integer fontSize, Integer fontColor) {
+        this.size = size == null?0:size;
+        this.grid = grid != null && grid;
+        this.scale = scale != null && scale;
+        //背景颜色
+        bgPaint.setStyle(Paint.Style.FILL);
+        bgPaint.setColor(color);
         // 初始化线条画笔
         linePaint.setStyle(Paint.Style.STROKE);
-        linePaint.setStrokeWidth(lineWidth);
-        linePaint.setColor(gridColor);
-
+        linePaint.setStrokeWidth(lineWidth == null ? 1 : lineWidth);
+        linePaint.setColor(gridColor == null ? Color.BLACK : gridColor);
         // 初始化文字画笔
-        textPaint.setColor(linePaint.getColor());
-        textPaint.setTextSize(30f);
+        textPaint.setColor(fontColor == null ? Color.BLACK : fontColor);
+        textPaint.setTextSize(fontSize == null ? QMUIDisplayHelper.dp2px(context, 12) : QMUIDisplayHelper.dp2px(context, fontSize));
         textPaint.setFakeBoldText(false);
         invalidateSelf();
     }
 
     @Override
     public void draw(@NonNull Canvas canvas) {
-        if (size<=0){
+        if (size <= 0) {
             return;
         }
         Rect bounds = getBounds();
+        if (Color.alpha(bgPaint.getColor()) > 0) {
+            canvas.drawRect(bounds, bgPaint);
+        }
         float width = bounds.width();
         float height = bounds.height();
 
@@ -82,16 +86,14 @@ public class GridDrawable extends Drawable {
         textPaint.setTextAlign(Paint.Align.CENTER);
         for (int i = -halfSize; i <= halfSize; i++) {
             float x = centerX + i * stepX;
-            if (grid){
+            if (grid) {
                 // 先画完整的线
                 canvas.drawLine(x, bounds.top, x, bounds.bottom, linePaint);
             }
 
             // 绘制坐标文字（带遮罩）
-            if (i % intervalX == 0 && x > bounds.left + 80 && x < bounds.right - 80) {
+            if (scale && i % intervalX == 0 && x > bounds.left + 80 && x < bounds.right - 80) {
                 String label = String.valueOf(Math.round(x - bounds.left));
-                float tw = textPaint.measureText(label);
-
                 // 绘制遮罩矩形 (断线效果)
                 float labelY = bounds.top + textHeight + 20;
                 // 绘制文字
@@ -103,15 +105,12 @@ public class GridDrawable extends Drawable {
         textPaint.setTextAlign(Paint.Align.LEFT);
         for (int i = -halfSize; i <= halfSize; i++) {
             float y = centerY + i * stepY;
-            if (grid){
+            if (grid) {
                 canvas.drawLine(bounds.left, y, bounds.right, y, linePaint);
             }
-
-            // 绘制坐标文字（带遮罩）
-            if (i % intervalY == 0 && y > bounds.top + 80 && y < bounds.bottom - 80) {
+            // 绘制坐标文字
+            if (scale && i % intervalY == 0 && y > bounds.top + 80 && y < bounds.bottom - 80) {
                 String label = String.valueOf(Math.round(y - bounds.top));
-                float tw = textPaint.measureText(label);
-
                 // 绘制遮罩矩形 (断线效果)
                 float labelX = bounds.left + 20;
                 // 绘制文字：y + vOffset 确保线从文字中间穿过

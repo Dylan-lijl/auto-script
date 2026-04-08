@@ -761,6 +761,9 @@ public class MacroListActivity extends BaseActivity {
                 config.dynamicUpdate = setting.read(SettingKey.DYNAMIC_UPDATE, SettingProxy.DEFAULT.getDynamicUpdate());
                 config.floatPoint = setting.read(SettingKey.FLOAT_POINT, SettingProxy.DEFAULT.getFloatPoint().clone());
                 config.maskConfig = setting.read(SettingKey.MASK_CONFIG, SettingProxy.DEFAULT.getMaskConfig().clone());
+                config.autoPlay = setting.read(SettingKey.AUTO_PLAY, SettingProxy.DEFAULT.getAutoPlay());
+                config.autoClose = setting.read(SettingKey.AUTO_CLOSE, SettingProxy.DEFAULT.getAutoClose());
+                config.ignoreFloatingScript = setting.read(SettingKey.IGNORE_FLOATING_SCRIPT, SettingProxy.DEFAULT.getIgnoreFloatingScript());
                 //打开
                 recordEngine.start(config);
             }

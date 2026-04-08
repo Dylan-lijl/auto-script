@@ -35,7 +35,7 @@ public class SettingProxy extends BaseObservable implements Cloneable {
         DEFAULT.setIgnoreFloatingScript(true);
         DEFAULT.setFloatPoint(new FloatPoint(200, 200));
         DEFAULT.setDynamicUpdate(true);
-        DEFAULT.setMaskConfig(new MaskConfig(Color.parseColor("#6b6b6b1a"), 10, false, 5, Color.BLACK));
+        DEFAULT.setMaskConfig(new MaskConfig(Color.parseColor("#6b6b6b1a"), 10, false, 2, Color.BLACK, true, 16, Color.BLACK));
     }
 
     /**

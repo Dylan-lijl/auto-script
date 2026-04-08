@@ -16,16 +16,22 @@ public class MaskConfig extends BaseObservable implements Cloneable{
     private Boolean grid;
     private Integer lineWidth;
     private Integer gridColor;
-
+    private Boolean scale;
+    private Integer fontSize;
+    private Integer fontColor;
     public MaskConfig() {
     }
 
-    public MaskConfig(Integer color, Integer size, Boolean grid, Integer lineWidth, Integer gridColor) {
+    public MaskConfig(Integer color, Integer size, Boolean grid, Integer lineWidth, Integer gridColor,
+                      Boolean scale, Integer fontSize, Integer fontColor) {
         this.color = color;
         this.size = size;
         this.grid = grid;
         this.lineWidth = lineWidth;
         this.gridColor = gridColor;
+        this.scale = scale;
+        this.fontSize = fontSize;
+        this.fontColor = fontColor;
     }
 
     @Bindable
@@ -76,6 +82,36 @@ public class MaskConfig extends BaseObservable implements Cloneable{
     public void setGridColor(Integer gridColor) {
         this.gridColor = gridColor;
         notifyPropertyChanged(BR.gridColor);
+    }
+
+    @Bindable
+    public Boolean getScale() {
+        return scale;
+    }
+
+    public void setScale(Boolean scale) {
+        this.scale = scale;
+        notifyPropertyChanged(BR.scale);
+    }
+
+    @Bindable
+    public Integer getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(Integer fontSize) {
+        this.fontSize = fontSize;
+        notifyPropertyChanged(BR.fontSize);
+    }
+
+    @Bindable
+    public Integer getFontColor() {
+        return fontColor;
+    }
+
+    public void setFontColor(Integer fontColor) {
+        this.fontColor = fontColor;
+        notifyPropertyChanged(BR.fontColor);
     }
 
     @Override

@@ -9,5 +9,8 @@ import pub.carzy.auto_script.entity.MaskConfig;
 public interface RecordScriptEngine extends ScriptEngine {
     class RecordConfig extends ScriptConfig{
         public MaskConfig maskConfig;
+        public Boolean autoPlay;
+        public Boolean autoClose;
+        public Boolean ignoreFloatingScript;
     }
 }

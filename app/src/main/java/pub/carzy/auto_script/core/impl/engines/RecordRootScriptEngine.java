@@ -89,17 +89,28 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                 }
             }
         }
+        for (Object arg : args) {
+            if (arg instanceof RecordConfig) {
+                RecordConfig config = (RecordConfig) arg;
+                viewWrapper.ignoreFloatingScript = config.ignoreFloatingScript;
+                viewWrapper.autoClose = config.autoClose;
+            }
+        }
         viewWrapper.showView();
     }
 
     private void addListenerByView() {
         WindowRecordFloatingButtonBinding binding = viewWrapper.binding;
         //添加长按拖动功能
-        addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.params, (x,y) -> {
+        addViewTouch(createMoveListener(binding.getRoot(), viewWrapper.params, (x, y) -> {
                     if (binding.getRecordState().getState() != RecordStateModel.STATE_RECORDING) {
                         return;
                     }
-                    ThreadUtil.runOnUi(dataWrapper::removeLastMotion, 50);
+                    ThreadUtil.runOnUi(() -> {
+                        if (viewWrapper.ignoreFloatingScript) {
+                            dataWrapper.removeLastMotion();
+                        }
+                    }, 50);
                 }),
                 binding.btnFloatingPause, binding.btnFloatingRecord, binding.btnFloatingRun, binding.btnFloatingStop, binding.btnFloatingClose);
         AtomicInteger state = new AtomicInteger(0);
@@ -124,6 +135,9 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                         state.set(1);
                         jumpToInfo(transformData(dataWrapper.idWorker, dataWrapper.watcher.getElapsedMillis(),
                                 0, dataWrapper.getMotionsData(), dataWrapper.getKeysData()));
+                        if (viewWrapper.autoClose) {
+                            close();
+                        }
                     }
                 }
             });
@@ -156,6 +170,9 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                 state.set(1);
                 jumpToInfo(transformData(dataWrapper.idWorker, dataWrapper.watcher.getElapsedMillis(),
                         0, dataWrapper.getMotionsData(), dataWrapper.getKeysData()));
+                if (viewWrapper.autoClose) {
+                    close();
+                }
             }, 1000);
         });
     }
@@ -177,7 +194,9 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
                     gestureRecorder.setReadingBack(new OnRecordReading() {
                         @Override
                         public void pause(Object... args) {
-                            dataWrapper.removeLastMotion();
+                            if (viewWrapper.ignoreFloatingScript) {
+                                dataWrapper.removeLastMotion();
+                            }
                             if (reading != null) {
                                 reading.pause(types, InputConstants.EV_ABS);
                             }
@@ -185,7 +204,9 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
 
                         @Override
                         public void stop(Object... args) {
-                            dataWrapper.removeLastMotion();
+                            if (viewWrapper.ignoreFloatingScript) {
+                                dataWrapper.removeLastMotion();
+                            }
                             if (reading != null) {
                                 reading.stop(types, InputConstants.EV_ABS);
                             }
@@ -350,6 +371,8 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
         WindowRecordFloatingButtonBinding binding;
         WindowManager windowManager;
         WindowManager.LayoutParams params;
+        boolean ignoreFloatingScript;
+        boolean autoClose;
 
         public ViewWrapper(WindowManager windowManager, WindowRecordFloatingButtonBinding binding, WindowManager.LayoutParams params) {
             this.windowManager = windowManager;

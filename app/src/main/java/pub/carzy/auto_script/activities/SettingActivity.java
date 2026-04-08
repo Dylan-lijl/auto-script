@@ -219,6 +219,29 @@ public class SettingActivity extends BaseActivity {
                 setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
             });
         });
+        //刻度
+        binding.maskScaleLayout.setOnClickListener(e -> {
+            MaskConfig config = model.getProxy().getMaskConfig();
+            if (config == null) {
+                return;
+            }
+            config.setScale(!config.getScale());
+            setting.write(SettingKey.MASK_CONFIG, config);
+        });
+        //刻度文字颜色
+        binding.maskFontColorRootLayout.setOnClickListener(e -> {
+            //打开弹窗
+            builderColorInputDialog(model.getProxy().getMaskConfig().getFontColor(), v -> {
+                model.getProxy().getMaskConfig().setFontColor(v);
+                setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+            });
+        });
+        //刻度文字大小
+        binding.maskFontSizeRootLayout.setOnClickListener(e ->
+                builderNumberInputDialog("刻度文字大小", model.getProxy().getMaskConfig().getFontSize(), v -> {
+                    model.getProxy().getMaskConfig().setFontSize(v);
+                    setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
+                }));
         Runnable updateCurrentStyle = () -> {
             Style currentStyle = model.getProxy().getCurrentStyle();
             if (currentStyle == null) {
@@ -727,6 +750,11 @@ public class SettingActivity extends BaseActivity {
         Optional.ofNullable(setting.read(SettingKey.DYNAMIC_UPDATE)).ifPresent(model.getProxy()::setDynamicUpdate);
         Optional.ofNullable(setting.read(SettingKey.MASK_CONFIG)).ifPresent(model.getProxy()::setMaskConfig);
         Optional.ofNullable(setting.getAll(SettingKey.STYLE)).ifPresent(a -> model.getProxy().setStyles(new ArrayList<>(a.values())));
+        //初始化
+        if (!setting.read(SettingKey.INITIALIZATION, false)) {
+            reset();
+            setting.write(SettingKey.INITIALIZATION, true);
+        }
     }
 
     private void reset() {

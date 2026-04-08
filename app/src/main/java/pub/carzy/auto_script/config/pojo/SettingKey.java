@@ -13,12 +13,13 @@ import pub.carzy.auto_script.entity.Style;
 public class SettingKey<T> {
     private final String key;
     private final Class<T> type;
-
     public SettingKey(String key, Class<T> type) {
         this.key = key;
         this.type = type;
     }
 
+
+    public static final SettingKey<Boolean> INITIALIZATION = new SettingKey<>("initialization", Boolean.class);
     public static final SettingKey<Boolean> AUTO_CLOSE = new SettingKey<>("autoClose", Boolean.class);
     public static final SettingKey<OperationConfig> OPERATION_CONFIG = new SettingKey<>("operationConfig", OperationConfig.class);
     public static final SettingKey<Boolean> SHOW_OPERATION = new SettingKey<>("showOperation", Boolean.class);

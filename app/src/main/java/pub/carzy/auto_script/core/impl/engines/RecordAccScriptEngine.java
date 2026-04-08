@@ -33,6 +33,7 @@ import pub.carzy.auto_script.entity.KeyEntity;
 import pub.carzy.auto_script.entity.MaskConfig;
 import pub.carzy.auto_script.entity.MotionEntity;
 import pub.carzy.auto_script.entity.PointEntity;
+import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.model.RecordStateModel;
 import pub.carzy.auto_script.core.MyAccessibilityService;
 import pub.carzy.auto_script.core.data.ReplayModel;
@@ -80,8 +81,6 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
                                     null,
                                     false
                             ));
-                    Setting setting = BeanFactory.getInstance().get(Setting.class);
-                    binding.getRecordState().setAutoReplay(setting.read(SettingKey.AUTO_PLAY, null));
                     addListenerByView();
                     setUpAccessibleCallback();
                     this.initialized = true;
@@ -92,19 +91,24 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
             if (arg instanceof RecordConfig) {
                 RecordConfig config = (RecordConfig) arg;
                 viewWrapper.dynamicUpdate = config.dynamicUpdate;
+                viewWrapper.autoClose = config.autoClose;
                 if (config.floatPoint != null) {
                     viewWrapper.moveView(config.floatPoint.getX(), config.floatPoint.getY());
                 }
                 if (config.maskConfig != null) {
                     MaskConfig maskConfig = config.maskConfig;
                     GridDrawable gridDrawable = new GridDrawable();
-                    gridDrawable.setConfig(maskConfig.getColor(),maskConfig.getSize(), maskConfig.getGrid(), maskConfig.getLineWidth(), maskConfig.getGridColor());
+                    gridDrawable.setConfig(getContext(), maskConfig.getColor(), maskConfig.getSize(), maskConfig.getGrid(),
+                            maskConfig.getLineWidth(), maskConfig.getGridColor(), maskConfig.getScale(), maskConfig.getFontSize(), maskConfig.getFontColor());
                     FrameLayout root = viewWrapper.maskViewBinding.backgroundRoot;
                     root.getOverlay().add(gridDrawable);
                     root.post(() -> {
                         gridDrawable.setBounds(0, 0, root.getWidth(), root.getHeight());
                     });
                     root.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> gridDrawable.setBounds(0, 0, v.getWidth(), v.getHeight()));
+                }
+                if (config.autoPlay != null) {
+                    viewWrapper.binding.getRecordState().setAutoReplay(config.autoPlay);
                 }
             }
         }
@@ -181,6 +185,9 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
             viewWrapper.removeMaskView();
             dataWrapper.saveData();
             jumpToInfo(transformData(dataWrapper.idWorker, millis, 0, dataWrapper.finalMotions, dataWrapper.finalKeyList));
+            if (viewWrapper.autoClose) {
+                close();
+            }
         });
     }
 
@@ -386,6 +393,7 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
         boolean tint = false;
         final WindowManager windowManager;
         boolean dynamicUpdate;
+        boolean autoClose;
 
         public ViewWrapper(WindowManager windowManager, WindowRecordFloatingButtonBinding binding, WindowManager.LayoutParams bindingParams, WindowMaskViewBinding maskViewBinding) {
             this.windowManager = windowManager;

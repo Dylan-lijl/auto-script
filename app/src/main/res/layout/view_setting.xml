@@ -110,6 +110,7 @@
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
+                            android:clickable="false"
                             style="@style/fieldSwitchLabel"
                             android:checked="@{model.proxy.autoClose}" />
                     </LinearLayout>
@@ -130,6 +131,7 @@
                         </LinearLayout>
 
                         <!--<androidx.appcompat.widget.SwitchCompat
+                        android:clickable="false"
                             style="@style/fieldSwitchLabel"
                             android:checked="@{model.proxy.showOperation}" />-->
                     </LinearLayout>
@@ -246,6 +248,7 @@
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
+                            android:clickable="false"
                             style="@style/fieldSwitchLabel"
                             android:checked="@{model.proxy.autoPlay}" />
                     </LinearLayout>
@@ -272,6 +275,7 @@
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
+                            android:clickable="false"
                             style="@style/fieldSwitchLabel"
                             android:checked="@{model.proxy.ignoreFloatingScript}" />
                     </LinearLayout>
@@ -319,6 +323,7 @@
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
+                            android:clickable="false"
                             style="@style/fieldSwitchLabel"
                             android:checked="@{model.proxy.dynamicUpdate}" />
                     </LinearLayout>
@@ -390,13 +395,15 @@
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
+                            android:clickable="false"
                             style="@style/fieldSwitchLabel"
                             android:checked="@{model.proxy.maskConfig.grid}" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/mask_grid_color_root_layout"
-                        style="@style/fieldLayout">
+                        style="@style/fieldLayout"
+                        android:visibility="@{model.proxy.maskConfig.grid?View.VISIBLE:View.GONE}">
 
                         <LinearLayout style="@style/fieldLeftLayout">
 
@@ -418,7 +425,8 @@
 
                     <LinearLayout
                         android:id="@+id/mask_grid_size_root_layout"
-                        style="@style/fieldLayout">
+                        style="@style/fieldLayout"
+                        android:visibility="@{model.proxy.maskConfig.grid?View.VISIBLE:View.GONE}">
 
                         <LinearLayout style="@style/fieldLeftLayout">
 
@@ -434,6 +442,68 @@
                         <TextView
                             style="@style/fieldInputLabel"
                             android:text="@{StringUtils.format(model.proxy.maskConfig.lineWidth)}" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/mask_scale_layout"
+                        style="@style/fieldLayout">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="刻度" />
+
+                            <TextView
+                                style="@style/fieldDescription"
+                                android:text="x轴和y轴坐标信息" />
+                        </LinearLayout>
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:clickable="false"
+                            style="@style/fieldSwitchLabel"
+                            android:checked="@{model.proxy.maskConfig.scale}" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/mask_font_color_root_layout"
+                        style="@style/fieldLayout"
+                        android:visibility="@{model.proxy.maskConfig.scale?View.VISIBLE:View.GONE}">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="刻度文字颜色" />
+
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/fieldColorLabel">
+
+                            <TextView
+                                style="@style/fieldColorLabel.InsideColor"
+                                android:background="@{model.proxy.maskConfig.fontColor}"
+                                android:text="@{MixedUtil.colorToHex(model.proxy.maskConfig.fontColor)}"
+                                android:textColor="@{MixedUtil.isColorLight(model.proxy.maskConfig.fontColor)?@color/black:@color/white}" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/mask_font_size_root_layout"
+                        style="@style/fieldLayout"
+                        android:visibility="@{model.proxy.maskConfig.scale?View.VISIBLE:View.GONE}">
+
+                        <LinearLayout style="@style/fieldLeftLayout">
+
+                            <TextView
+                                style="@style/fieldLabel"
+                                android:text="刻度文字大小" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            style="@style/fieldInputLabel"
+                            android:text="@{StringUtils.format(model.proxy.maskConfig.fontSize)}" />
                     </LinearLayout>
 
                     <TextView style="@style/dividingLine" />
@@ -463,9 +533,9 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:orientation="vertical"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="vertical"
                         android:visibility="@{model.proxy.currentStyle==null?View.GONE:View.VISIBLE}">
 
                         <TextView
@@ -514,6 +584,7 @@
                             </LinearLayout>
 
                             <androidx.appcompat.widget.SwitchCompat
+                                android:clickable="false"
                                 style="@style/fieldSwitchLabel"
                                 android:checked="@{model.proxy.currentStyle.statusBarMode}" />
                         </LinearLayout>
@@ -606,9 +677,9 @@
                         <LinearLayout style="@style/fieldLeftLayout">
 
                             <TextView
-                                android:textColor="@color/danger"
                                 style="@style/fieldLabel"
-                                android:text="重置" />
+                                android:text="重置"
+                                android:textColor="@color/danger" />
 
                             <TextView
                                 style="@style/fieldDescription"
