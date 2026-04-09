@@ -196,7 +196,7 @@ public class MacroInfoActivity extends BaseActivity {
 
     private void changeRunService() {
         ThreadUtil.runOnUi(() -> {
-            Integer type = setting.read(SettingKey.TYPE, null);
+            Integer type = setting.read(SettingKey.TYPE, SettingProxy.DEFAULT.getType());
             if (replayScriptEngine == null) {
                 replayScriptEngine = type == SettingProxy.AUTO || type == SettingProxy.ROOT ? new ReplayRootScriptEngine() : new ReplayAccScriptEngine();
             }

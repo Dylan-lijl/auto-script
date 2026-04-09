@@ -668,7 +668,7 @@ public class MacroListActivity extends BaseActivity {
             ReplayModel replayModel = ReplayModel.create(script, actions, points);
             //打开服务
             ThreadUtil.runOnUi(() -> {
-                Integer type = setting.read(SettingKey.TYPE, null);
+                Integer type = setting.read(SettingKey.TYPE, SettingProxy.DEFAULT.getType());
                 replayEngine = type == SettingProxy.AUTO || type == SettingProxy.ROOT ? new ReplayRootScriptEngine() : new ReplayAccScriptEngine();
                 AtomicReference<ScriptEngine.ResultCallback> reference = new AtomicReference<>(null);
                 reference.set(new ScriptEngine.ResultCallback() {
@@ -746,7 +746,7 @@ public class MacroListActivity extends BaseActivity {
      * 打开录制服务
      */
     private void openService() {
-        Integer type = setting.read(SettingKey.TYPE, null);
+        Integer type = setting.read(SettingKey.TYPE, SettingProxy.DEFAULT.getType());
         recordEngine = type == SettingProxy.AUTO || type == SettingProxy.ROOT ? new RecordRootScriptEngine() : new RecordAccScriptEngine();
         AtomicReference<ScriptEngine.ResultCallback> reference = new AtomicReference<>(null);
         reference.set(new ScriptEngine.ResultCallback() {
