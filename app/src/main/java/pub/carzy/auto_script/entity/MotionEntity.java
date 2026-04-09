@@ -35,7 +35,7 @@ public class MotionEntity implements Parcelable {
         points = in.createTypedArrayList(PointEntity.CREATOR);
     }
 
-    public static final Creator<MotionEntity> CREATOR = new Creator<MotionEntity>() {
+    public static final Creator<MotionEntity> CREATOR = new Creator<>() {
         @Override
         public MotionEntity createFromParcel(Parcel in) {
             return new MotionEntity(in);

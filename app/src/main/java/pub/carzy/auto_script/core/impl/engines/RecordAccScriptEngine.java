@@ -96,9 +96,7 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
                             maskConfig.getLineWidth(), maskConfig.getGridColor(), maskConfig.getScale(), maskConfig.getFontSize(), maskConfig.getFontColor());
                     FrameLayout root = viewWrapper.maskViewBinding.backgroundRoot;
                     root.getOverlay().add(gridDrawable);
-                    root.post(() -> {
-                        gridDrawable.setBounds(0, 0, root.getWidth(), root.getHeight());
-                    });
+                    root.post(() -> gridDrawable.setBounds(0, 0, root.getWidth(), root.getHeight()));
                     root.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) -> gridDrawable.setBounds(0, 0, v.getWidth(), v.getHeight()));
                 }
                 if (config.autoPlay != null) {
@@ -384,7 +382,7 @@ public class RecordAccScriptEngine extends AccScriptEngine implements RecordScri
         /**
          * 消除警告
          */
-        boolean tint = false;
+        final boolean tint = false;
         final WindowManager windowManager;
         boolean dynamicUpdate;
         boolean autoClose;

@@ -25,9 +25,6 @@ import java.util.List;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
 import pub.carzy.auto_script.config.BeanContainer;
-import pub.carzy.auto_script.config.Setting;
-import pub.carzy.auto_script.config.pojo.SettingKey;
-import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.core.MyAccessibilityService;
 import pub.carzy.auto_script.utils.ThreadUtil;
 

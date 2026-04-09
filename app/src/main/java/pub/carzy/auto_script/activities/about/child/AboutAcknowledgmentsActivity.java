@@ -1,6 +1,5 @@
 package pub.carzy.auto_script.activities.about.child;
 
-import static java.security.AccessController.getContext;
 
 import android.os.Bundle;
 import android.view.View;
@@ -9,13 +8,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
@@ -25,18 +22,12 @@ import com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView;
 import com.qmuiteam.qmui.widget.popup.QMUIPopup;
 import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicReference;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
 import pub.carzy.auto_script.databinding.ComAboutAcknowledgmentsBinding;
 import pub.carzy.auto_script.entity.AcknowledgementEntity;
-import pub.carzy.auto_script.entity.BasicFileImport;
-import pub.carzy.auto_script.entity.DevelopmentProcessItem;
 import pub.carzy.auto_script.entity.WrapperEntity;
 import pub.carzy.auto_script.model.AboutAcknowledgmentModel;
 import pub.carzy.auto_script.utils.ActivityUtils;

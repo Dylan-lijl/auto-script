@@ -3,39 +3,59 @@
 
     <data>
 
+        <import type="pub.carzy.auto_script.utils.ActivityUtils" />
     </data>
 
     <LinearLayout
-        android:orientation="vertical"
-        android:padding="20dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="@{@string/label_format(@string/project_principles)}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            <Button
-                android:id="@+id/link_btn"
-                style="@style/TransparentButton"
-                android:textColor="@color/link"
-                android:text="@{`https://www.edrawmax.cn/online/share.html?code=4496f1fcfcba11f0b6f7d1f4a4d039f5`}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp">
+
         <TextView
-            android:text="@string/issues_submit_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/project_principles" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{ActivityUtils.version1}"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/link_btn"
+            style="@style/TransparentButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{`https://www.edrawmax.cn/online/share.html?code=4496f1fcfcba11f0b6f7d1f4a4d039f5`}"
+            android:textColor="@color/link" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{ActivityUtils.version2}"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/link2_btn"
+            style="@style/TransparentButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{`https://www.edrawmax.cn/online/share.html?code=147a747a33b611f18f3f9f21c0f9c063`}"
+            android:textColor="@color/link" />
+
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="@string/issues_submit_message" />
+
         <Button
             android:id="@+id/issues_btn"
             style="@style/TransparentButton"
-            android:textColor="@color/link"
-            android:text="@{`https://github.com/Dylan-lijl/auto-script/issues`}"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="@{`https://github.com/Dylan-lijl/auto-script/issues`}"
+            android:textColor="@color/link" />
     </LinearLayout>
 </layout>

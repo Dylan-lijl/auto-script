@@ -3,7 +3,6 @@ package pub.carzy.auto_script.utils;
 import androidx.annotation.Nullable;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -148,9 +147,7 @@ public abstract class Assert {
      */
     @Deprecated
     public static void doesNotContain(@Nullable String textToSearch, String substring) {
-        doesNotContain(textToSearch, substring, () -> {
-            return "[Assertion failed] - this String argument must not contain the substring [" + substring + "]";
-        });
+        doesNotContain(textToSearch, substring, () -> "[Assertion failed] - this String argument must not contain the substring [" + substring + "]");
     }
 
     public static void notEmpty(@Nullable Object[] array, String message) {

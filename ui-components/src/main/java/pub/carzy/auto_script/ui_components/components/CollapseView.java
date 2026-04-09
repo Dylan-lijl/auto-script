@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.ui_components.components;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
@@ -25,8 +26,8 @@ import pub.carzy.auto_script.ui_components.R;
  * 第一个参数是数据泛型,剩下依次是标题View,右侧View,内容View,这样写回调时就不需要强转,不会弄错类型
  * @author admin
  */
+@SuppressWarnings({"LombokGetterMayBeUsed","LombokSetterMayBeUsed"})
 public class CollapseView<D, T extends View, E extends View, C extends View> extends LinearLayout {
-    private RecyclerView recyclerView;
     private CollapseAdapter<D,T,E,C> adapter;
 
     private boolean accordion;
@@ -34,6 +35,7 @@ public class CollapseView<D, T extends View, E extends View, C extends View> ext
     private boolean ghost;
     private Drawable titleBackground;
 
+    @SuppressLint("NotifyDataSetChanged")
     public void setGhost(boolean ghost) {
         this.ghost = ghost;
         adapter.notifyDataSetChanged();
@@ -56,9 +58,85 @@ public class CollapseView<D, T extends View, E extends View, C extends View> ext
         init(context, attrs);
     }
 
+    public CollapseAdapter<D, T, E, C> getAdapter() {
+        return adapter;
+    }
+
+    public void setAdapter(CollapseAdapter<D, T, E, C> adapter) {
+        this.adapter = adapter;
+    }
+
+    public boolean isAccordion() {
+        return accordion;
+    }
+
+    public void setAccordion(boolean accordion) {
+        this.accordion = accordion;
+    }
+
+    public boolean isCollapsible() {
+        return collapsible;
+    }
+
+    public void setCollapsible(boolean collapsible) {
+        this.collapsible = collapsible;
+    }
+
+    public boolean isGhost() {
+        return ghost;
+    }
+
+    public Drawable getTitleBackground() {
+        return titleBackground;
+    }
+
+    public void setTitleBackground(Drawable titleBackground) {
+        this.titleBackground = titleBackground;
+    }
+
+    public Function<DataWrapper<D>, T> getTitleFactory() {
+        return titleFactory;
+    }
+
+    public void setTitleFactory(Function<DataWrapper<D>, T> titleFactory) {
+        this.titleFactory = titleFactory;
+    }
+
+    public Function<DataWrapper<D>, E> getRightFactory() {
+        return rightFactory;
+    }
+
+    public void setRightFactory(Function<DataWrapper<D>, E> rightFactory) {
+        this.rightFactory = rightFactory;
+    }
+
+    public Function<DataWrapper<D>, C> getContentFactory() {
+        return contentFactory;
+    }
+
+    public void setContentFactory(Function<DataWrapper<D>, C> contentFactory) {
+        this.contentFactory = contentFactory;
+    }
+
+    public Consumer<CollapseItem<D, T, E, C>> getOnRenderListener() {
+        return onRenderListener;
+    }
+
+    public void setOnRenderListener(Consumer<CollapseItem<D, T, E, C>> onRenderListener) {
+        this.onRenderListener = onRenderListener;
+    }
+
+    public Consumer<CollapseItem<D, T, E, C>> getOnHeaderClickListener() {
+        return onHeaderClickListener;
+    }
+
+    public void setOnHeaderClickListener(Consumer<CollapseItem<D, T, E, C>> onHeaderClickListener) {
+        this.onHeaderClickListener = onHeaderClickListener;
+    }
+
     private void init(Context context, AttributeSet attrs) {
         setOrientation(VERTICAL);
-        recyclerView = new RecyclerView(context);
+        RecyclerView recyclerView = new RecyclerView(context);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         adapter = new CollapseAdapter<>(this);
         recyclerView.setAdapter(adapter);
@@ -73,46 +151,6 @@ public class CollapseView<D, T extends View, E extends View, C extends View> ext
             setTitleBackground(ContextCompat.getDrawable(getContext(),
                     ta.getResourceId(R.styleable.CollapseView_titleBackground, R.drawable.bg_collapse_bordered)));
         }
-    }
-
-    public void setTitleFactory(Function<DataWrapper<D>, T> factory) {
-        this.titleFactory = factory;
-    }
-
-    public void setRightFactory(Function<DataWrapper<D>, E> factory) {
-        this.rightFactory = factory;
-    }
-
-    public void setContentFactory(Function<DataWrapper<D>, C> factory) {
-        this.contentFactory = factory;
-    }
-
-    public void setAccordion(boolean accordion) {
-        this.accordion = accordion;
-    }
-
-    public void setCollapsible(boolean collapsible) {
-        this.collapsible = collapsible;
-    }
-
-    public void setOnRenderListener(Consumer<CollapseItem<D,T,E,C>> listener) {
-        this.onRenderListener = listener;
-    }
-
-    public Drawable getTitleBackground() {
-        return titleBackground;
-    }
-
-    public void setTitleBackground(Drawable titleBackground) {
-        this.titleBackground = titleBackground;
-    }
-
-    public Consumer<CollapseItem<D,T,E,C>> getOnHeaderClickListener() {
-        return onHeaderClickListener;
-    }
-
-    public void setOnHeaderClickListener(Consumer<CollapseItem<D,T,E,C>> onHeaderClickListener) {
-        this.onHeaderClickListener = onHeaderClickListener;
     }
 
     public void setItems(List<D> items) {
@@ -132,6 +170,7 @@ public class CollapseView<D, T extends View, E extends View, C extends View> ext
             this.view = view;
         }
 
+        @SuppressLint("NotifyDataSetChanged")
         void setItems(List<DataWrapper<D>> list) {
             items.clear();
             items.addAll(list);
@@ -195,13 +234,9 @@ public class CollapseView<D, T extends View, E extends View, C extends View> ext
                         }
                     }
                     // 打开或关闭当前
-                    item.getData().setExpanded(!item.getData().isExpanded());
-                    notifyItemChanged(position);
-                } else {
-                    // 独立模式
-                    item.getData().setExpanded(!item.getData().isExpanded());
-                    notifyItemChanged(position);
                 }
+                item.getData().setExpanded(!item.getData().isExpanded());
+                notifyItemChanged(position);
                 if (view.getOnHeaderClickListener() != null) {
                     view.getOnHeaderClickListener().accept(item);
                 }
@@ -217,8 +252,8 @@ public class CollapseView<D, T extends View, E extends View, C extends View> ext
         }
     }
 
-    static class VH extends RecyclerView.ViewHolder {
-        LinearLayout titleContainer, rightContainer, contentContainer, header;
+    public static class VH extends RecyclerView.ViewHolder {
+        final LinearLayout titleContainer, rightContainer, contentContainer, header;
 
         VH(@NonNull View itemView) {
             super(itemView);
@@ -236,7 +271,6 @@ public class CollapseView<D, T extends View, E extends View, C extends View> ext
         private E rightView;
         private C contentView;
         private DataWrapper<D> data;
-
 
         public View getRootView() {
             return rootView;
@@ -296,20 +330,20 @@ public class CollapseView<D, T extends View, E extends View, C extends View> ext
             this(null);
         }
 
-        public boolean isExpanded() {
-            return expanded;
-        }
-
-        public void setExpanded(boolean expanded) {
-            this.expanded = expanded;
-        }
-
         public D getData() {
             return data;
         }
 
         public void setData(D data) {
             this.data = data;
+        }
+
+        public boolean isExpanded() {
+            return expanded;
+        }
+
+        public void setExpanded(boolean expanded) {
+            this.expanded = expanded;
         }
     }
 }

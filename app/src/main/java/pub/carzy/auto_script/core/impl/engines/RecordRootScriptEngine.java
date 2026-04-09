@@ -368,9 +368,9 @@ public class RecordRootScriptEngine extends RootScriptEngine implements RecordSc
     }
 
     static class ViewWrapper {
-        WindowRecordFloatingButtonBinding binding;
-        WindowManager windowManager;
-        WindowManager.LayoutParams params;
+        final WindowRecordFloatingButtonBinding binding;
+        final WindowManager windowManager;
+        final WindowManager.LayoutParams params;
         boolean ignoreFloatingScript;
         boolean autoClose;
 

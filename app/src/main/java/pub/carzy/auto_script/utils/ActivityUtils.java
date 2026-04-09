@@ -71,6 +71,8 @@ import pub.carzy.auto_script.core.ScriptEngine;
  * @author admin
  */
 public class ActivityUtils {
+    public static final String version1 = "v1.0.1";
+    public static final String version2 = "v1.1.0";
     private static volatile Map<String, Locale> LOCALE_MAP = null;
 
     public static View reinstatedView(View root) {

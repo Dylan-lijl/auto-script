@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -353,15 +354,21 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
         protected void selected(boolean first) {
             super.selected(first);
             if (first) {
-                binding.linkBtn.setOnClickListener(e -> ActivityUtils.openToBrowser(context, binding.linkBtn.getText().toString()));
-                binding.linkBtn.setOnLongClickListener(e -> {
-                    ActivityUtils.copyToClipboard(context, "link", binding.linkBtn.getText().toString());
-                    Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show();
-                    return true;
-                });
+                flowchartListener(binding.linkBtn,binding.link2Btn);
                 binding.issuesBtn.setOnClickListener(e -> ActivityUtils.openToBrowser(context, binding.issuesBtn.getText().toString()));
                 binding.issuesBtn.setOnLongClickListener(e -> {
                     ActivityUtils.copyToClipboard(context, "link", binding.issuesBtn.getText().toString());
+                    Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show();
+                    return true;
+                });
+            }
+        }
+
+        private void flowchartListener(Button... buttons) {
+            for (Button button:buttons){
+                button.setOnClickListener(e -> ActivityUtils.openToBrowser(context, button.getText().toString()));
+                button.setOnLongClickListener(e -> {
+                    ActivityUtils.copyToClipboard(context, "link", button.getText().toString());
                     Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show();
                     return true;
                 });
@@ -411,9 +418,7 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
                 binding.setModel(m);
                 binding.confirmBtn.setOnClickListener(e -> {
                     QMUIDialog.MessageDialogBuilder builder = new QMUIDialog.MessageDialogBuilder(context);
-                    builder.addAction(R.string.confirm, (dialog, index) -> {
-                                dialog.dismiss();
-                            }).setMessage(context.getString(R.string.test) + m.getCount())
+                    builder.addAction(R.string.confirm, (dialog, index) -> dialog.dismiss()).setMessage(context.getString(R.string.test) + m.getCount())
                             .create()
                             .show();
                 });
@@ -452,9 +457,7 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
                     }
 
                 });
-                binding.resetBtn.setOnClickListener(e -> {
-                    m.reset();
-                });
+                binding.resetBtn.setOnClickListener(e -> m.reset());
                 binding.testBtn.setOnClickListener(e -> createTestListener());
                 m.setMax(1000);
                 AtomicReference<Thread> ref = new AtomicReference<>(null);

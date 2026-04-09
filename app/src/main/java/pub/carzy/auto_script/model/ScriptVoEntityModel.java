@@ -193,9 +193,7 @@ public class ScriptVoEntityModel extends BaseObservable {
         //清空已选择的point
         checkedPoint.clear();
         //清空对应的points
-        actions.forEach((k, v) -> {
-            v.getPointIds().clear();
-        });
+        actions.forEach((k, v) -> v.getPointIds().clear());
         if (points != null) {
             //获取最后一个选中的action id
             Long checkActionId = getLastCheckActionId();

@@ -80,18 +80,10 @@ public class ActionAddActivity extends BaseActivity {
     }
 
     private void initListener() {
-        binding.addStart.setOnClickListener(e -> {
-            data.setStartTime(0L);
-        });
-        binding.addEnd.setOnClickListener(e -> {
-            data.setStartTime(maxTime);
-        });
-        binding.addBefore.setOnClickListener(e -> {
-            data.setStartTime(startTime);
-        });
-        binding.addAfter.setOnClickListener(e -> {
-            data.setStartTime(endTime);
-        });
+        binding.addStart.setOnClickListener(e -> data.setStartTime(0L));
+        binding.addEnd.setOnClickListener(e -> data.setStartTime(maxTime));
+        binding.addBefore.setOnClickListener(e -> data.setStartTime(startTime));
+        binding.addAfter.setOnClickListener(e -> data.setStartTime(endTime));
         binding.btnSubmit.setOnClickListener(createSubmitListener());
         binding.btnCancel.setOnClickListener(createCancelListener());
     }

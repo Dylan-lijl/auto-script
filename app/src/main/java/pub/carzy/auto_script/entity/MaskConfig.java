@@ -1,5 +1,6 @@
 package pub.carzy.auto_script.entity;
 
+import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
@@ -114,12 +115,12 @@ public class MaskConfig extends BaseObservable implements Cloneable{
         notifyPropertyChanged(BR.fontColor);
     }
 
+    @NonNull
     @Override
     public MaskConfig clone() {
         try {
-            MaskConfig clone = (MaskConfig) super.clone();
             // 都是基础对象
-            return clone;
+            return (MaskConfig) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }

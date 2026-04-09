@@ -84,9 +84,7 @@ public abstract class BaseActivity extends AppCompatActivity {
      */
     public void addActionByXml(QMUIBottomSheet.BottomListSheetBuilder builder, Context context, int xmlId) {
         //默认回调:添加
-        addActionByXml(builder, context, xmlId, (builder1, model, actionItem) -> {
-            builder.addItem(model);
-        });
+        addActionByXml(builder, context, xmlId, (builder1, model, actionItem) -> builder.addItem(model));
     }
 
     /**

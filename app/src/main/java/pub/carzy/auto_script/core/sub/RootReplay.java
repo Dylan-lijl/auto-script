@@ -47,7 +47,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
         queue = new LinkedBlockingQueue<>();
     }
 
-    Map<Integer, Integer> slotMap = new ConcurrentHashMap<>();
+    final Map<Integer, Integer> slotMap = new ConcurrentHashMap<>();
 
     /**
      * <a href="https://cs.android.com/android/platform/superproject/+/android-latest-release:frameworks/native/services/inputflinger/tests/MultiTouchInputMapper_test.cpp;l=1?q=MultiTouchInputMapper_test&sq=">android多手势测试demo</a>

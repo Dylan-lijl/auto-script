@@ -56,9 +56,9 @@ public class SingleSimpleAdapter extends BaseAdapter {
     }
 
     public static class Data {
-        public String text;
-        public boolean selected;
-        public Object[] args;
+        public final String text;
+        public final boolean selected;
+        public final Object[] args;
         public Data(String text, boolean selected,Object... args) {
             this.text = text;
             this.selected = selected;

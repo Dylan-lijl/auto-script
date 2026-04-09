@@ -1,23 +1,14 @@
 package pub.carzy.auto_script.activities.about.child;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 
-import com.qmuiteam.qmui.skin.QMUISkinManager;
-import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
-import com.qmuiteam.qmui.widget.popup.QMUIPopups;
 import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
 import com.qmuiteam.qmui.widget.textview.QMUILinkTextView;
-
-import java.util.Date;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;

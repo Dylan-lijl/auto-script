@@ -32,7 +32,7 @@
     <string name="delete">删除</string>
     <string name="export">导出</string>
     <string name="message_file_not_exist">文件不存在！</string>
-    <string name="message_exporting">正在导出中...</string>
+    <string name="message_exporting">正在导出中\u2026</string>
     <string name="message_saved_successfully_ph">保存成功:%s</string>
     <string name="message_no_available_app_open_file">没有可用的应用程序打开此文件！</string>
     <string name="message_input_prompt">请输入新的%s</string>
@@ -98,7 +98,7 @@
     <string name="loop">循环</string>
     <string name="ptr_pull_down_to_refresh">下拉刷新</string>
     <string name="ptr_release_to_refresh">松开刷新</string>
-    <string name="ptr_refreshing">正在刷新…</string>
+    <string name="ptr_refreshing">正在刷新\u2026</string>
     <string name="ptr_refresh_complete">刷新完成</string>
     <string name="ptr_last_update">上次更新：</string>
     <string name="ptr_seconds_ago">秒前</string>
@@ -150,7 +150,7 @@
     <string name="ads">广告</string>
     <string name="open_source_license">开源许可</string>
     <string name="development_process">开发蓝图</string>
-    <string name="checking_update">检查更新中...</string>
+    <string name="checking_update">检查更新中\u2026</string>
     <string name="checking_update_failed">获取最新版本失败</string>
     <string name="no_new_version">没有可用的新版本</string>
     <string name="update_now">立即更新</string>
@@ -250,4 +250,6 @@
     <string name="title_bar_icon_color_desc">标题栏图标颜色</string>
     <string name="reset_setting">重置</string>
     <string name="reset_setting_desc">恢复默认配置</string>
+    <string name="display">展示</string>
+    <string name="pick">拾取</string>
 </resources>

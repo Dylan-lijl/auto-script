@@ -997,7 +997,7 @@ public class MacroListActivity extends BaseActivity {
         }
 
         public static class VH extends RecyclerView.ViewHolder {
-            TextView textView;
+            final TextView textView;
 
             VH(@NonNull View itemView) {
                 super(itemView);

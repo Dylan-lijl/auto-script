@@ -66,8 +66,6 @@ public class AboutLicensesActivity extends BaseActivity {
     }
 
     private void updateText(String text) {
-        ThreadUtil.runOnUi(() -> {
-            binding.licensesText.setText(text);
-        });
+        ThreadUtil.runOnUi(() -> binding.licensesText.setText(text));
     }
 }

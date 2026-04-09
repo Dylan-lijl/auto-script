@@ -32,7 +32,7 @@
     <string name="delete">削除</string>
     <string name="export">エクスポート</string>
     <string name="message_file_not_exist">ファイルが存在しません！</string>
-    <string name="message_exporting">エクスポート中...</string>
+    <string name="message_exporting">エクスポート中\u2026</string>
     <string name="message_saved_successfully_ph">保存に成功しました:%s</string>
     <string name="message_no_available_app_open_file">このファイルを開ける利用可能なアプリがありません！</string>
     <string name="message_input_prompt">新しい%s を入力してください</string>
@@ -98,7 +98,7 @@
     <string name="loop">ループ</string>
     <string name="ptr_pull_down_to_refresh">プルして更新</string>
     <string name="ptr_release_to_refresh">離して更新</string>
-    <string name="ptr_refreshing">更新中…</string>
+    <string name="ptr_refreshing">更新中\u2026</string>
     <string name="ptr_refresh_complete">更新完了</string>
     <string name="ptr_last_update">最終更新：</string>
     <string name="ptr_seconds_ago">秒前</string>
@@ -150,7 +150,7 @@
     <string name="ads">広告</string>
     <string name="open_source_license">オープンソースライセンス</string>
     <string name="development_process">開発プロセス</string>
-    <string name="checking_update">更新を確認しています…</string>
+    <string name="checking_update">更新を確認しています\u2026</string>
     <string name="checking_update_failed">最新バージョンの取得に失敗しました</string>
     <string name="no_new_version">利用可能な新バージョンはありません</string>
     <string name="update_now">今すぐ更新</string>
@@ -250,4 +250,6 @@
     <string name="title_bar_icon_color_desc">タイトルバーのアイコン色</string>
     <string name="reset_setting">重置</string>
     <string name="reset_setting_desc">デフォルト設定に戻す</string>
+    <string name="display">表示</string>
+    <string name="pick">取得</string>
 </resources>

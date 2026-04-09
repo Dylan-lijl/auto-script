@@ -298,7 +298,7 @@ public class AboutActivity extends BaseActivity {
         });
     }
 
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /**
      * 更新

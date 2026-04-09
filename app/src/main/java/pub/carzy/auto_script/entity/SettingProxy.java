@@ -13,7 +13,6 @@ import java.util.List;
 import pub.carzy.auto_script.BR;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.Startup;
-import pub.carzy.auto_script.activities.MainActivity;
 
 /**
  * 录制设置和播放设置等写完root模式之后再决定怎么配置

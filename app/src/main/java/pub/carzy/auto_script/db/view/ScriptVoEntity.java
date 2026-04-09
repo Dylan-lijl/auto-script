@@ -45,17 +45,12 @@ public class ScriptVoEntity implements Parcelable {
             root = in.readParcelable(ScriptEntity.class.getClassLoader());
         }
         // 读入列表到已初始化的列表中
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            in.readTypedList(actions, ScriptActionEntity.CREATOR);
-            in.readTypedList(points, ScriptPointEntity.CREATOR);
-        } else {
-            in.readTypedList(actions, ScriptActionEntity.CREATOR);
-            in.readTypedList(points, ScriptPointEntity.CREATOR);
-        }
+        in.readTypedList(actions, ScriptActionEntity.CREATOR);
+        in.readTypedList(points, ScriptPointEntity.CREATOR);
     }
 
 
-    public static final Creator<ScriptVoEntity> CREATOR = new Creator<ScriptVoEntity>() {
+    public static final Creator<ScriptVoEntity> CREATOR = new Creator<>() {
         @Override
         public ScriptVoEntity createFromParcel(Parcel in) {
             return new ScriptVoEntity(in);

@@ -126,9 +126,7 @@ public class SettingActivity extends BaseActivity {
         //自动关闭
         settingConfigs.put(binding.autoCloseRootLayout, new SettingAction(SettingKey.AUTO_CLOSE, model.getProxy()::getAutoClose, model.getProxy()::setAutoClose));
         //显示点按操作
-        binding.showOperationRootLayout.setOnClickListener(e -> {
-            jumpDevPage();
-        });
+        binding.showOperationRootLayout.setOnClickListener(e -> jumpDevPage());
 //        settingConfigs.put(binding.showOperationRootLayout, new SettingAction(SettingKey.SHOW_OPERATION, model.getProxy()::getShowOperation, model.getProxy()::setShowOperation));
         /*binding.operationSizeRootLayout.setOnClickListener(e -> {
             //打开弹窗
@@ -234,9 +232,7 @@ public class SettingActivity extends BaseActivity {
             setting.write(new SettingKey<>(SettingKey.STYLE.getKey() + currentStyle.getId(), Style.class), model.getProxy().getCurrentStyle());
         };
         //样式配置
-        binding.styleRootLayout.setOnClickListener(e -> {
-            builderStyleDialog();
-        });
+        binding.styleRootLayout.setOnClickListener(e -> builderStyleDialog());
         binding.statusBarBackgroundRootLayout.setOnClickListener(e -> {
             Style currentStyle = model.getProxy().getCurrentStyle();
             builderColorInputDialog(currentStyle.getStatusBarBackgroundColor(), v -> {

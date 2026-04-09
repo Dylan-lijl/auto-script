@@ -81,7 +81,7 @@
                     android:id="@+id/test_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="测试" />
+                    android:text="@string/test" />
             </LinearLayout>
 
             <LinearLayout
@@ -119,13 +119,13 @@
                     android:id="@+id/root_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="开启" />
+                    android:text="@string/start" />
 
                 <Button
                     android:id="@+id/stop_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="停止"
+                    android:text="@string/stop"
                     android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>

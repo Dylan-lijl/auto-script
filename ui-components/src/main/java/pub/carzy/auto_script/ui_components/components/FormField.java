@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.Getter;
 import pub.carzy.auto_script.ui_components.R;
 
 /**
@@ -25,6 +26,7 @@ public class FormField extends LinearLayout {
     private final ViewGroup editorContainer;
     public static final String VIEWER = "0";
     public static final String EDITOR = "1";
+    @Getter
     private boolean edit;
 
     public FormField(Context context, AttributeSet attrs) {
@@ -105,17 +107,13 @@ public class FormField extends LinearLayout {
         applyMode();
     }
 
-    public boolean isEdit() {
-        return this.edit;
-    }
-
     @BindingAdapter("edit")
     public static void setFormFieldEdit(FormField view, boolean isEdit) {
         view.setEdit(isEdit);
     }
 
     public static class SlotLayoutParams extends LayoutParams {
-        public String slot;
+        public final String slot;
 
         public SlotLayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);

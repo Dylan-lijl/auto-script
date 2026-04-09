@@ -43,7 +43,7 @@
         <com.qmuiteam.qmui.widget.roundwidget.QMUIRoundButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
+            android:layout_gravity="end"
             android:drawableStart="@{model.show?@drawable/arrow_down:@drawable/arrow_left}"
             android:onClick="@{e->model.setShow(!model.show)}" />
 

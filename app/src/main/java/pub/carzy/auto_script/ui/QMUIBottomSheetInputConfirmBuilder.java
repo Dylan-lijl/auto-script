@@ -21,7 +21,7 @@ import pub.carzy.auto_script.utils.ActivityUtils;
 public class QMUIBottomSheetInputConfirmBuilder extends QMUIBottomSheetConfirmBuilder<QMUIBottomSheetInputConfirmBuilder> {
     protected ConfigEditView<EditText> configEditView;
 
-    protected int id;
+    protected final int id;
 
     public QMUIBottomSheetInputConfirmBuilder(Context context) {
         super(context);

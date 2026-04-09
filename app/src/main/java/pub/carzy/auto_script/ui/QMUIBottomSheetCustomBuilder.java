@@ -22,7 +22,7 @@ import lombok.Data;
  */
 public class QMUIBottomSheetCustomBuilder<T extends QMUIBottomSheetCustomBuilder<T>>
         extends QMUIBottomSheetBaseBuilder<T> {
-    protected Context context;
+    protected final Context context;
     protected ViewWrapper wrapper;
 
     public QMUIBottomSheetCustomBuilder(Context context) {

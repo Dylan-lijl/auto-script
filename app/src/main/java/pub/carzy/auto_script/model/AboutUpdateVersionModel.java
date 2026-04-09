@@ -3,8 +3,6 @@ package pub.carzy.auto_script.model;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.util.Date;
 import java.util.Locale;
 

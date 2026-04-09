@@ -32,7 +32,7 @@
     <string name="delete">삭제</string>
     <string name="export">내보내기</string>
     <string name="message_file_not_exist">파일이 존재하지 않습니다!</string>
-    <string name="message_exporting">내보내는 중...</string>
+    <string name="message_exporting">내보내는 중\u2026</string>
     <string name="message_saved_successfully_ph">성공적으로 저장되었습니다:%s</string>
     <string name="message_no_available_app_open_file">이 파일을 열 수 있는 사용 가능한 애플리케이션이 없습니다!</string>
     <string name="message_input_prompt">새%s을(를) 입력하세요</string>
@@ -98,7 +98,7 @@
     <string name="loop">반복</string>
     <string name="ptr_pull_down_to_refresh">당겨서 새로고침</string>
     <string name="ptr_release_to_refresh">놓아서 새로고침</string>
-    <string name="ptr_refreshing">새로고침 중…</string>
+    <string name="ptr_refreshing">새로고침 중\u2026</string>
     <string name="ptr_refresh_complete">새로고침 완료</string>
     <string name="ptr_last_update">마지막 업데이트:</string>
     <string name="ptr_seconds_ago">초 전</string>
@@ -150,7 +150,7 @@
     <string name="ads">광고</string>
     <string name="open_source_license">오픈 소스 라이선스</string>
     <string name="development_process">개발 블루프린트</string>
-    <string name="checking_update">업데이트를 확인하는 중…</string>
+    <string name="checking_update">업데이트를 확인하는 중\u2026</string>
     <string name="checking_update_failed">최신 버전 가져오기에 실패했습니다</string>
     <string name="no_new_version">사용 가능한 새 버전이 없습니다</string>
     <string name="update_now">지금 업데이트</string>
@@ -250,4 +250,6 @@
     <string name="title_bar_icon_color_desc">타이틀 바 아이콘 색상</string>
     <string name="reset_setting">재설정</string>
     <string name="reset_setting_desc">기본 설정으로 복원</string>
+    <string name="display">표시</string>
+    <string name="pick">선택</string>
 </resources>
