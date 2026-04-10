@@ -33,6 +33,8 @@ public interface Replay {
 
     void close();
 
+    int getTick();
+
     interface ResultListener {
         int SUCCESS = 0;
         int FAIL = -1;

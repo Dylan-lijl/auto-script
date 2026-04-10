@@ -92,7 +92,6 @@
     <string name="show">显示</string>
     <string name="hide">隐藏</string>
     <string name="stop">停止</string>
-    <string name="dialog_edit_loop_count">编辑循环次数</string>
     <string name="infinite_loop">无限循环</string>
     <string name="loop_format">%d次循环</string>
     <string name="loop">循环</string>
@@ -252,4 +251,5 @@
     <string name="reset_setting_desc">恢复默认配置</string>
     <string name="display">展示</string>
     <string name="pick">拾取</string>
+    <string name="adjust">调整</string>
 </resources>

@@ -57,8 +57,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     /**
      * 时间片
      */
-    @Getter
-    protected final AtomicLong tick = new AtomicLong(10);
+    protected final AtomicInteger tick = new AtomicInteger(10);
     /**
      * 开始时间,开始时这个时间等于当前时间,,恢复时startTime += 当前时间-暂停时间
      */
@@ -81,6 +80,11 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
         if (tick != null) {
             this.tick.set(tick);
         }
+    }
+
+    @Override
+    public int getTick() {
+        return tick.get();
     }
 
     @Override
@@ -157,6 +161,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
                 callback.forEach(c -> c.stop(ResultListener.FAIL, null, null));
                 return;
             }
+            Log.d("task-over", "" + (System.currentTimeMillis() - startTime.get()));
             status.set(STOP);
             //释放键类型事件
             releaseKeyMap();
@@ -254,6 +259,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
             status.set(RUNNING);
             //开始时间加上间隔时长
             startTime.set(startTime.get() + System.currentTimeMillis() - pauseTime.get());
+            nextTickAbsoluteTime = -1;
             //调用时间片方法
             scheduler.schedule(this::tickProcess, 0, TimeUnit.MILLISECONDS);
             callback.forEach(c -> c.resume(ResultListener.SUCCESS, null, null));
@@ -265,12 +271,15 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     /**
      * 时间片任务
      */
+    long nextTickAbsoluteTime = -1;
+
     protected void tickProcess() {
         if (status.get() != RUNNING) {
             return;
         }
+        long now = System.currentTimeMillis();
         //间隔时长
-        long duration = System.currentTimeMillis() - startTime.get();
+        long duration = now - startTime.get();
         //获取可执行列表
         ConcurrentNavigableMap<Long, ReplayModel.ReplayActionModel> headWaitMap = model.headWaitMap(duration, true);
         if (status.get() != RUNNING) {
@@ -301,6 +310,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
                     }
                 }
             };
+            //这块逻辑要从遍历改成时间线相互组成命令
             synchronized (this) {
                 //删除的id
                 Set<Long> ids = new HashSet<>();
@@ -382,8 +392,15 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
                 }
             }
         }
+        //计算下一个时长
+        if (nextTickAbsoluteTime == -1) {
+            nextTickAbsoluteTime = System.currentTimeMillis() + tick.get();
+        } else {
+            nextTickAbsoluteTime += tick.get();
+        }
+        long next = nextTickAbsoluteTime - System.currentTimeMillis();
         //提交下一个时间片任务
-        scheduler.schedule(this::tickProcess, tick.get(), TimeUnit.MILLISECONDS);
+        scheduler.schedule(this::tickProcess, next > 0 ? next : 0, TimeUnit.MILLISECONDS);
     }
 
     protected abstract D createKeyEventPayload();
@@ -401,6 +418,7 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
         model.recover();
         //重置开始时间
         startTime.set(System.currentTimeMillis());
+        nextTickAbsoluteTime = -1;
     }
 
     /**

@@ -78,7 +78,7 @@ public abstract class AbstractGetEventRecorder<T> extends AbstractRecorderLifeCy
                 int code = Integer.parseInt(parts[1], 16);
                 // 使用Long解析防止十六进制符号位溢出
                 int value = (int) Long.parseLong(parts[2], 16);
-                Log.d("doStart", type + " " + code + " " + value);
+//                Log.d("doStart", type + " " + code + " " + value);
                 //子类实现实际解析逻辑
                 handleEvent(type, code, value, stopwatch.getElapsedMillis(), listener);
             }

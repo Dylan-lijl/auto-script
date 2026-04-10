@@ -92,7 +92,6 @@
     <string name="show">表示</string>
     <string name="hide">非表示</string>
     <string name="stop">停止</string>
-    <string name="dialog_edit_loop_count">ループ回数を編集</string>
     <string name="infinite_loop">無限ループ</string>
     <string name="loop_format">%d回ループ</string>
     <string name="loop">ループ</string>
@@ -252,4 +251,5 @@
     <string name="reset_setting_desc">デフォルト設定に戻す</string>
     <string name="display">表示</string>
     <string name="pick">取得</string>
+    <string name="adjust">調整</string>
 </resources>

@@ -28,6 +28,7 @@ import pub.carzy.auto_script.utils.Shell;
 
 /**
  * root回放引擎
+ *
  * @author admin
  */
 public class ReplayRootScriptEngine extends RootScriptEngine implements ReplayScriptEngine {
@@ -159,9 +160,10 @@ public class ReplayRootScriptEngine extends RootScriptEngine implements ReplaySc
             if (viewWrapper.dialog.isShowing()) {
                 viewWrapper.dialog.dismiss();
             } else {
-                viewWrapper.dialog.show(dataWrapper.count.get(), (result) -> {
-                    dataWrapper.count.set(result);
-                    dataWrapper.replay.setRepeatCount(result);
+                viewWrapper.dialog.show(dataWrapper.count.get(), dataWrapper.replay.getTick(), (c, t) -> {
+                    dataWrapper.count.set(c);
+                    dataWrapper.replay.setRepeatCount(c);
+                    dataWrapper.replay.setTick(t);
                 });
             }
         });

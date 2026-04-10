@@ -92,7 +92,6 @@
     <string name="show">표시</string>
     <string name="hide">숨기기</string>
     <string name="stop">중지</string>
-    <string name="dialog_edit_loop_count">반복 횟수 편집</string>
     <string name="infinite_loop">무한 반복</string>
     <string name="loop_format">%d회 반복</string>
     <string name="loop">반복</string>
@@ -252,4 +251,5 @@
     <string name="reset_setting_desc">기본 설정으로 복원</string>
     <string name="display">표시</string>
     <string name="pick">선택</string>
+    <string name="adjust">調整</string>
 </resources>

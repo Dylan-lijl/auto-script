@@ -141,9 +141,10 @@ public class ReplayAccScriptEngine extends AccScriptEngine implements ReplayScri
             if (viewWrapper.dialog.isShowing()) {
                 viewWrapper.dialog.dismiss();
             } else {
-                viewWrapper.dialog.show(dataWrapper.count.get(), (result) -> {
-                    dataWrapper.count.set(result);
-                    dataWrapper.replay.setRepeatCount(result);
+                viewWrapper.dialog.show(dataWrapper.count.get(),dataWrapper.replay.getTick(), (c,t) -> {
+                    dataWrapper.count.set(c);
+                    dataWrapper.replay.setTick(t);
+                    dataWrapper.replay.setRepeatCount(c);
                 });
             }
         });
