@@ -6,6 +6,8 @@
         <import type="pub.carzy.auto_script.R" />
 
         <import type="pub.carzy.auto_script.utils.StringUtils" />
+        <import type="pub.carzy.auto_script.utils.ActivityUtils" />
+        <import type="java.util.concurrent.TimeUnit" />
 
         <import type="android.view.View" />
 
@@ -20,6 +22,12 @@
         <variable
             name="checkedIds"
             type="androidx.databinding.ObservableList" />
+        <variable
+            name="timeUtils"
+            type="java.util.concurrent.TimeUnit[]" />
+        <variable
+            name="timeIndex"
+            type="androidx.databinding.ObservableMap" />
     </data>
 
     <LinearLayout
@@ -64,7 +72,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{item.totalDuration+context.getString(R.string.unit_ms)}" />
+                    android:text="@{ActivityUtils.toReadable(context,item.totalDuration+item.delayStart+item.delayEnd,TimeUnit.MILLISECONDS,timeUtils,timeIndex.get(item.id)==null?0:timeIndex.get(item.id))+context.getString(R.string.unit_ms)}" />
             </LinearLayout>
 
             <LinearLayout
@@ -89,6 +97,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:visibility="@{StringUtils.isEmpty(item.description)?View.GONE:View.VISIBLE}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 

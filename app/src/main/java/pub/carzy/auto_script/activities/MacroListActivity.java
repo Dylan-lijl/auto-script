@@ -26,8 +26,10 @@ import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.Observable;
 import androidx.databinding.ObservableArrayList;
+import androidx.databinding.ObservableArrayMap;
 import androidx.databinding.ObservableBoolean;
 import androidx.databinding.ObservableList;
+import androidx.databinding.ObservableMap;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,6 +58,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -843,6 +846,8 @@ public class MacroListActivity extends BaseActivity {
          * 是否多选模式
          */
         private final ObservableBoolean multiple = new ObservableBoolean(false);
+        private final TimeUnit[] optionalTimeUnits = new TimeUnit[]{TimeUnit.HOURS, TimeUnit.MINUTES, TimeUnit.SECONDS, TimeUnit.MILLISECONDS};
+        private final ObservableMap<Long, Integer> dataTimeUtil = new ObservableArrayMap<>();
 
         public Adapter() {
             //调用父类
@@ -929,6 +934,7 @@ public class MacroListActivity extends BaseActivity {
                 return true;
             });
             b.setCheckedIds(checkedIds);
+            b.setTimeUtils(optionalTimeUnits);
             final VH vh = new VH(b);
             vh.addSwipeAction(deleteAction);
             vh.addSwipeAction(exportAction);
@@ -940,7 +946,18 @@ public class MacroListActivity extends BaseActivity {
         protected void onBindNormal(VH holder, ScriptEntity item, int position) {
             holder.binding.setItem(data.get(position));
             //点击跳转到详情
-            holder.binding.getRoot().setOnClickListener(e -> jumpInfo(holder.binding.getItem()));
+            holder.binding.getRoot().setOnClickListener(e -> {
+                ScriptEntity script = holder.binding.getItem();
+                if (multiple.get()) {
+                    if (checkedIds.contains(script.getId())) {
+                        checkedIds.remove(script.getId());
+                    } else {
+                        checkedIds.add(script.getId());
+                    }
+                } else {
+                    jumpInfo(script);
+                }
+            });
         }
 
         @Override

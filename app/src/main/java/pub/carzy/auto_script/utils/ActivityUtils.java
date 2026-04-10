@@ -55,6 +55,7 @@ import com.qmuiteam.qmui.widget.popup.QMUIQuickAction;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -556,5 +557,10 @@ public class ActivityUtils {
                 }
             }
         });
+    }
+
+    public static String toReadable(Context context, Long v, TimeUnit timeUnit, TimeUnit[] units, Integer index) {
+        //todo
+        return "";
     }
 }
