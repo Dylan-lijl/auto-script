@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import pub.carzy.auto_script.core.data.ReplayModel;
+import pub.carzy.auto_script.utils.ThreadUtil;
 
 /**
  * 无障碍回放
@@ -175,7 +176,8 @@ public class AccessibilityReplay extends AbstractReplay<AccessibilityReplay.Gest
         if (payload.empty) {
             return false;
         }
-        return service.dispatchGesture(payload.builder.build(), null, new Handler(Looper.getMainLooper()));
+        ThreadUtil.runOnUi(()-> service.dispatchGesture(payload.builder.build(), null, new Handler(Looper.getMainLooper())));
+        return true;
     }
 
     @Override
@@ -183,9 +185,11 @@ public class AccessibilityReplay extends AbstractReplay<AccessibilityReplay.Gest
         if (payload.empty) {
             return false;
         }
-        for (KeyEvent event : payload.events) {
-            service.performGlobalAction(event.getKeyCode());
-        }
+        ThreadUtil.runOnUi(()->{
+            for (KeyEvent event : payload.events) {
+                service.performGlobalAction(event.getKeyCode());
+            }
+        });
         return true;
     }
 

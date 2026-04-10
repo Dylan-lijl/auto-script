@@ -307,6 +307,7 @@ public class RootReplay extends AbstractReplay<RootReplay.GesturePayload, RootRe
                     payload.move(action.getIndex(), point.getX(), point.getY());
                     point.setDispatched(true);
                 }
+                payload.sync();
             }
             // 时间推进
             t -= cost;

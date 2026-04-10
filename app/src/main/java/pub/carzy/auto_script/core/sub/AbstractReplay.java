@@ -326,25 +326,21 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
             }
             if (!gesturePayload.isEmpty()) {
                 //发送手势
-                ThreadUtil.runOnUi(() -> {
-                    if (status.get() != RUNNING) {
-                        return;
-                    }
-                    if (!dispatchGesture(gesturePayload)) {
-                        Log.d(this.getClass().getCanonicalName(), "dispatchGesture fail");
-                    }
-                });
+                if (status.get() != RUNNING) {
+                    return;
+                }
+                if (!dispatchGesture(gesturePayload)) {
+                    Log.d(this.getClass().getCanonicalName(), "dispatchGesture fail");
+                }
             }
             if (!eventPayload.isEmpty()) {
                 //发送键事件
-                ThreadUtil.runOnUi(() -> {
-                    if (status.get() != RUNNING) {
-                        return;
-                    }
-                    if (!dispatchKeyEvent(eventPayload)) {
-                        Log.w(this.getClass().getCanonicalName(), "performGlobalAction failure");
-                    }
-                });
+                if (status.get() != RUNNING) {
+                    return;
+                }
+                if (!dispatchKeyEvent(eventPayload)) {
+                    Log.w(this.getClass().getCanonicalName(), "performGlobalAction failure");
+                }
             }
         }
         if (status.get() != RUNNING) {
