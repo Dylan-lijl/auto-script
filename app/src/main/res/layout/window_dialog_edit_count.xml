@@ -49,6 +49,7 @@
                 android:background="@drawable/input"
                 android:inputType="number|numberSigned"
                 android:maxLines="1"
+                android:maxLength="9"
                 android:textSize="14sp" />
         </LinearLayout>
 
@@ -80,6 +81,7 @@
                 android:autofillHints=""
                 android:background="@drawable/input"
                 android:inputType="number"
+                android:maxLength="9"
                 android:textSize="14sp" />
         </LinearLayout>
 
