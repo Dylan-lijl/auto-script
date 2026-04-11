@@ -50,7 +50,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_id))}" />
+                    android:text="@{@string/label_format(@string/label_id)}" />
                 <TextView
                     android:text="@{StringUtils.format(entity.id)}"
                     android:layout_width="wrap_content"
@@ -60,7 +60,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_action_id))}" />
+                    android:text="@{@string/label_format(@string/label_action_id)}" />
                 <TextView
                     android:text="@{StringUtils.format(entity.actionId)}"
                     android:layout_width="wrap_content"
@@ -70,7 +70,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_id))}" />
+                    android:text="@{@string/label_format(@string/label_script_id)}" />
                 <TextView
                     android:text="@{StringUtils.format(entity.scriptId)}"
                     android:layout_width="wrap_content"
@@ -81,7 +81,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_time))}" />
+                    android:text="@{@string/label_format(@string/point_label_time)}" />
 
                 <pub.carzy.auto_script.ui_components.components.FormField
                     android:layout_width="match_parent"
@@ -91,7 +91,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@{StringUtils.format(entity.deltaTime)+context.getString(R.string.unit_ms)}"
+                        android:text="@{StringUtils.format(entity.deltaTime)}"
                         app:slot="viewer" />
                     <TextView
                         android:layout_width="wrap_content"
@@ -121,7 +121,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_x))}" />
+                    android:text="@{@string/label_format(@string/point_label_x)}" />
 
                 <pub.carzy.auto_script.ui_components.components.FormField
                     android:layout_width="match_parent"
@@ -165,7 +165,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.point_label_y))}" />
+                    android:text="@{@string/label_format(@string/point_label_y)}" />
 
                 <pub.carzy.auto_script.ui_components.components.FormField
                     android:layout_width="match_parent"
@@ -209,7 +209,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_description))}" />
+                    android:text="@{@string/label_format(@string/label_description)}" />
 
                 <pub.carzy.auto_script.ui_components.components.FormField
                     android:layout_width="match_parent"

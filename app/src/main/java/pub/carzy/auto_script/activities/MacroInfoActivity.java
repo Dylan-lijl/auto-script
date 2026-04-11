@@ -445,7 +445,7 @@ public class MacroInfoActivity extends BaseActivity {
         if (!ids.isEmpty() && point != null) {
             int index = ids.indexOf(point.getKey());
             if (!model.getPoints().isEmpty()) {
-                ScriptPointEntity pointEntity = model.getPoints().get(ids.get(0));
+                 ScriptPointEntity pointEntity = model.getPoints().get(ids.get(0));
                 if (pointEntity != null) {
                     intent.putExtra("minOrder", pointEntity.getOrder());
                 }
@@ -471,8 +471,8 @@ public class MacroInfoActivity extends BaseActivity {
             entity.setX(point.getData().getX());
             entity.setY(point.getData().getY());
         } else {
-            intent.putExtra("minOrder", 50);
-            intent.putExtra("maxOrder", 50);
+            intent.putExtra("minOrder", 50F);
+            intent.putExtra("maxOrder", 50F);
         }
         if (point != null) {
             entity.setX(point.getData().getX());
@@ -724,7 +724,7 @@ public class MacroInfoActivity extends BaseActivity {
                 .setMessage(R.string.auto_adjust)
                 .setTitle(R.string.delete_dialog_title);
         builder.addAction(R.string.cancel, (d, i) -> d.dismiss())
-                .addAction(R.string.confirm, (d, i) -> removeCheckedAction(builder.isChecked()))
+                .addAction(R.string.confirm, (d, i) -> removeCheckedAction(d,builder.isChecked()))
                 .create().show();
     }
 
@@ -856,7 +856,7 @@ public class MacroInfoActivity extends BaseActivity {
         chart.invalidate();
     }
 
-    private void removeCheckedAction(boolean checked) {
+    private void removeCheckedAction(QMUIDialog d,boolean checked) {
         if (refresh.getDelete() || refresh.getDeleteDetail()) {
             return;
         }
@@ -876,7 +876,10 @@ public class MacroInfoActivity extends BaseActivity {
             } catch (Exception e) {
                 Log.d(this.getClass().getCanonicalName(), "removeCheckedAction", e);
             } finally {
-                ThreadUtil.runOnUi(() -> refresh.setDelete(false));
+                ThreadUtil.runOnUi(() -> {
+                    d.dismiss();
+                    refresh.setDelete(false);
+                });
             }
         });
     }

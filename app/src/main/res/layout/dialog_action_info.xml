@@ -49,7 +49,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_id))}" />
+                        android:text="@{@string/label_format(@string/label_id)}" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -62,7 +62,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_script_id))}" />
+                        android:text="@{@string/label_format(@string/label_script_id)}" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -75,7 +75,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_down_time))}" />
+                        android:text="@{@string/label_format(@string/action_label_down_time)}" />
 
                     <pub.carzy.auto_script.ui_components.components.FormField
                         android:layout_width="match_parent"
@@ -118,7 +118,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_duration))}" />
+                        android:text="@{@string/label_format(@string/action_label_duration)}" />
 
                     <pub.carzy.auto_script.ui_components.components.FormField
                         android:layout_width="match_parent"
@@ -163,7 +163,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_count))}" />
+                        android:text="@{@string/label_format(@string/action_label_count)}" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -176,7 +176,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_type))}" />
+                        android:text="@{@string/label_format(@string/action_label_type)}" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -191,7 +191,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_index))}" />
+                        android:text="@{@string/label_format(@string/action_label_index)}" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -206,7 +206,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.action_label_code))}" />
+                        android:text="@{@string/label_format(@string/action_label_code)}" />
 
                     <pub.carzy.auto_script.ui_components.components.FormField
                         android:layout_width="match_parent"
@@ -237,7 +237,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{context.getString(R.string.label_format,context.getString(R.string.label_description))}" />
+                        android:text="@{@string/label_format(@string/label_description)}" />
 
                     <pub.carzy.auto_script.ui_components.components.FormField
                         android:layout_width="match_parent"

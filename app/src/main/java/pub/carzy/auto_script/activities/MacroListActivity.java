@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -98,6 +99,7 @@ import pub.carzy.auto_script.ui.entity.ActionInflater;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.BeanHandler;
 import pub.carzy.auto_script.utils.MixedUtil;
+import pub.carzy.auto_script.utils.StringUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.MyTypeToken;
 
@@ -846,8 +848,9 @@ public class MacroListActivity extends BaseActivity {
          * 是否多选模式
          */
         private final ObservableBoolean multiple = new ObservableBoolean(false);
-        private final TimeUnit[] optionalTimeUnits = new TimeUnit[]{TimeUnit.HOURS, TimeUnit.MINUTES, TimeUnit.SECONDS, TimeUnit.MILLISECONDS};
+        private final TimeUnit[] optionalTimeUnits = new TimeUnit[]{TimeUnit.MILLISECONDS, TimeUnit.SECONDS, TimeUnit.MINUTES, TimeUnit.HOURS};
         private final ObservableMap<Long, Integer> dataTimeUtil = new ObservableArrayMap<>();
+        private final Set<Long> formatTimes = new HashSet<>();
 
         public Adapter() {
             //调用父类
@@ -935,6 +938,7 @@ public class MacroListActivity extends BaseActivity {
             });
             b.setCheckedIds(checkedIds);
             b.setTimeUtils(optionalTimeUnits);
+            b.setTimeIndex(dataTimeUtil);
             final VH vh = new VH(b);
             vh.addSwipeAction(deleteAction);
             vh.addSwipeAction(exportAction);
@@ -957,6 +961,42 @@ public class MacroListActivity extends BaseActivity {
                 } else {
                     jumpInfo(script);
                 }
+            });
+            holder.binding.durationText.setOnClickListener(e -> {
+                ScriptEntity script = holder.binding.getItem();
+                Integer v = dataTimeUtil.get(script.getId());
+                if (v == null) {
+                    dataTimeUtil.put(script.getId(), 1);
+                    return;
+                }
+                Integer index = ActivityUtils.getNextValidUnitIndex(script.getTotalDuration() + script.getDelayEnd() + script.getDelayStart(), v, optionalTimeUnits);
+                if (index == null) {
+                    dataTimeUtil.remove(script.getId());
+                } else {
+                    dataTimeUtil.put(script.getId(), index);
+                }
+            });
+            //操作dom
+            holder.binding.timeText.setOnClickListener(e -> {
+                Long id = holder.binding.getItem().getId();
+                Date updateTime = holder.binding.getItem().getUpdateTime();
+                if (updateTime == null) {
+                    return;
+                }
+                String text;
+                if (formatTimes.contains(id)) {
+                    formatTimes.remove(id);
+                    text = StringUtils.formatTime(updateTime);
+                } else {
+                    formatTimes.add(id);
+                    text = DateUtils.getRelativeTimeSpanString(
+                            updateTime.getTime(),
+                            System.currentTimeMillis(),
+                            DateUtils.MINUTE_IN_MILLIS,
+                            DateUtils.FORMAT_ABBREV_RELATIVE
+                    ).toString();
+                }
+                holder.binding.timeText.setText(text);
             });
         }
 

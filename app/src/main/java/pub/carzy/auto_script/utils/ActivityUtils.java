@@ -559,8 +559,100 @@ public class ActivityUtils {
         });
     }
 
+    /**
+     * 根据索引转成对应单位可读类型字符串, 比如 62s, 转成可读就是 1m 2s
+     *
+     * @param context  上下文, 用于获取国际化单位字符串
+     * @param v        值
+     * @param timeUnit 默认值的时间单位 (若 units/index 为空时使用)
+     * @param units    可选单位数组
+     * @param index    选中的索引 (对应 units 数组)
+     * @return 格式化字符串
+     */
     public static String toReadable(Context context, Long v, TimeUnit timeUnit, TimeUnit[] units, Integer index) {
-        //todo
-        return "";
+        if (v == null) {
+            return "";
+        }
+        if (context == null || timeUnit == null) {
+            return v.toString();
+        }
+        //没提供单位或者单位一样
+        if (units == null || units.length == 0 || index == null || units[index % units.length] == timeUnit) {
+            String dynamicUnit = getDynamicUnit(context, timeUnit);
+            return v + (dynamicUnit == null ? "" : dynamicUnit);
+        }
+        long remainingMillis = timeUnit.toMillis(v);
+        //转成目标单位
+        index = index % units.length;
+        StringBuilder sb = new StringBuilder();
+        for (int i = index; i >= 0; i--) {
+            TimeUnit current = units[i];
+            // 计算当前单位能分掉多少
+            long count = current.convert(remainingMillis, TimeUnit.MILLISECONDS);
+            if (count == 0) {
+                continue;
+            }
+            sb.append(count);
+            String unit = getDynamicUnit(context, current);
+            if (unit == null) {
+                unit = "?";
+                Log.d("toReadable", "缺失" + current.name() + "单位国际化字符串资源");
+            }
+            sb.append(unit);
+            // 重要：减去已经分配掉的时间量，留给下一级单位
+            remainingMillis -= current.toMillis(count);
+
+            if (remainingMillis <= 0) break;
+        }
+        return sb.toString().trim();
+    }
+
+    /**
+     * 动态获取单位字符
+     *
+     * @param timeUnit 对应 strings.xml 中的
+     */
+    private static String getDynamicUnit(Context context, TimeUnit timeUnit) {
+        String resourceName = "unit_" + timeUnit.name().toLowerCase(Locale.ROOT);
+        // 参数1: 资源名, 参数2: 资源类型 (string), 参数3: 包名
+        int resId = context.getResources().getIdentifier(resourceName, "string", context.getPackageName());
+
+        if (resId != 0) {
+            return context.getString(resId);
+        }
+        return null;
+    }
+
+
+    /**
+     * 计算点击后的下一个有效单位索引
+     *
+     * @param totalMs    总毫秒数
+     * @param currentIdx 当前索引 (null 表示默认)
+     * @param units      可选单位列表
+     * @return 下一个索引，如果需要重置则返回 null
+     */
+    public static Integer getNextValidUnitIndex(long totalMs, Integer currentIdx, TimeUnit[] units) {
+        if (units == null || units.length == 0) return null;
+
+        // 默认状态从 -1 开始（-1 表示显示全部/毫秒起步）
+        int startIdx = (currentIdx == null) ? -1 : currentIdx;
+
+        // 循环尝试寻找下一个能够“吃得下”当前数值的单位
+        for (int i = 1; i <= units.length; i++) {
+            int checkIdx = startIdx + i;
+
+            // 如果已经尝试完所有单位，或者超出范围，则回到初始状态（null）
+            if (checkIdx >= units.length) {
+                return null;
+            }
+
+            // 核心判断：totalMs 在 units[checkIdx] 单位下是否至少等于 1
+            // 比如 18000ms 在 TimeUnit.MINUTES 下 convert 结果是 0，则继续循环找下一级
+            if (units[checkIdx].convert(totalMs, TimeUnit.MILLISECONDS) > 0) {
+                return checkIdx;
+            }
+        }
+        return null;
     }
 }

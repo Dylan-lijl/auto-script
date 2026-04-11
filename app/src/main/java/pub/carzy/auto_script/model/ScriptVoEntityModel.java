@@ -260,6 +260,8 @@ public class ScriptVoEntityModel extends BaseObservable {
             }
         }
         notifyPropertyChanged(BR.showPoints);
+        this.checkedPoint.clear();
+        notifyPropertyChanged(BR.checkedPoint);
     }
 
     @NonNull
@@ -611,7 +613,7 @@ public class ScriptVoEntityModel extends BaseObservable {
         for (int i = 0; i < values.size(); i++) {
             ScriptPointModel model = values.get(i);
             //更新对应bar
-            model.setBarEntry(new BarEntry(i, new float[]{startTime, model.getData().getDeltaTime()}));
+            model.setBarEntry(new BarEntry(i, new float[]{startTime, model.getData().getDeltaTime()}, model.getKey()));
             //累加间隔
             startTime += model.getData().getDeltaTime();
             //重新更新颜色

@@ -1,35 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <data>
-
-        <import type="pub.carzy.auto_script.R" />
-
-        <import type="pub.carzy.auto_script.utils.StringUtils" />
-        <import type="pub.carzy.auto_script.utils.ActivityUtils" />
-        <import type="java.util.concurrent.TimeUnit" />
-
-        <import type="android.view.View" />
-
-        <variable
-            name="item"
-            type="pub.carzy.auto_script.db.entity.ScriptEntity" />
-
-        <variable
-            name="multiple"
-            type="androidx.databinding.ObservableBoolean" />
-
-        <variable
-            name="checkedIds"
-            type="androidx.databinding.ObservableList" />
-        <variable
-            name="timeUtils"
-            type="java.util.concurrent.TimeUnit[]" />
-        <variable
-            name="timeIndex"
-            type="androidx.databinding.ObservableMap" />
-    </data>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -42,8 +13,8 @@
             android:id="@+id/checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{()->checkedIds.contains(item.id)?checkedIds.remove(item.id):checkedIds.add(item.id)}"
             android:checked="@{ checkedIds.contains(item.id)}"
+            android:onClick="@{()->checkedIds.contains(item.id)?checkedIds.remove(item.id):checkedIds.add(item.id)}"
             android:visibility="@{multiple?View.VISIBLE:View.GONE}" />
 
         <LinearLayout
@@ -70,9 +41,10 @@
                     android:layout_weight="1" />
 
                 <TextView
+                    android:id="@+id/duration_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{ActivityUtils.toReadable(context,item.totalDuration+item.delayStart+item.delayEnd,TimeUnit.MILLISECONDS,timeUtils,timeIndex.get(item.id)==null?0:timeIndex.get(item.id))+context.getString(R.string.unit_ms)}" />
+                    android:text="@{ActivityUtils.toReadable(context, item.totalDuration + item.delayStart + item.delayEnd, TimeUnit.MILLISECONDS, timeUtils, timeIndex.get(item.id) ?? 0)}" />
             </LinearLayout>
 
             <LinearLayout
@@ -91,15 +63,16 @@
                     android:layout_weight="1" />
 
                 <TextView
+                    android:id="@+id/time_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@{StringUtils.formatTime(item.updateTime)}" />
             </LinearLayout>
 
             <LinearLayout
-                android:visibility="@{StringUtils.isEmpty(item.description)?View.GONE:View.VISIBLE}"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:visibility="@{StringUtils.isEmpty(item.description)?View.GONE:View.VISIBLE}">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -108,4 +81,37 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
+
+    <data>
+
+        <import type="pub.carzy.auto_script.R" />
+
+        <import type="pub.carzy.auto_script.utils.StringUtils" />
+
+        <import type="pub.carzy.auto_script.utils.ActivityUtils" />
+
+        <import type="java.util.concurrent.TimeUnit" />
+
+        <import type="android.view.View" />
+
+        <variable
+            name="item"
+            type="pub.carzy.auto_script.db.entity.ScriptEntity" />
+
+        <variable
+            name="multiple"
+            type="androidx.databinding.ObservableBoolean" />
+
+        <variable
+            name="checkedIds"
+            type="androidx.databinding.ObservableList" />
+
+        <variable
+            name="timeUtils"
+            type="java.util.concurrent.TimeUnit[]" />
+
+        <variable
+            name="timeIndex"
+            type="androidx.databinding.ObservableMap&lt;Long, Integer&gt;" />
+    </data>
 </layout>

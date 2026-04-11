@@ -252,4 +252,11 @@
     <string name="display">表示</string>
     <string name="pick">取得</string>
     <string name="adjust">調整</string>
+    <string name="unit_nanoseconds">ナノ秒</string>
+    <string name="unit_microseconds">マイクロ秒</string>
+    <string name="unit_milliseconds">ミリ秒</string>
+    <string name="unit_seconds">秒</string>
+    <string name="unit_minutes">分</string>
+    <string name="unit_hours">時</string>
+    <string name="unit_days">日</string>
 </resources>

@@ -252,4 +252,11 @@
     <string name="display">표시</string>
     <string name="pick">선택</string>
     <string name="adjust">調整</string>
+    <string name="unit_nanoseconds">나노초</string>
+    <string name="unit_microseconds">마이크로초</string>
+    <string name="unit_milliseconds">밀리초</string>
+    <string name="unit_seconds">초</string>
+    <string name="unit_minutes">분</string>
+    <string name="unit_hours">시</string>
+    <string name="unit_days">일</string>
 </resources>

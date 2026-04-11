@@ -27,10 +27,11 @@ gitee: [https://gitee.com/Dylan-lijl/auto-script](https://gitee.com/Dylan-lijl/a
 A quick demonstration of script recording and playback:
 
 **Watch demo video:**
-[doc/demo.mp4](doc/demo.mp4)
+[doc/demo.mp4](doc/demo.mp4) | [game demo](https://www.bilibili.com/video/BV1AMDyBWEjY/)
 
 ![record](doc/record.gif)   ![replay](doc/replay.gif)
 
+![root mode](doc/root.gif)
 ---
 
 ## ✨ Key Features
@@ -83,26 +84,9 @@ Open the project in Android Studio, wait for Gradle sync, then click **Run** to 
 
 ## 📝 Usage Guide
 
-### 1. Grant permissions
-
-Before running scripts, manually enable:
-
-- Accessibility Service
-- Floating Window permission
-
-These permissions are required to simulate touch actions.
-
-### 2. Record or edit scripts
-
-On the script list page:
-
-- Tap **Record** to capture gestures and key events
-- After recording, you can add, edit, or delete actions (tap, swipe, long press, etc.)
-
-### 3. Run scripts
-
-Tap the **Start** floating button and switch to the target app.
-The script will automatically execute according to the recorded steps.
+1. **Grant Permissions**: Before running the app, you must manually enable the **Accessibility Service** and **Floating Window (overlay) permission**, or have **root access**; otherwise, the script cannot simulate clicks.
+2. **Create / Import Rules**: On the script list page, tap **Record Script** to start recording. After recording, you can go to the details page to continue adding, editing, or deleting actions such as taps, swipes, and long presses.
+3. **Run the Script**: Tap the floating **Start** button, switch to the target app, and the script will automatically execute according to the predefined rules.
 
 ---
 

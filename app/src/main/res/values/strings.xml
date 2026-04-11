@@ -252,4 +252,11 @@
     <string name="display">Display</string>
     <string name="pick">Pick</string>
     <string name="adjust">Adjust</string>
+    <string name="unit_nanoseconds">ns</string>
+    <string name="unit_microseconds">µs</string>
+    <string name="unit_milliseconds">ms</string>
+    <string name="unit_seconds">s</string>
+    <string name="unit_minutes">m</string>
+    <string name="unit_hours">h</string>
+    <string name="unit_days">d</string>
 </resources>
