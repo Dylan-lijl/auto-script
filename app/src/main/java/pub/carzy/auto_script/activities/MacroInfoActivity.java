@@ -445,7 +445,7 @@ public class MacroInfoActivity extends BaseActivity {
         if (!ids.isEmpty() && point != null) {
             int index = ids.indexOf(point.getKey());
             if (!model.getPoints().isEmpty()) {
-                 ScriptPointEntity pointEntity = model.getPoints().get(ids.get(0));
+                ScriptPointEntity pointEntity = model.getPoints().get(ids.get(0));
                 if (pointEntity != null) {
                     intent.putExtra("minOrder", pointEntity.getOrder());
                 }
@@ -692,18 +692,18 @@ public class MacroInfoActivity extends BaseActivity {
                 .setMessage(R.string.auto_adjust)
                 .setTitle(R.string.delete_dialog_title);
         builder.addAction(R.string.cancel, (d, i) -> d.dismiss())
-                .addAction(R.string.confirm, (d, i) -> removeCheckedPoint(builder.isChecked()))
+                .addAction(R.string.confirm, (d, i) -> removeCheckedPoint(d, builder.isChecked()))
                 .create().show();
     }
 
-    private void removeCheckedPoint(boolean checked) {
+    private void removeCheckedPoint(QMUIDialog d, boolean checked) {
         if (refresh.getDeleteDetail() || refresh.getDetail()) {
             return;
         }
         refresh.setDeleteDetail(true);
         ThreadUtil.runOnCpu(() -> {
             try {
-                model.deletePoint(model.getCheckedAction().keySet(), checked);
+                model.deletePoint(model.getCheckedPoint().keySet(), checked);
                 ThreadUtil.runOnUi(() -> {
                     updateChartData(binding.flowChatLayout.actionBarChart, model.getActionBarEntries(), model.getActionColors());
                     updateChartData(binding.flowChatLayout.pointBarChart, model.getShowPointBarEntries(), model.getShowPointColors());
@@ -713,7 +713,10 @@ public class MacroInfoActivity extends BaseActivity {
             } catch (Exception e) {
                 Log.d(this.getClass().getCanonicalName(), "removeCheckedPoint", e);
             } finally {
-                ThreadUtil.runOnUi(() -> refresh.setDeleteDetail(false));
+                ThreadUtil.runOnUi(() -> {
+                    d.dismiss();
+                    refresh.setDeleteDetail(false);
+                });
             }
         });
     }
@@ -724,7 +727,7 @@ public class MacroInfoActivity extends BaseActivity {
                 .setMessage(R.string.auto_adjust)
                 .setTitle(R.string.delete_dialog_title);
         builder.addAction(R.string.cancel, (d, i) -> d.dismiss())
-                .addAction(R.string.confirm, (d, i) -> removeCheckedAction(d,builder.isChecked()))
+                .addAction(R.string.confirm, (d, i) -> removeCheckedAction(d, builder.isChecked()))
                 .create().show();
     }
 
@@ -856,7 +859,7 @@ public class MacroInfoActivity extends BaseActivity {
         chart.invalidate();
     }
 
-    private void removeCheckedAction(QMUIDialog d,boolean checked) {
+    private void removeCheckedAction(QMUIDialog d, boolean checked) {
         if (refresh.getDelete() || refresh.getDeleteDetail()) {
             return;
         }
