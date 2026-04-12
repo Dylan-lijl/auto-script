@@ -76,7 +76,7 @@ public class MixedUtil {
     @SuppressLint("SimpleDateFormat")
     public static Date getReleaseTime() {
         try {
-            return new SimpleDateFormat("yyyy-MM-dd").parse("2026-01-19");
+            return new SimpleDateFormat("yyyy-MM-dd").parse("2026-04-12");
         } catch (ParseException e) {
             return null;
         }

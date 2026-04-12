@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +31,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -277,7 +277,7 @@ public class AboutActivity extends BaseActivity {
             });
             inflate.updateVersionBtn.setOnClickListener(e -> {
                 //下载文件进行更新
-                updateSoftware(copy.getBrowserDownloadUrl(), (file) -> ThreadUtil.runOnUi(() -> {
+                updateSoftware(copy.getBrowserDownloadUrl(), copy.getAppFileName(), (file) -> ThreadUtil.runOnUi(() -> {
                     if (build.get() != null) {
                         build.get().dismiss();
                     }
@@ -302,10 +302,12 @@ public class AboutActivity extends BaseActivity {
 
     /**
      * 更新
-     * @param url 路径
-     * @param success 成功回调
+     *
+     * @param url         路径
+     * @param appFileName
+     * @param success     成功回调
      */
-    private void updateSoftware(String url, Consumer<File> success) {
+    private void updateSoftware(String url, String appFileName, Consumer<File> success) {
         if (url == null) {
             return;
         }
@@ -334,7 +336,7 @@ public class AboutActivity extends BaseActivity {
                 .create();
         qmuiDialog.show();
         //启动任务
-        future.set(executor.submit(() -> downloadFile(url,
+        future.set(executor.submit(() -> downloadFile(url, appFileName,
                 (v) -> ThreadUtil.runOnUi(() -> m.setMax(v.intValue())),
                 (v) -> ThreadUtil.runOnUi(() -> m.setProgress(v.intValue())), success)));
     }
@@ -365,7 +367,7 @@ public class AboutActivity extends BaseActivity {
      * @param updateProcess 更新进度回调
      * @param success       成功回调
      */
-    private void downloadFile(String url, Consumer<Long> setMaxValue, Consumer<Long> updateProcess, Consumer<File> success) {
+    private void downloadFile(String url, String appFileName, Consumer<Long> setMaxValue, Consumer<Long> updateProcess, Consumer<File> success) {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(url).build();
 
@@ -383,7 +385,7 @@ public class AboutActivity extends BaseActivity {
                 setMaxValue.accept(length);
             }
             //创建文件,这里需要跟配置路径一致
-            File out = new File(getExternalFilesDir("AppInstaller"), UUID.randomUUID().toString() + ".apk");
+            File out = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), appFileName != null ? appFileName : "auto_script_" + System.currentTimeMillis() + ".apk");
             if (out.exists()) {
                 if (!out.delete()) {
                     Log.d(this.getClass().getName(), "delete file failed");
