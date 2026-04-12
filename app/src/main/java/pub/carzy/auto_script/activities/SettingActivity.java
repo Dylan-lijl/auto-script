@@ -270,7 +270,7 @@ public class SettingActivity extends BaseActivity {
             QMUIBottomSheetConfirmBuilder<?> builder = new QMUIBottomSheetConfirmBuilder<>(this);
             builder.setTitle(getString(R.string.confirm_reset))
                     .setConfirm((sheet, views) -> {
-                        reset();
+                        resetModel();
                         updateCurrentStyle.run();
                         sheet.dismiss();
                     }).setCancel(((sheet, views) -> sheet.dismiss()))
@@ -603,25 +603,32 @@ public class SettingActivity extends BaseActivity {
         Optional.ofNullable(setting.getAll(SettingKey.STYLE)).ifPresent(a -> model.getProxy().setStyles(new ArrayList<>(a.values())));
         //初始化
         if (!setting.read(SettingKey.INITIALIZATION, false)) {
-            reset();
+            resetModel();
             setting.write(SettingKey.INITIALIZATION, true);
         }
     }
 
-    private void reset() {
+    private void resetModel() {
         model.getProxy().getStyles().forEach(item -> setting.remove(new SettingKey<>(SettingKey.STYLE.getKey() + item.getId(), Style.class)));
         model.setProxy(SettingProxy.DEFAULT.clone());
-        setting.write(SettingKey.TYPE, model.getProxy().getType());
-        setting.write(SettingKey.TICK, model.getProxy().getTick());
-        setting.write(SettingKey.AUTO_CLOSE, model.getProxy().getAutoClose());
-        setting.write(SettingKey.SHOW_OPERATION, model.getProxy().getShowOperation());
-        setting.write(SettingKey.OPERATION_CONFIG, model.getProxy().getOperationConfig());
-        setting.write(SettingKey.AUTO_PLAY, model.getProxy().getAutoPlay());
-        setting.write(SettingKey.IGNORE_FLOATING_SCRIPT, model.getProxy().getIgnoreFloatingScript());
-        setting.write(SettingKey.FLOAT_POINT, model.getProxy().getFloatPoint());
-        setting.write(SettingKey.DYNAMIC_UPDATE, model.getProxy().getDynamicUpdate());
-        setting.write(SettingKey.MASK_CONFIG, model.getProxy().getMaskConfig());
-        model.getProxy().getStyles().forEach(item -> setting.write(new SettingKey<>(SettingKey.STYLE.getKey() + item.getId(), Style.class), item));
+        reset(setting, model.getProxy());
+    }
+
+    public static void reset(Setting setting, SettingProxy proxy) {
+        if (proxy == null) {
+            return;
+        }
+        setting.write(SettingKey.TYPE, proxy.getType());
+        setting.write(SettingKey.TICK, proxy.getTick());
+        setting.write(SettingKey.AUTO_CLOSE, proxy.getAutoClose());
+        setting.write(SettingKey.SHOW_OPERATION, proxy.getShowOperation());
+        setting.write(SettingKey.OPERATION_CONFIG, proxy.getOperationConfig());
+        setting.write(SettingKey.AUTO_PLAY, proxy.getAutoPlay());
+        setting.write(SettingKey.IGNORE_FLOATING_SCRIPT, proxy.getIgnoreFloatingScript());
+        setting.write(SettingKey.FLOAT_POINT, proxy.getFloatPoint());
+        setting.write(SettingKey.DYNAMIC_UPDATE, proxy.getDynamicUpdate());
+        setting.write(SettingKey.MASK_CONFIG, proxy.getMaskConfig());
+        proxy.getStyles().forEach(item -> setting.write(new SettingKey<>(SettingKey.STYLE.getKey() + item.getId(), Style.class), item));
     }
 
     /**
@@ -638,9 +645,7 @@ public class SettingActivity extends BaseActivity {
                         return;
                     }
                     int id = ActionInflater.ActionItem.stringToId(tag);
-                    if (defaultProcessMenu(id)) {
-                        return;
-                    }
+                    defaultProcessMenu(id);
                 });
         addActionByXml(builder, this, R.xml.actions_common,
                 (b, m, item) -> {

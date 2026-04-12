@@ -15,10 +15,12 @@ import io.noties.markwon.syntax.Prism4jThemeDefault;
 import io.noties.markwon.syntax.SyntaxHighlightPlugin;
 import io.noties.prism4j.Prism4j;
 import pub.carzy.auto_script.R;
+import pub.carzy.auto_script.activities.SettingActivity;
 import pub.carzy.auto_script.config.impl.PrefsSetting;
 import pub.carzy.auto_script.config.impl.SnowflakeGenerator;
 import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.db.AppDatabase;
+import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.entity.Style;
 import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.MyTypeToken;
@@ -26,11 +28,13 @@ import pub.carzy.auto_script.utils.statics.StaticValues;
 
 /**
  * 注册器
+ *
  * @author admin
  */
 public class BeanRegister {
     /**
      * 注册必要组件
+     *
      * @param context c
      */
     public static void run(Application context) {
@@ -45,7 +49,7 @@ public class BeanRegister {
         Setting setting = BeanContainer.getInstance().get(Setting.class);
         if (setting.read(SettingKey.UUID, null) == null) {
             //设置用户标识
-            setting.write(SettingKey.UUID,UUID.randomUUID().toString().replace("-", ""));
+            setting.write(SettingKey.UUID, UUID.randomUUID().toString().replace("-", ""));
         }
         //设置QMUI皮肤
         QMUISkinManager manager = BeanContainer.getInstance().get(QMUISkinManager.class);
@@ -72,10 +76,16 @@ public class BeanRegister {
                 BeanContainer.getInstance().register(StaticValues.STYLE_CURRENT, currentStyle);
             }
         });
+        //初始化配置
+        if (!setting.read(SettingKey.INITIALIZATION, false)) {
+            SettingActivity.reset(setting, SettingProxy.DEFAULT.clone());
+            setting.write(SettingKey.INITIALIZATION, true);
+        }
     }
 
     /**
      * 注册组件
+     *
      * @param context c
      */
     private static void registerBeans(Application context) {
