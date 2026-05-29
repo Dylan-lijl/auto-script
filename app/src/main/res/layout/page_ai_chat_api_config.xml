@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.model.AiChatModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="@{model.aiChatConfig!=null?View.VISIBLE:View.GONE}">
+
+            <LinearLayout style="@style/FormVerticalItemStyle">
+
+                <TextView
+                    android:id="@+id/url_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="路径:" />
+
+                <EditText
+                    android:id="@+id/url_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/input"
+                    android:hint="请填写路径"
+                    android:importantForAutofill="no"
+                    android:inputType="textUri"
+                    android:labelFor="@id/url_input_label"
+                    android:text="@={model.aiChatConfig.url}" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/FormVerticalItemStyle">
+
+                <TextView
+                    android:id="@+id/api_key_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="密钥:" />
+
+                <EditText
+                    android:id="@+id/key_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/input"
+                    android:hint="平台没有密钥可不填"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:labelFor="@id/api_key_input_label"
+                    android:text="@={model.aiChatConfig.key}" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/FormVerticalItemStyle">
+
+                <TextView
+                    android:id="@+id/model_input_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="模型:" />
+
+                <EditText
+                    android:id="@+id/model_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/input"
+                    android:hint="请输入或填写模型"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:labelFor="@id/model_input_label"
+                    android:text="@={model.aiChatConfig.model}" />
+
+                <Button
+                    android:id="@+id/search_model_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="查询" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/test_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="测试" />
+        </LinearLayout>
+    </LinearLayout>
+</layout>

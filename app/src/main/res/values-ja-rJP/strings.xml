@@ -259,4 +259,5 @@
     <string name="unit_minutes">分</string>
     <string name="unit_hours">時</string>
     <string name="unit_days">日</string>
+    <string name="ai_reply">AI返信</string>
 </resources>

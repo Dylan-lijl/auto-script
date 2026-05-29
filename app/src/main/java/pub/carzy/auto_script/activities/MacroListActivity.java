@@ -477,33 +477,6 @@ public class MacroListActivity extends BaseActivity {
 
     private void initToolbar() {
         initTopBar();
-        /*//右侧添加一个查询按钮
-        QMUIAlphaImageButton searchBtn = binding.topBarLayout.actionBar.addRightImageButton(R.drawable.search, QMUIViewHelper.generateViewId());
-        //创建一个文本输入框(其实这个功能没用到)
-        EditText searchEdit = createSearchEditText();
-        //点击查询图标按钮显示返回键和文本输入框
-        searchBtn.setOnClickListener(v -> {
-            //删除右边所有组件
-            binding.topBarLayout.actionBar.removeAllRightViews();
-            //清空标题
-            binding.topBarLayout.actionBar.setTitle(null);
-            //设置中间组件为文本输入框
-            binding.topBarLayout.actionBar.setCenterView(searchEdit);
-            //添加返回键,点击时恢复回来
-            binding.topBarLayout.actionBar.addLeftBackImageButton().setOnClickListener(e -> {
-                //删除中间组件
-                binding.topBarLayout.actionBar.removeCenterViewAndTitleView();
-                //移除左侧组件
-                binding.topBarLayout.actionBar.removeAllLeftViews();
-                initToolbar();
-                updateStyle();
-            });
-            searchEdit.post(() -> {
-                updateStyle();
-                searchEdit.requestFocus();
-                QMUIKeyboardHelper.showKeyboard(searchEdit, true);
-            });
-        });*/
         binding.searchInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -521,7 +494,6 @@ public class MacroListActivity extends BaseActivity {
                 model.reloadData();
             }
         });
-//        binding.btnRecord.setOnClickListener((e) -> openService());
     }
 
     @Override
@@ -572,6 +544,9 @@ public class MacroListActivity extends BaseActivity {
                     if (id == R.id.deselect_all) {
                         //全不选
                         adapter.checkedIds.clear();
+                    }
+                    if (id == R.id.jump_to_ai_chat) {
+                        startActivity(new Intent(this, AiChatActivity.class));
                     }
                     dialog.dismiss();
                 });

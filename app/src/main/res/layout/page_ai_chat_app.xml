@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.model.AiChatModel" />
+    </data>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:id="@+id/checkbox_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <com.qmuiteam.qmui.widget.tab.QMUITabSegment2
+                android:id="@+id/app_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@color/qmui_config_color_white"
+                app:qmui_bottomDividerColor="?attr/qmui_skin_support_color_separator"
+                app:qmui_bottomDividerHeight="1px" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/app_view_page"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:fitsSystemWindows="true" />
+        </LinearLayout>
+    </LinearLayout>
+</layout>

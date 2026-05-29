@@ -24,6 +24,7 @@ databindingRuntime = "8.13.1"
 library = "3.2.0-alpha11"
 mpandroidchart = "v3.1.0"
 okhttp = "4.12.0"
+openaiJava = "4.9.0"
 prism4jBundler = "2.0.0"
 prism4jLanguages = "1.0.0"
 prism4jProcessor = "4.6.0"
@@ -61,6 +62,7 @@ databinding-runtime = { group = "androidx.databinding", name = "databinding-runt
 library = { group = "androidx.databinding", name = "library", version.ref = "library" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+openai-java = { module = "com.openai:openai-java", version.ref = "openaiJava" }
 prism4j = { module = "io.noties:prism4j", version.ref = "prism4jBundler" }
 prism4j-bundler = { module = "io.noties:prism4j-bundler", version.ref = "prism4jBundler" }
 prism4j-languages = { module = "io.noties:prism4j-languages", version.ref = "prism4jBundler" }

@@ -41,6 +41,16 @@ android {
             outputFileName = "auto-script_v${versionName}${typeAbbr}.apk"
         }
     }
+    packaging {
+        resources {
+            excludes += "/META-INF/DEPENDENCIES"
+            excludes += "/META-INF/LICENSE"
+            excludes += "/META-INF/LICENSE.txt"
+            excludes += "/META-INF/NOTICE"
+            excludes += "/META-INF/NOTICE.txt"
+            excludes += "/META-INF/ASL2.0"
+        }
+    }
 }
 
 dependencies {
@@ -63,6 +73,7 @@ dependencies {
     implementation libs.image
     implementation libs.linkify
     implementation(libs.colorpickerview)
+    implementation libs.openai.java
     implementation(libs.prism4j) {
         exclude group: 'org.jetbrains', module: 'annotations-java5'
     }

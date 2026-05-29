@@ -29,4 +29,9 @@
         android:icon="@drawable/import_icon"
         android:tint="@color/black"
         android:title="@string/import_message" />
+    <action
+        android:id="@+id/jump_to_ai_chat"
+        android:icon="@drawable/ai_chat"
+        android:tint="@color/link"
+        android:title="@string/ai_reply" />
 </actions>
