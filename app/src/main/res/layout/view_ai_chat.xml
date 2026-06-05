@@ -32,7 +32,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:padding="10dp"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
                 android:orientation="vertical">
 
                 <com.qmuiteam.qmui.widget.tab.QMUITabSegment2
@@ -48,7 +49,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:fitsSystemWindows="true" />
+                    android:fitsSystemWindows="true"
+                    tools:ignore="NestedWeights" />
             </LinearLayout>
         </LinearLayout>
     </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>

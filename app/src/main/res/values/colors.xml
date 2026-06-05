@@ -25,4 +25,5 @@
     <color name="rainbow_blue">#0000FF</color>
     <color name="rainbow_indigo">#4B0082</color>
     <color name="rainbow_violet">#8B00FF</color>
+    <color name="gray_100">#FAFAFA</color>
 </resources>

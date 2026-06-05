@@ -80,5 +80,6 @@ dependencies {
     implementation(libs.syntax.highlight) {
         exclude group: 'org.jetbrains', module: 'annotations-java5'
     }
+    implementation libs.mbknor.jackson.jsonschema.x.x3
     implementation project(':ui-components')
 }

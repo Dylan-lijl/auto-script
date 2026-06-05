@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.entity.AiChatAppBaseConfig" />
+
+        <import type="android.view.View" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/enable_prompt_layout"
+            style="@style/fieldLayout">
+
+            <LinearLayout style="@style/fieldLeftLayout">
+
+                <TextView
+                    style="@style/fieldLabel"
+                    android:text="提示词" />
+
+                <EditText
+                    android:id="@+id/prompt_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/input"
+                    android:importantForAutofill="no"
+                    android:inputType="textUri"
+                    android:labelFor="@+id/fieldLabel"
+                    android:text="@={model.prompt}"
+                    android:visibility="@{model.enablePrompt?View.VISIBLE:View.GONE}" />
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                style="@style/fieldSwitchLabel"
+                android:checked="@={model.enablePrompt}" />
+        </LinearLayout>
+    </LinearLayout>
+</layout>

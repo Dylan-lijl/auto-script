@@ -22,6 +22,10 @@ import pub.carzy.auto_script.config.pojo.SettingKey;
 import pub.carzy.auto_script.db.AppDatabase;
 import pub.carzy.auto_script.entity.SettingProxy;
 import pub.carzy.auto_script.entity.Style;
+import pub.carzy.auto_script.ext.ai_abs.AiChatAppManager;
+import pub.carzy.auto_script.ext.ai_abs.AiChatContext;
+import pub.carzy.auto_script.ext.impl.QQAiChatLifeCycle;
+import pub.carzy.auto_script.ext.impl.WechatAiChatLifeCycle;
 import pub.carzy.auto_script.utils.ThreadUtil;
 import pub.carzy.auto_script.utils.MyTypeToken;
 import pub.carzy.auto_script.utils.statics.StaticValues;
@@ -81,6 +85,9 @@ public class BeanRegister {
             SettingActivity.reset(setting, SettingProxy.DEFAULT.clone());
             setting.write(SettingKey.INITIALIZATION, true);
         }
+        //注册ai聊天
+        AiChatAppManager.register(new WechatAiChatLifeCycle().setContext(new AiChatContext(setting)));
+        AiChatAppManager.register(new QQAiChatLifeCycle().setContext(new AiChatContext(setting)));
     }
 
     /**

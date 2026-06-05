@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.entity.AiChatAppBaseConfig" />
+
+        <variable name="title" type="String" />
+
+        <import type="android.view.View" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{title}"
+            android:textColor="@color/secondary"
+            android:textStyle="bold" />
+
+        <include
+            layout="@layout/com_ai_chat_app_base"
+            model="@{model}" />
+    </LinearLayout>
+</layout>

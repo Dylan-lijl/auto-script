@@ -12,14 +12,14 @@ import pub.carzy.auto_script.entity.AiChatApiModel;
 import pub.carzy.auto_script.entity.AiChatConfig;
 
 public class AiChatModel extends BaseObservable {
-    private Boolean running = false;
-    private Boolean searchingModel = false;
+    private boolean running = false;
+    private boolean searchingModel = false;
     private Boolean connectable;
     private AiChatConfig aiChatConfig;
 
     private final List<AppImplConfig> appImplConfigs = new ArrayList<>();
 
-    private final List<AiChatApiModel> models = new ObservableArrayList<>();
+    private final List<AiChatApiModel> models = new ArrayList<>();
 
     @Bindable
     public List<AiChatApiModel> getModels() {
@@ -27,11 +27,11 @@ public class AiChatModel extends BaseObservable {
     }
 
     @Bindable
-    public Boolean getSearchingModel() {
+    public boolean isSearchingModel() {
         return searchingModel;
     }
 
-    public void setSearchingModel(Boolean searchingModel) {
+    public void setSearchingModel(boolean searchingModel) {
         this.searchingModel = searchingModel;
         notifyPropertyChanged(BR.searchingModel);
     }
@@ -42,11 +42,11 @@ public class AiChatModel extends BaseObservable {
     }
 
     @Bindable
-    public Boolean getRunning() {
+    public boolean isRunning() {
         return running;
     }
 
-    public void setRunning(Boolean running) {
+    public void setRunning(boolean running) {
         this.running = running;
         notifyPropertyChanged(BR.running);
     }
@@ -61,13 +61,4 @@ public class AiChatModel extends BaseObservable {
         notifyPropertyChanged(BR.aiChatConfig);
     }
 
-    @Bindable
-    public Boolean getConnectable() {
-        return connectable;
-    }
-
-    public void setConnectable(Boolean connectable) {
-        this.connectable = connectable;
-        notifyPropertyChanged(BR.connectable);
-    }
 }

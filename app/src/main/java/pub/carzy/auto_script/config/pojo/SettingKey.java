@@ -1,6 +1,7 @@
 package pub.carzy.auto_script.config.pojo;
 
 import lombok.Getter;
+import pub.carzy.auto_script.entity.AiChatAppBaseConfig;
 import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.entity.MaskConfig;
 import pub.carzy.auto_script.entity.OperationConfig;
@@ -13,6 +14,7 @@ import pub.carzy.auto_script.entity.Style;
 public class SettingKey<T> {
     private final String key;
     private final Class<T> type;
+
     public SettingKey(String key, Class<T> type) {
         this.key = key;
         this.type = type;
@@ -35,4 +37,5 @@ public class SettingKey<T> {
     public static final SettingKey<Style> STYLE = new SettingKey<>("style_", Style.class);
     public static final SettingKey<Boolean> AUTO_PLAY = new SettingKey<>("autoPlay", Boolean.class);
     public static final SettingKey<Integer> TYPE = new SettingKey<>("type", Integer.class);
+    public static final SettingKey<? extends AiChatAppBaseConfig> AI_CHAT_APP = new SettingKey<>("ai_chat_app_", AiChatAppBaseConfig.class);
 }
