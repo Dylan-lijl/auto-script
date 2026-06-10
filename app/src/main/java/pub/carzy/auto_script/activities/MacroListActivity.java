@@ -548,6 +548,9 @@ public class MacroListActivity extends BaseActivity {
                     if (id == R.id.jump_to_ai_chat) {
                         startActivity(new Intent(this, AiChatActivity.class));
                     }
+                    if (id == R.id.jump_to_plugin) {
+                        startActivity(new Intent(this, ExtensionToolsActivity.class));
+                    }
                     dialog.dismiss();
                 });
         //添加对应菜单列表

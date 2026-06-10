@@ -6,15 +6,66 @@
         <variable
             name="model"
             type="pub.carzy.auto_script.model.AiChatModel" />
+        <variable
+            name="selfModel"
+            type="pub.carzy.auto_script.model.AiChatAppDataModel" />
     </data>
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <TextView
-            android:text="数据"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <!--下拉选-->
+            </LinearLayout>
+            <LinearLayout
+                android:gravity="right"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <Button
+                    android:text="高级"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <Button
+                    android:text="查询"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
+        <com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout
+            android:layout_marginTop="3dp"
+            android:id="@+id/pull_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="?attr/qmui_skin_support_color_background">
+            <com.qmuiteam.qmui.widget.pullLayout.QMUIPullRefreshView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:qmui_pull_edge="top" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/dataList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:qmui_is_target="true" />
+
+            <com.qmuiteam.qmui.widget.pullLayout.QMUIPullLoadMoreView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:qmui_pull_edge="bottom"
+                app:qmui_pull_load_more_pull_text="@string/ptr_pull_down_to_refresh"
+                app:qmui_pull_load_more_release_text="@string/ptr_release_to_refresh" />
+        </com.qmuiteam.qmui.widget.pullLayout.QMUIPullLayout>
     </LinearLayout>
 </layout>

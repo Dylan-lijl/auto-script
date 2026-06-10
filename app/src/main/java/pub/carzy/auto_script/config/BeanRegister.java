@@ -2,6 +2,11 @@ package pub.carzy.auto_script.config;
 
 import android.app.Application;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ProcessLifecycleOwner;
+
 import com.qmuiteam.qmui.skin.QMUISkinManager;
 
 import java.util.ArrayList;

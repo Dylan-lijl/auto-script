@@ -74,6 +74,7 @@ dependencies {
     implementation libs.linkify
     implementation(libs.colorpickerview)
     implementation libs.openai.java
+    implementation libs.lifecycle.process
     implementation(libs.prism4j) {
         exclude group: 'org.jetbrains', module: 'annotations-java5'
     }

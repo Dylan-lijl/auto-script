@@ -34,4 +34,9 @@
         android:icon="@drawable/ai_chat"
         android:tint="@color/link"
         android:title="@string/ai_reply" />
+    <action
+        android:id="@+id/jump_to_plugin"
+        android:icon="@drawable/plugin"
+        android:tint="@color/link"
+        android:title="@string/extension_tools" />
 </actions>

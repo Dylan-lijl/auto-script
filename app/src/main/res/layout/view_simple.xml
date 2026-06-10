@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <import type="android.view.View" />
+    </data>
+
+    <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
+        android:id="@+id/window_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <!--根布局-->
+        <LinearLayout
+            android:id="@+id/root_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <!--标题栏-->
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/com_common_top_bar" />
+            <!--内容区域-->
+            <LinearLayout
+                android:id="@+id/content_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:orientation="vertical">
+                <!--自己的页面逻辑-->
+            </LinearLayout>
+        </LinearLayout>
+    </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
+</layout>

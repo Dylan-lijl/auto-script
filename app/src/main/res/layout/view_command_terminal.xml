@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="model"
+            type="pub.carzy.auto_script.entity.CommandTerminalModel" />
+    </data>
+
+    <com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2
+        android:id="@+id/window_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <!--根布局-->
+        <LinearLayout
+            android:id="@+id/root_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <!--标题栏-->
+            <include
+                android:id="@+id/top_bar_layout"
+                layout="@layout/com_common_top_bar" />
+            <!--内容区域-->
+            <LinearLayout
+                android:id="@+id/content_layout"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <!--自己的页面逻辑-->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_output"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:overScrollMode="never"
+                    android:scrollbars="vertical" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="8dp">
+
+                    <EditText
+                        android:id="@+id/et_input"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/input"
+                        android:singleLine="true" />
+
+                    <Button
+                        android:id="@+id/btn_send"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="发送" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </com.qmuiteam.qmui.widget.QMUIWindowInsetLayout2>
+</layout>

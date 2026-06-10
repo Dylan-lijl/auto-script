@@ -17,6 +17,7 @@ espressoCore = "3.7.0"
 appcompat = "1.7.0"
 kotlinGradlePlugin = "1.9.0"
 libraryVersion = "1.2.0"
+lifecycleProcess = "2.10.0"
 lintApi = "31.13.2"
 lombok = "1.18.30"
 material = "1.10.0"
@@ -54,6 +55,7 @@ ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitV
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinGradlePlugin" }
+lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycleProcess" }
 linkify = { module = "io.noties.markwon:linkify", version.ref = "core" }
 lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "lintApi" }
 lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintApi" }

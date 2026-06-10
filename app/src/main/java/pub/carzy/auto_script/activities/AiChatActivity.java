@@ -74,6 +74,8 @@ import pub.carzy.auto_script.databinding.DialogAiTestResultBinding;
 import pub.carzy.auto_script.databinding.ItemModelBinding;
 import pub.carzy.auto_script.databinding.PageAiChatApiConfigBinding;
 import pub.carzy.auto_script.databinding.PageAiChatAppBinding;
+import pub.carzy.auto_script.databinding.PageAiChatAppControllerBinding;
+import pub.carzy.auto_script.databinding.PageAiChatAppDataBinding;
 import pub.carzy.auto_script.databinding.ViewAiChatBinding;
 import pub.carzy.auto_script.entity.AiChatApiModel;
 import pub.carzy.auto_script.entity.AiChatAppBaseConfig;
@@ -83,6 +85,7 @@ import pub.carzy.auto_script.entity.AiChatTabEntity;
 import pub.carzy.auto_script.entity.ai.HelloEntity;
 import pub.carzy.auto_script.ext.ai_abs.AiChatAppManager;
 import pub.carzy.auto_script.ext.ai_abs.AiChatLifeCycle;
+import pub.carzy.auto_script.model.AiChatAppDataModel;
 import pub.carzy.auto_script.model.AiChatModel;
 import pub.carzy.auto_script.ui.BottomCustomSheetBuilder;
 import pub.carzy.auto_script.ui.QMUIBottomSheetCustomBuilder;
@@ -245,15 +248,31 @@ public class AiChatActivity extends BaseActivity {
         model.setRunning(false);
     }
 
+    List<AiChatAppListModel<? extends AiChatAppBaseConfig, ? extends ViewDataBinding>> list;
+
+    private synchronized List<AiChatAppListModel<? extends AiChatAppBaseConfig, ? extends ViewDataBinding>> getList() {
+        if (list == null) {
+            Map<String, AiChatLifeCycle<?, ?>> all = AiChatAppManager.all();
+            list = new ArrayList<>();
+            all.forEach((k, v) -> list.add(AiChatAppListModel.create(v)));
+        }
+        return list;
+    }
+
+    CheckAppViewAdapter appViewAdapter;
+
+    private synchronized CheckAppViewAdapter getAppViewAdapter() {
+        if (appViewAdapter == null) {
+            appViewAdapter = new CheckAppViewAdapter(getList(), this);
+        }
+        return appViewAdapter;
+    }
+
     private void initApp(ViewDataBinding binding) {
         if (!(binding instanceof PageAiChatAppBinding)) {
             return;
         }
         PageAiChatAppBinding b = (PageAiChatAppBinding) binding;
-        Map<String, AiChatLifeCycle<?, ?>> all = AiChatAppManager.all();
-        List<AiChatAppListModel<? extends AiChatAppBaseConfig, ? extends ViewDataBinding>> list = new ArrayList<>();
-        all.forEach((k, v) -> list.add(AiChatAppListModel.create(v)));
-        CheckAppViewAdapter appViewAdapter = new CheckAppViewAdapter(list, this);
         b.viewGroup.setAdapter(appViewAdapter);
         b.checkGroup.setAdapter(new CheckAppGroupAdapter(list, appViewAdapter::notifyItemChanged));
         b.saveBtn.setOnClickListener(e -> {
@@ -264,10 +283,23 @@ public class AiChatActivity extends BaseActivity {
     }
 
     private void initAppData(ViewDataBinding binding) {
-
+        if (!(binding instanceof PageAiChatAppDataBinding)) {
+            return;
+        }
+        PageAiChatAppDataBinding b = (PageAiChatAppDataBinding) binding;
+        AiChatAppDataModel selfModel = new AiChatAppDataModel();
+        b.setModel(model);
+        b.setSelfModel(selfModel);
+        //暂时不处理 todo
     }
 
     private void initController(ViewDataBinding binding) {
+        if (!(binding instanceof PageAiChatAppControllerBinding)) {
+            return;
+        }
+        PageAiChatAppControllerBinding b = (PageAiChatAppControllerBinding) binding;
+        b.setModel(model);
+        b.checkGroup.setAdapter(getAppViewAdapter());
 
     }
 

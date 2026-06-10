@@ -36,6 +36,7 @@
         <activity android:name=".activities.MacroInfoActivity" />
         <activity android:name=".activities.SettingActivity" />
         <activity android:name=".activities.AiChatActivity" />
+        <activity android:name=".activities.ExtensionToolsActivity" />
         <!--关于界面-->
         <activity android:name=".activities.AboutActivity" />
         <activity android:name=".activities.about.DefaultEmptyAboutActivity" />
@@ -49,6 +50,8 @@
         <activity android:name=".activities.about.child.AboutDevelopmentProcessActivity" />
         <activity android:name=".activities.about.child.AboutFAQActivity" />
         <activity android:name=".activities.about.child.AboutTroubleshootingActivity" />
+        <!--扩展工具子页面-->
+        <activity android:name=".activities.ext.children.CommandTerminalActivity" />
 
         <service
             android:name=".core.MyAccessibilityService"
