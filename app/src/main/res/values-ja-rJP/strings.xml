@@ -261,4 +261,10 @@
     <string name="unit_days">日</string>
     <string name="ai_reply">AI返信</string>
     <string name="extension_tools">拡張ツール</string>
+    <string name="clear">クリア</string>
+    <string name="command_history">コマンド履歴</string>
+    <string name="show_number_line">行番号を表示</string>
+    <string name="kill_title">ターミナルを終了</string>
+    <string name="kill_detail">この操作により現在のターミナルが停止します。終了してもよろしいですか？</string>
+    <string name="command_tools_title">コマンドラインツール</string>
 </resources>

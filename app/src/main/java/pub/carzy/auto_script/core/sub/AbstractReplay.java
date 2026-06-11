@@ -16,8 +16,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import lombok.Getter;
-import lombok.Setter;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.core.data.ReplayModel;
 import pub.carzy.auto_script.utils.ThreadUtil;
@@ -47,9 +45,45 @@ public abstract class AbstractReplay<T extends Replay.Payload, D extends Replay.
     /**
      * 数据
      */
-    @Getter
-    @Setter
     private ReplayModel model;
+
+    public ScheduledExecutorService getScheduler() {
+        return scheduler;
+    }
+
+    public ReplayModel getModel() {
+        return model;
+    }
+
+    @Override
+    public void setModel(ReplayModel model) {
+        this.model = model;
+    }
+
+    public AtomicLong getStartTime() {
+        return startTime;
+    }
+
+    public AtomicLong getPauseTime() {
+        return pauseTime;
+    }
+
+    public AtomicInteger getRepeatCount() {
+        return repeatCount;
+    }
+
+    public Set<ResultListener> getCallback() {
+        return callback;
+    }
+
+    public long getNextTickAbsoluteTime() {
+        return nextTickAbsoluteTime;
+    }
+
+    public void setNextTickAbsoluteTime(long nextTickAbsoluteTime) {
+        this.nextTickAbsoluteTime = nextTickAbsoluteTime;
+    }
+
     /**
      * 定时任务线程池
      */

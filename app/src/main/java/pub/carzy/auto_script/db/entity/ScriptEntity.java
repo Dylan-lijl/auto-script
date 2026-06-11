@@ -12,14 +12,12 @@ import androidx.room.PrimaryKey;
 
 import java.util.Date;
 
-import lombok.EqualsAndHashCode;
 import pub.carzy.auto_script.BR;
 
 /**
  * @author admin
  */
 @Entity(tableName = "script")
-@EqualsAndHashCode(callSuper = false)
 public class ScriptEntity extends BaseObservable implements Parcelable {
     @PrimaryKey
     private Long id;

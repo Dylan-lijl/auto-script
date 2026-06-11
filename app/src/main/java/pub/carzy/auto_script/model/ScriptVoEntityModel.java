@@ -21,9 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import pub.carzy.auto_script.BR;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
@@ -61,9 +58,16 @@ public class ScriptVoEntityModel extends BaseObservable {
     /**
      * 颜色
      */
-    @Getter
-    @Setter
     private List<Integer> colorsResource = new ArrayList<>();
+
+    public List<Integer> getColorsResource() {
+        return colorsResource;
+    }
+
+    public void setColorsResource(List<Integer> colorsResource) {
+        this.colorsResource = colorsResource;
+    }
+
     /**
      * 是否需要保存
      */
@@ -840,18 +844,89 @@ public class ScriptVoEntityModel extends BaseObservable {
         return null;
     }
 
-    @Data
     public static class ScriptActionModel {
         private ScriptActionEntity data;
         private Long key;
         private BarEntry barEntry;
         private Integer color;
         private List<Long> pointIds = new ArrayList<>();
+
+        public ScriptActionEntity getData() {
+            return data;
+        }
+
+        public void setData(ScriptActionEntity data) {
+            this.data = data;
+        }
+
+        public Long getKey() {
+            return key;
+        }
+
+        public void setKey(Long key) {
+            this.key = key;
+        }
+
+        public BarEntry getBarEntry() {
+            return barEntry;
+        }
+
+        public void setBarEntry(BarEntry barEntry) {
+            this.barEntry = barEntry;
+        }
+
+        public Integer getColor() {
+            return color;
+        }
+
+        public void setColor(Integer color) {
+            this.color = color;
+        }
+
+        public List<Long> getPointIds() {
+            return pointIds;
+        }
+
+        public void setPointIds(List<Long> pointIds) {
+            this.pointIds = pointIds;
+        }
     }
 
-    @Data
     public static class ScriptPointModel {
         private ScriptPointEntity data;
+
+        public ScriptPointEntity getData() {
+            return data;
+        }
+
+        public void setData(ScriptPointEntity data) {
+            this.data = data;
+        }
+
+        public Long getKey() {
+            return key;
+        }
+
+        public void setKey(Long key) {
+            this.key = key;
+        }
+
+        public BarEntry getBarEntry() {
+            return barEntry;
+        }
+
+        public void setBarEntry(BarEntry barEntry) {
+            this.barEntry = barEntry;
+        }
+
+        public Integer getColor() {
+            return color;
+        }
+
+        public void setColor(Integer color) {
+            this.color = color;
+        }
+
         private Long key;
         private BarEntry barEntry;
         private Integer color;

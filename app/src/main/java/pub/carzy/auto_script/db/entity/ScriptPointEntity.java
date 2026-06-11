@@ -10,13 +10,11 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import lombok.EqualsAndHashCode;
 import pub.carzy.auto_script.BR;
 
 /**
  * @author admin
  */
-@EqualsAndHashCode(callSuper = true)
 @Entity(tableName = "script_point")
 public class ScriptPointEntity extends BaseObservable implements Parcelable {
     @PrimaryKey

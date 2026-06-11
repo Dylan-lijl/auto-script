@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import lombok.Data;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
@@ -23,11 +22,99 @@ import pub.carzy.auto_script.utils.BeanHandler;
  *
  * @author admin
  */
-@Data
 public class ReplayModel {
     //-----------重复脚本实体属性----------
     private String name;
     private Long count;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getCount() {
+        return count;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
+    }
+
+    public Long getActionCount() {
+        return actionCount;
+    }
+
+    public void setActionCount(Long actionCount) {
+        this.actionCount = actionCount;
+    }
+
+    public Long getTotalDuration() {
+        return totalDuration;
+    }
+
+    public void setTotalDuration(Long totalDuration) {
+        this.totalDuration = totalDuration;
+    }
+
+    public Long getDelayEnd() {
+        return delayEnd;
+    }
+
+    public void setDelayEnd(Long delayEnd) {
+        this.delayEnd = delayEnd;
+    }
+
+    public Long getDelayStart() {
+        return delayStart;
+    }
+
+    public void setDelayStart(Long delayStart) {
+        this.delayStart = delayStart;
+    }
+
+    public Boolean getInited() {
+        return inited;
+    }
+
+    public void setInited(Boolean inited) {
+        this.inited = inited;
+    }
+
+    public AtomicLong getDelayEndCount() {
+        return delayEndCount;
+    }
+
+    public void setDelayEndCount(AtomicLong delayEndCount) {
+        this.delayEndCount = delayEndCount;
+    }
+
+    public List<ReplayActionModel> getActions() {
+        return actions;
+    }
+
+    public void setActions(List<ReplayActionModel> actions) {
+        this.actions = actions;
+    }
+
+    public ConcurrentSkipListMap<Long, ReplayActionModel> getActionWaitMap() {
+        return actionWaitMap;
+    }
+
+    public void setActionWaitMap(ConcurrentSkipListMap<Long, ReplayActionModel> actionWaitMap) {
+        this.actionWaitMap = actionWaitMap;
+    }
+
+    public ConcurrentSkipListMap<Long, ReplayActionModel> getActionDeleteMap() {
+        return actionDeleteMap;
+    }
+
+    public void setActionDeleteMap(ConcurrentSkipListMap<Long, ReplayActionModel> actionDeleteMap) {
+        this.actionDeleteMap = actionDeleteMap;
+    }
+
     private Long actionCount;
     private Long totalDuration;
     private Long delayEnd;
@@ -37,12 +124,116 @@ public class ReplayModel {
     private List<ReplayActionModel> actions = new ArrayList<>();
 
     //----------action属性------------------
-    @Data
     public static class ReplayActionModel {
         private Long id;
         private Long startTime;
         private Long duration;
         private Integer pointCount;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public Long getStartTime() {
+            return startTime;
+        }
+
+        public void setStartTime(Long startTime) {
+            this.startTime = startTime;
+        }
+
+        public Long getDuration() {
+            return duration;
+        }
+
+        public void setDuration(Long duration) {
+            this.duration = duration;
+        }
+
+        public Integer getPointCount() {
+            return pointCount;
+        }
+
+        public void setPointCount(Integer pointCount) {
+            this.pointCount = pointCount;
+        }
+
+        public Integer getType() {
+            return type;
+        }
+
+        public void setType(Integer type) {
+            this.type = type;
+        }
+
+        public Integer getCode() {
+            return code;
+        }
+
+        public void setCode(Integer code) {
+            this.code = code;
+        }
+
+        public Integer getIndex() {
+            return index;
+        }
+
+        public void setIndex(Integer index) {
+            this.index = index;
+        }
+
+        public List<ReplayPointModel> getPoints() {
+            return points;
+        }
+
+        public void setPoints(List<ReplayPointModel> points) {
+            this.points = points;
+        }
+
+        public Integer getTrackingId() {
+            return trackingId;
+        }
+
+        public void setTrackingId(Integer trackingId) {
+            this.trackingId = trackingId;
+        }
+
+        public List<ReplayActionModel> getParallel() {
+            return parallel;
+        }
+
+        public void setParallel(List<ReplayActionModel> parallel) {
+            this.parallel = parallel;
+        }
+
+        public AtomicInteger getCurrent() {
+            return current;
+        }
+
+        public void setCurrent(AtomicInteger current) {
+            this.current = current;
+        }
+
+        public AtomicLong getRemainingTime() {
+            return remainingTime;
+        }
+
+        public void setRemainingTime(AtomicLong remainingTime) {
+            this.remainingTime = remainingTime;
+        }
+
+        public boolean isMerged() {
+            return merged;
+        }
+
+        public void setMerged(boolean merged) {
+            this.merged = merged;
+        }
+
         private Integer type;
         private Integer code;
         private Integer index;
@@ -81,7 +272,6 @@ public class ReplayModel {
     }
 
     //-----------point属性------------------
-    @Data
     public static class ReplayPointModel {
         private Long id;
         private Float x;
@@ -105,6 +295,58 @@ public class ReplayModel {
         public void reset() {
             remainingTime.set(deltaTime);
             dispatched = false;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public Float getX() {
+            return x;
+        }
+
+        public void setX(Float x) {
+            this.x = x;
+        }
+
+        public Float getY() {
+            return y;
+        }
+
+        public void setY(Float y) {
+            this.y = y;
+        }
+
+        public Long getDeltaTime() {
+            return deltaTime;
+        }
+
+        public void setDeltaTime(Long deltaTime) {
+            this.deltaTime = deltaTime;
+        }
+
+        public Float getOrder() {
+            return order;
+        }
+
+        public void setOrder(Float order) {
+            this.order = order;
+        }
+
+        public AtomicLong getRemainingTime() {
+            return remainingTime;
+        }
+
+        public boolean isDispatched() {
+            return dispatched;
+        }
+
+        public void setDispatched(boolean dispatched) {
+            this.dispatched = dispatched;
         }
     }
 

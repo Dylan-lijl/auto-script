@@ -1,9 +1,12 @@
 package pub.carzy.auto_script.adapter;
 
+import android.content.res.ColorStateList;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
+import android.widget.ImageView;
 
+import androidx.core.widget.ImageViewCompat;
 import androidx.databinding.BindingAdapter;
 import androidx.databinding.InverseMethod;
 
@@ -50,7 +53,10 @@ public class Converter {
             return 0;
         }
     }
-
+    @BindingAdapter("tint")
+    public static void bindTint(ImageView view, int color) {
+        view.setColorFilter(color);
+    }
     @BindingAdapter("minVal")
     public static void setMinVal(EditText view, int min) {
         view.addTextChangedListener(new TextWatcher() {

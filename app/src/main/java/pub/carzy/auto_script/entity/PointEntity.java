@@ -6,16 +6,38 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 
-import lombok.Data;
 
 /**
  * @author admin
  */
-@Data
 public class PointEntity implements Parcelable {
     private Float x;
     private Float y;
     private Long time;
+
+    public Float getX() {
+        return x;
+    }
+
+    public void setX(Float x) {
+        this.x = x;
+    }
+
+    public Float getY() {
+        return y;
+    }
+
+    public void setY(Float y) {
+        this.y = y;
+    }
+
+    public Long getTime() {
+        return time;
+    }
+
+    public void setTime(Long time) {
+        this.time = time;
+    }
 
     public PointEntity() {
     }

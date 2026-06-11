@@ -261,4 +261,10 @@
     <string name="unit_days">天</string>
     <string name="ai_reply">AI 回覆</string>
     <string name="extension_tools">擴充工具</string>
+    <string name="clear">清除</string>
+    <string name="command_history">歷史命令</string>
+    <string name="show_number_line">顯示行號</string>
+    <string name="kill_title">終止終端</string>
+    <string name="kill_detail">此操作將會停止目前終端，確定要終止嗎？</string>
+    <string name="command_tools_title">命令列工具</string>
 </resources>

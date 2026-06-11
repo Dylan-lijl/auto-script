@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import lombok.Getter;
-import lombok.Setter;
 import pub.carzy.auto_script.ex.BeanInstantiationException;
 import pub.carzy.auto_script.ex.BeansException;
 import pub.carzy.auto_script.ex.FatalBeanException;
@@ -285,16 +283,39 @@ public class BeanHandler {
      * [Android-Friendly] PropertyDescriptor 的无依赖替代品。
      * 封装了属性名称、类型、Getter 和 Setter 方法。
      */
-    @Getter
-    @Setter
     public static class PropertyDescriptor {
 
         private final String name;
         private final Class<?> propertyType;
 
         @Nullable private Method readMethod;
-        @Getter
         @Nullable private Method writeMethod;
+
+        public String getName() {
+            return name;
+        }
+
+        public Class<?> getPropertyType() {
+            return propertyType;
+        }
+
+        @Nullable
+        public Method getReadMethod() {
+            return readMethod;
+        }
+
+        public void setReadMethod(@Nullable Method readMethod) {
+            this.readMethod = readMethod;
+        }
+
+        @Nullable
+        public Method getWriteMethod() {
+            return writeMethod;
+        }
+
+        public void setWriteMethod(@Nullable Method writeMethod) {
+            this.writeMethod = writeMethod;
+        }
 
         /**
          * 构造一个新的 PropertyDescriptor。

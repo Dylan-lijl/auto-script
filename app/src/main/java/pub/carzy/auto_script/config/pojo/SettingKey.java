@@ -1,6 +1,5 @@
 package pub.carzy.auto_script.config.pojo;
 
-import lombok.Getter;
 import pub.carzy.auto_script.entity.AiChatAppBaseConfig;
 import pub.carzy.auto_script.entity.FloatPoint;
 import pub.carzy.auto_script.entity.MaskConfig;
@@ -10,7 +9,6 @@ import pub.carzy.auto_script.entity.Style;
 /**
  * @author admin
  */
-@Getter
 public class SettingKey<T> {
     private final String key;
     private final Class<T> type;
@@ -20,6 +18,13 @@ public class SettingKey<T> {
         this.type = type;
     }
 
+    public String getKey() {
+        return key;
+    }
+
+    public Class<T> getType() {
+        return type;
+    }
 
     public static final SettingKey<Boolean> INITIALIZATION = new SettingKey<>("initialization", Boolean.class);
     public static final SettingKey<Boolean> AUTO_CLOSE = new SettingKey<>("autoClose", Boolean.class);

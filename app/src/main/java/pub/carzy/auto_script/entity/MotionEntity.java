@@ -8,15 +8,38 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
 
 /**
  * @author admin
  */
-@Data
 public class MotionEntity implements Parcelable {
     private Integer index;
     private Long downTime;
+
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    public Long getDownTime() {
+        return downTime;
+    }
+
+    public void setDownTime(Long downTime) {
+        this.downTime = downTime;
+    }
+
+    public List<PointEntity> getPoints() {
+        return points;
+    }
+
+    public void setPoints(List<PointEntity> points) {
+        this.points = points;
+    }
+
     private List<PointEntity> points = new ArrayList<>();
 
     public MotionEntity() {

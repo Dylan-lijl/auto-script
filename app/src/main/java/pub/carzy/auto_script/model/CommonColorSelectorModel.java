@@ -9,7 +9,6 @@ import androidx.databinding.ObservableInt;
 
 import java.util.function.Consumer;
 
-import lombok.Setter;
 import pub.carzy.auto_script.BR;
 
 /**
@@ -17,8 +16,11 @@ import pub.carzy.auto_script.BR;
  */
 public class CommonColorSelectorModel extends BaseObservable {
     private final ObservableInt color = new ObservableInt(0);
-    @Setter
     private Consumer<Integer> colorListener;
+
+    public void setColorListener(Consumer<Integer> colorListener) {
+        this.colorListener = colorListener;
+    }
 
     @Bindable
     public int getColor() {

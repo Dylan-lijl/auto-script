@@ -4,7 +4,6 @@ import java.util.*;
 import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 
-import lombok.Getter;
 import pub.carzy.auto_script.ex.BeanNotFoundException;
 import pub.carzy.auto_script.utils.MyTypeToken;
 
@@ -13,8 +12,21 @@ import pub.carzy.auto_script.utils.MyTypeToken;
  */
 public class BeanContainer {
 
-    @Getter
     private static final BeanContainer instance = new BeanContainer();
+    public static BeanContainer getInstance(){
+        return instance;
+    }
+    public Map<String, Object> getNameMap() {
+        return nameMap;
+    }
+
+    public Map<Class<?>, Set<String>> getTypeMap() {
+        return typeMap;
+    }
+
+    public Map<Type, Object> getGenericTypeMap() {
+        return genericTypeMap;
+    }
 
     /**
      * 名字 -> bean 对象

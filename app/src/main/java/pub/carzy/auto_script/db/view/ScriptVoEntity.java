@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
 import pub.carzy.auto_script.db.entity.ScriptActionEntity;
 import pub.carzy.auto_script.db.entity.ScriptEntity;
 import pub.carzy.auto_script.db.entity.ScriptPointEntity;
@@ -17,8 +16,31 @@ import pub.carzy.auto_script.db.entity.ScriptPointEntity;
 /**
  * @author admin
  */
-@Data
 public class ScriptVoEntity implements Parcelable {
+
+    public ScriptEntity getRoot() {
+        return root;
+    }
+
+    public void setRoot(ScriptEntity root) {
+        this.root = root;
+    }
+
+    public List<ScriptActionEntity> getActions() {
+        return actions;
+    }
+
+    public void setActions(List<ScriptActionEntity> actions) {
+        this.actions = actions;
+    }
+
+    public List<ScriptPointEntity> getPoints() {
+        return points;
+    }
+
+    public void setPoints(List<ScriptPointEntity> points) {
+        this.points = points;
+    }
 
     // 根实体 (单个对象)
     private ScriptEntity root;

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import lombok.Data;
 import pub.carzy.auto_script.activities.about.DefaultEmptyAboutActivity;
 import pub.carzy.auto_script.activities.about.ErrorAboutActivity;
 
@@ -145,7 +144,6 @@ public class PageMappingInflater {
         return "item".equals(name);
     }
 
-    @Data
     public static class PageItem {
         private int id;
         private CharSequence title;
@@ -153,6 +151,54 @@ public class PageMappingInflater {
         private boolean enabled;
         private Class<? extends Activity> activity;
         private Integer order;
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public CharSequence getTitle() {
+            return title;
+        }
+
+        public void setTitle(CharSequence title) {
+            this.title = title;
+        }
+
+        public Drawable getIcon() {
+            return icon;
+        }
+
+        public void setIcon(Drawable icon) {
+            this.icon = icon;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public Class<? extends Activity> getActivity() {
+            return activity;
+        }
+
+        public void setActivity(Class<? extends Activity> activity) {
+            this.activity = activity;
+        }
+
+        public Integer getOrder() {
+            return order;
+        }
+
+        public void setOrder(Integer order) {
+            this.order = order;
+        }
 
         public PageItem() {
 

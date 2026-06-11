@@ -23,7 +23,6 @@ import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 
 import java.util.Locale;
 
-import lombok.Getter;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.databinding.WindowMaskViewBinding;
 import pub.carzy.auto_script.utils.DefaultTextWatch;
@@ -32,9 +31,13 @@ import pub.carzy.auto_script.utils.DefaultTextWatch;
  * @author admin
  */
 public class CoordinateViewWrapper {
-    @Getter
     private View rootView;
     private EditText xInput;
+
+    public View getRootView() {
+        return rootView;
+    }
+
     private EditText yInput;
     private Button btnDisplay;
     private Button btnPick;

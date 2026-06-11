@@ -261,4 +261,10 @@
     <string name="unit_days">d</string>
     <string name="ai_reply">AI reply</string>
     <string name="extension_tools">Extension Tools</string>
+    <string name="clear">Clear</string>
+    <string name="command_history">Command History</string>
+    <string name="show_number_line">Show number line</string>
+    <string name="kill_title">Terminate Terminal</string>
+    <string name="kill_detail">This action will stop the current terminal. Do you want to terminate it?</string>
+    <string name="command_tools_title">Command Line Tool</string>
 </resources>

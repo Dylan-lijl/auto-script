@@ -261,4 +261,10 @@
     <string name="unit_days">일</string>
     <string name="ai_reply">AI 답변</string>
     <string name="extension_tools">확장 도구</string>
+    <string name="clear">지우기</string>
+    <string name="command_history">명령어 기록</string>
+    <string name="show_number_line">줄 번호 표시</string>
+    <string name="kill_title">터미널 종료</string>
+    <string name="kill_detail">이 작업은 현재 터미널을 중지합니다. 종료하시겠습니까?</string>
+    <string name="command_tools_title">명령줄 도구</string>
 </resources>

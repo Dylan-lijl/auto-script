@@ -13,7 +13,6 @@ import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheetBaseBuilder;
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheetRootLayout;
 
-import lombok.Data;
 
 /**
  * 自定义
@@ -54,10 +53,25 @@ public class QMUIBottomSheetCustomBuilder<T extends QMUIBottomSheetCustomBuilder
         return null;
     }
 
-    @Data
     protected static class ViewWrapper {
         private View view;
         private int resId = -1;
+
+        public View getView() {
+            return view;
+        }
+
+        public void setView(View view) {
+            this.view = view;
+        }
+
+        public int getResId() {
+            return resId;
+        }
+
+        public void setResId(int resId) {
+            this.resId = resId;
+        }
 
         public ViewWrapper(View view) {
             this.view = view;

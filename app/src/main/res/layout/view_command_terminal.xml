@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
         <import type="android.view.View" />
+
+        <import type="pub.carzy.auto_script.utils.StringUtils" />
+
+        <import type="android.content.res.ColorStateList" />
 
         <variable
             name="model"
@@ -29,9 +35,30 @@
                 android:id="@+id/content_layout"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginStart="10dp"
+                android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{StringUtils.format(model.pid)}" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+                </LinearLayout>
                 <!--自己的页面逻辑-->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_output"
@@ -39,27 +66,104 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:overScrollMode="never"
-                    android:scrollbars="vertical" />
+                    android:scrollbars="vertical"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:ignore="NestedWeights" />
+                <!--工具栏-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp">
+
+                    <ImageButton
+                        android:id="@+id/history_btn"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:contentDescription="@string/command_history"
+                        android:enabled="@{model.commandLength>0}"
+                        android:src="@drawable/historical_command"
+                        app:tint="@{model.commandLength>0 ? @color/rainbow_orange : @color/secondary2}" />
+
+                    <ImageButton
+                        android:id="@+id/copy_btn"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="10dp"
+                        android:contentDescription="@string/copy"
+                        android:src="@drawable/copy" />
+
+                    <ImageButton
+                        android:id="@+id/export_btn"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="10dp"
+                        android:contentDescription="@string/export"
+                        android:enabled="@{!model.exporting &amp;&amp; model.logLength>0}"
+                        android:src="@drawable/export"
+                        app:tint="@{model.logLength>0 ? @color/rainbow_green : @color/secondary2}" />
+
+                    <ImageButton
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="10dp"
+                        android:contentDescription="@string/show_number_line"
+                        android:onClick="@{e->model.setShowLineNumber(!model.showLineNumber)}"
+                        android:src="@drawable/number_line"
+                        app:tint="@{model.showLineNumber?@color/black:@color/secondary2}" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/kill_btn"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="@string/delete"
+                        android:enabled="@{model.pid>0}"
+                        android:src="@drawable/multiplication"
+                        app:tint="@{model.pid > 0?@color/danger:@color/secondary2}" />
+
+                    <ImageButton
+                        android:id="@+id/clear_btn"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="@string/clear"
+                        android:enabled="@{model.logLength>0}"
+                        android:src="@drawable/clear"
+                        app:tint="@{model.logLength>0 ? @color/rainbow_blue : @color/secondary2}" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
 
                     <EditText
                         android:id="@+id/et_input"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:autofillHints=""
                         android:background="@drawable/input"
-                        android:singleLine="true" />
+                        android:enabled="@{!model.running}"
+                        android:inputType="text"
+                        android:singleLine="true"
+                        android:text="@={model.command}"
+                        tools:ignore="LabelFor" />
 
-                    <Button
+                    <ImageButton
                         android:id="@+id/btn_send"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="发送" />
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:contentDescription="@{model.running?`停止`:`发送`}"
+                        android:enabled="@{!model.init &amp;&amp; !model.stopping}"
+                        android:src="@{model.running?@drawable/stop: @drawable/send}"
+                        app:tint="@{model.running?@color/danger:@color/safe}" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

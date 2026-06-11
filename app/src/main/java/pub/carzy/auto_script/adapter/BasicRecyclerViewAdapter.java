@@ -9,16 +9,18 @@ import androidx.databinding.ObservableArrayList;
 import androidx.databinding.ObservableList;
 import androidx.recyclerview.widget.RecyclerView;
 
-import lombok.Getter;
 
 
 /**
  * 基础适配器,管理无数据和有数据切换
  * @author admin
  */
-@Getter
 public abstract class BasicRecyclerViewAdapter<V extends RecyclerView.ViewHolder, D>
         extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    public ObservableList<D> getData() {
+        return data;
+    }
+
     /**
      * 数据集合
      */

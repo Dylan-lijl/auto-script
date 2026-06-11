@@ -9,7 +9,6 @@ import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
 import java.util.Locale;
-import lombok.Setter;
 import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.Setting;
 import pub.carzy.auto_script.utils.ActivityUtils;
@@ -19,9 +18,24 @@ import pub.carzy.auto_script.utils.ActivityUtils;
  */
 public class MyAccessibilityService extends AccessibilityService {
     private final Setting setting;
-    @Setter
     private EventCallback callback;
     private final BroadcastReceiver screenReceiver;
+
+    public Setting getSetting() {
+        return setting;
+    }
+
+    public EventCallback getCallback() {
+        return callback;
+    }
+
+    public void setCallback(EventCallback callback) {
+        this.callback = callback;
+    }
+
+    public BroadcastReceiver getScreenReceiver() {
+        return screenReceiver;
+    }
 
     public MyAccessibilityService() {
         BeanContainer.getInstance().register(this);

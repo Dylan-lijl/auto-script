@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import lombok.Getter;
 import pub.carzy.auto_script.BR;
 import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.DynamicSqlBuilder;
@@ -23,14 +22,34 @@ import pub.carzy.auto_script.utils.ThreadUtil;
  * @author admin
  */
 public class MacroListModel extends BaseObservable {
-    @Getter
     private final ObservableList<ScriptEntity> data = new ObservableArrayList<>();
-    @Getter
     private final ObservableBoolean loading = new ObservableBoolean();
-    @Getter
     private final ObservableList<Long> deleteIds = new ObservableArrayList<>();
     private String keyword;
 
+    public ObservableList<ScriptEntity> getData() {
+        return data;
+    }
+
+    public ObservableBoolean getLoading() {
+        return loading;
+    }
+
+    public ObservableList<Long> getDeleteIds() {
+        return deleteIds;
+    }
+
+    public AppDatabase getDatabase() {
+        return database;
+    }
+
+    public AtomicReference<Date> getLastTime() {
+        return lastTime;
+    }
+
+    public AtomicReference<Long> getLastId() {
+        return lastId;
+    }
 
     @Bindable
     public String getKeyword() {

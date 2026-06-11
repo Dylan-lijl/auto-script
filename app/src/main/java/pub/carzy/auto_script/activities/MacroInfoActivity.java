@@ -64,7 +64,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import lombok.Getter;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.config.BeanContainer;
 import pub.carzy.auto_script.config.IdGenerator;
@@ -967,10 +966,21 @@ public class MacroInfoActivity extends BaseActivity {
         });
     }
 
-    @Getter
     public static class CodeOption {
         private final int code;
         private final String label;
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public static Map<String, Integer> getCodeMap() {
+            return codeMap;
+        }
 
         public CodeOption(int code, String label) {
             this.code = code;

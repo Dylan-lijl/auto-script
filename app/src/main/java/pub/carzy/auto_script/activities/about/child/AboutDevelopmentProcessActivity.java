@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.noties.markwon.Markwon;
-import lombok.Setter;
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
 import pub.carzy.auto_script.config.BeanContainer;
@@ -74,6 +73,19 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
     private ComAboutDevelopmentProcessBinding binding;
     private AboutDevelopmentProcessModel model;
     private List<TabCallback<?>> tabList;
+
+    public void setBinding(ComAboutDevelopmentProcessBinding binding) {
+        this.binding = binding;
+    }
+
+    public void setModel(AboutDevelopmentProcessModel model) {
+        this.model = model;
+    }
+
+    public void setTabList(List<TabCallback<?>> tabList) {
+        this.tabList = tabList;
+    }
+
     private static final List<Class<? extends TabCallback<?>>> CLASSES;
 
     static {
@@ -164,13 +176,42 @@ public class AboutDevelopmentProcessActivity extends BaseActivity {
 
 
     abstract static class TabCallback<T extends ViewDataBinding> {
-        @Setter
         protected Context context;
         protected T binding;
-        @Setter
         protected AboutDevelopmentProcessModel model;
-        @Setter
         protected Markwon markwon;
+
+        public Context getContext() {
+            return context;
+        }
+
+        public void setContext(Context context) {
+            this.context = context;
+        }
+
+        public T getBinding() {
+            return binding;
+        }
+
+        public void setBinding(T binding) {
+            this.binding = binding;
+        }
+
+        public AboutDevelopmentProcessModel getModel() {
+            return model;
+        }
+
+        public void setModel(AboutDevelopmentProcessModel model) {
+            this.model = model;
+        }
+
+        public Markwon getMarkwon() {
+            return markwon;
+        }
+
+        public void setMarkwon(Markwon markwon) {
+            this.markwon = markwon;
+        }
 
         public abstract String getTabName();
 

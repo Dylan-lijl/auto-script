@@ -14,7 +14,6 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 
-import lombok.Getter;
 import pub.carzy.auto_script.R;
 
 /**
@@ -30,7 +29,10 @@ public class SpinLayout extends FrameLayout {
     private TextView tipView;
     private ObjectAnimator spinnerAnimator;
 
-    @Getter
+    public boolean isSpinning() {
+        return spinning;
+    }
+
     private boolean spinning = false;
 
     public SpinLayout(Context context) {

@@ -1,14 +1,26 @@
 package pub.carzy.auto_script.entity;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * @author admin
  */
-@EqualsAndHashCode(callSuper = true)
-@Data
 public class FAQEntity extends BasicFileImport{
     private String question;
     private String answer;
+
+    public String getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(String question) {
+        this.question = question;
+    }
+
+    public String getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(String answer) {
+        this.answer = answer;
+    }
 }

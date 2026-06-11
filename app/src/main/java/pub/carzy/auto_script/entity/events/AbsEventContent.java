@@ -1,13 +1,39 @@
 package pub.carzy.auto_script.entity.events;
 
-import lombok.Getter;
 import pub.carzy.auto_script.entity.EventContent;
 
 /**
  * @author admin
  */
-@Getter
 public class AbsEventContent extends EventContent {
+    public String getName() {
+        return name;
+    }
+
+    public Integer getValue() {
+        return value;
+    }
+
+    public Integer getMin() {
+        return min;
+    }
+
+    public Integer getMax() {
+        return max;
+    }
+
+    public Integer getFuzz() {
+        return fuzz;
+    }
+
+    public Integer getFlat() {
+        return flat;
+    }
+
+    public Integer getResolution() {
+        return resolution;
+    }
+
     public static final String KEY = "ABS";
     public static final int CODE = 0x0003;
     @Override

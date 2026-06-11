@@ -11,16 +11,12 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import pub.carzy.auto_script.BR;
 import pub.carzy.auto_script.R;
 
 /**
  * @author admin
  */
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @Entity(tableName = "script_action")
 public class ScriptActionEntity extends BaseObservable implements Parcelable {
     /**
@@ -115,6 +111,22 @@ public class ScriptActionEntity extends BaseObservable implements Parcelable {
 
     public static final int GESTURE = 1;
     public static final int KEY_EVENT = 2;
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "ScriptActionEntity{" +
+                "id=" + id +
+                ", scriptId=" + scriptId +
+                ", index=" + index +
+                ", startTime=" + startTime +
+                ", duration=" + duration +
+                ", pointCount=" + pointCount +
+                ", type=" + type +
+                ", code=" + code +
+                ", description='" + description + '\'' +
+                '}';
+    }
 
     public static int getTypeName(int type) {
         switch (type) {

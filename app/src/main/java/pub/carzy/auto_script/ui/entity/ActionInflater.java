@@ -21,19 +21,33 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
 
 /**
  * @author admin
  */
 public class ActionInflater {
-    @Getter
     public static final class ActionItem {
 
         private final int id;
         private final CharSequence title;
         private final Drawable icon;
         private final boolean enabled;
+
+        public int getId() {
+            return id;
+        }
+
+        public CharSequence getTitle() {
+            return title;
+        }
+
+        public Drawable getIcon() {
+            return icon;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
 
         public ActionItem(int id,
                           CharSequence title,
