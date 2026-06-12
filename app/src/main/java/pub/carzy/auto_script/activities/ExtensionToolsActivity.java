@@ -14,12 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 
 import java.util.List;
-
-import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.ext.ExtManager;
+import pub.carzy.auto_script.R;
+import pub.carzy.auto_script.common_library.entity.ExtToolEntity;
 import pub.carzy.auto_script.databinding.ItemExtToolBinding;
 import pub.carzy.auto_script.databinding.ViewExtensionToolsBinding;
-import pub.carzy.auto_script.entity.ExtToolEntity;
 
 public class ExtensionToolsActivity extends BaseActivity {
     private ViewExtensionToolsBinding binding;
@@ -87,7 +86,7 @@ public class ExtensionToolsActivity extends BaseActivity {
             holder.binding.executePendingBindings();
             // 点击事件
             holder.binding.getRoot().setOnClickListener(v -> {
-                if (Boolean.TRUE.equals(item.getEnable()) && item.getClazz() != null) {
+                if (item.isEnable()&& item.getClazz() != null) {
                     v.getContext().startActivity(new Intent(v.getContext(), item.getClazz()));
                 }
             });

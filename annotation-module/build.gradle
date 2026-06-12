@@ -1,0 +1,17 @@
+plugins {
+    // 💡 彻底化身 Android 模块，这样它就能向下无缝引入你的 common_library 了！
+    id 'com.android.library'
+}
+
+android {
+    namespace 'pub.carzy.auto_script.annotation'
+    compileSdk 36 // 保持跟你的主项目一致
+
+    defaultConfig {
+        minSdk 26
+    }
+}
+dependencies {
+    implementation project(':common-library')
+}
+

@@ -267,4 +267,11 @@
     <string name="kill_title">終止終端</string>
     <string name="kill_detail">此操作將會停止目前終端，確定要終止嗎？</string>
     <string name="command_tools_title">命令列工具</string>
+    <string name="message_delete_old_file_error">刪除舊檔案失敗</string>
+    <string name="message_create_new_file_error">建立新檔案失敗:%s</string>
+    <string name="message_export_file_error">匯出\"%s\"檔案失敗</string>
+    <string name="message_export_file_success">匯出\"%s\"檔案成功</string>
+    <string name="message_open_terminal_error">開啟終端失敗:%s</string>
+    <string name="message_closed_terminal">終端已關閉:%d</string>
+    <string name="go_to_line_number">跳轉行號</string>
 </resources>

@@ -267,4 +267,11 @@
     <string name="kill_title">터미널 종료</string>
     <string name="kill_detail">이 작업은 현재 터미널을 중지합니다. 종료하시겠습니까?</string>
     <string name="command_tools_title">명령줄 도구</string>
+    <string name="message_delete_old_file_error">이전 파일 삭제에 실패했습니다</string>
+    <string name="message_create_new_file_error">새 파일 생성에 실패했습니다:%s</string>
+    <string name="message_export_file_error">\'%s\' 파일 내보내기에 실패했습니다</string>
+    <string name="message_export_file_success">\'%s\' 파일 내보내기에 성공했습니다</string>
+    <string name="message_open_terminal_error">터미널 열기에 실패했습니다:%s</string>
+    <string name="message_closed_terminal">터미널이 종료되었습니다:%d</string>
+    <string name="go_to_line_number">줄 번호로 이동</string>
 </resources>

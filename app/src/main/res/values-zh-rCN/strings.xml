@@ -267,4 +267,11 @@
     <string name="kill_title">终止终端</string>
     <string name="kill_detail">此操作将会停止当前终端，确认终止吗？</string>
     <string name="command_tools_title">命令行工具</string>
+    <string name="message_delete_old_file_error">删除旧文件失败</string>
+    <string name="message_create_new_file_error">创建新文件失败:%s</string>
+    <string name="message_export_file_error">导出\"%s\"文件失败</string>
+    <string name="message_export_file_success">导出\"%s\"文件成功</string>
+    <string name="message_open_terminal_error">开启终端失败:%s</string>
+    <string name="message_closed_terminal">终端已关闭:%d</string>
+    <string name="go_to_line_number">跳转行号</string>
 </resources>

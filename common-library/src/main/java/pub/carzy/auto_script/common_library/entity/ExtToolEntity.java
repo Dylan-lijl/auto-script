@@ -1,14 +1,9 @@
-package pub.carzy.auto_script.entity;
+package pub.carzy.auto_script.common_library.entity;
 
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
 
-import androidx.databinding.BaseObservable;
-import androidx.databinding.Bindable;
-
-import pub.carzy.auto_script.BR;
-
-public class ExtToolEntity extends BaseObservable {
+public class ExtToolEntity{
     /**
      * 图标
      */
@@ -24,7 +19,7 @@ public class ExtToolEntity extends BaseObservable {
     /**
      * 是否启用
      */
-    private Boolean enable;
+    private boolean enable;
     /**
      * 跳转的clazz
      */
@@ -34,47 +29,38 @@ public class ExtToolEntity extends BaseObservable {
         this(clazz, enable, null, null, null);
     }
 
-    @Bindable
     public Drawable getIcon() {
         return icon;
     }
 
     public void setIcon(Drawable icon) {
         this.icon = icon;
-        notifyPropertyChanged(BR.icon);
     }
 
-    @Bindable
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
-        notifyPropertyChanged(BR.title);
     }
 
-    @Bindable
     public String getDetail() {
         return detail;
     }
 
     public void setDetail(String detail) {
         this.detail = detail;
-        notifyPropertyChanged(BR.detail);
     }
 
-    @Bindable
-    public Boolean getEnable() {
+    public Boolean isEnable() {
         return enable;
     }
 
     public void setEnable(Boolean enable) {
         this.enable = enable;
-        notifyPropertyChanged(BR.enable);
     }
 
-    @Bindable
     public Class<? extends Activity> getClazz() {
         return clazz;
     }

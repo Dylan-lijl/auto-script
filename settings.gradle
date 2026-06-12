@@ -29,3 +29,6 @@ rootProject.name = "auto-script"
 include(":app")
 include ':ui-components'
 include ':components-rules'
+include ':annotation-module'
+include ':compiler-module'
+include ':common-library'

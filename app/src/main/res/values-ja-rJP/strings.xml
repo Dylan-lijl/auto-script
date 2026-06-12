@@ -267,4 +267,11 @@
     <string name="kill_title">ターミナルを終了</string>
     <string name="kill_detail">この操作により現在のターミナルが停止します。終了してもよろしいですか？</string>
     <string name="command_tools_title">コマンドラインツール</string>
+    <string name="message_delete_old_file_error">古いファイルの削除に失敗しました</string>
+    <string name="message_create_new_file_error">新しいファイルの作成に失敗しました:%s</string>
+    <string name="message_export_file_error">\"%s\"ファイルのエクスポートに失敗しました</string>
+    <string name="message_export_file_success">\"%s\"ファイルのエクスポートに成功しました</string>
+    <string name="message_open_terminal_error">ターミナルの起動に失敗しました:%s</string>
+    <string name="message_closed_terminal">ターミナルが閉じられました:%d</string>
+    <string name="go_to_line_number">行番号へ移動</string>
 </resources>

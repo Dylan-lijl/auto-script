@@ -80,5 +80,10 @@ dependencies {
         exclude group: 'org.jetbrains', module: 'annotations-java5'
     }
     implementation libs.mbknor.jackson.jsonschema.x.x3
+    //--------------项目模块---------------
     implementation project(':ui-components')
+    implementation project(':annotation-module')
+    annotationProcessor project(':compiler-module')
+    implementation project(':common-library')
+    implementation project(':annotation-module')
 }

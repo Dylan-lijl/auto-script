@@ -1,13 +1,17 @@
 package pub.carzy.auto_script.activities.ext.children;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import androidx.databinding.DataBindingUtil;
@@ -31,12 +35,16 @@ import java.util.UUID;
 
 import pub.carzy.auto_script.R;
 import pub.carzy.auto_script.activities.BaseActivity;
+import pub.carzy.auto_script.activities.ext.AbstractExtToolRegister;
+import pub.carzy.auto_script.annotation_module.ExtTool;
+import pub.carzy.auto_script.common_library.entity.ExtToolEntity;
 import pub.carzy.auto_script.databinding.ItemCommandLineBinding;
 import pub.carzy.auto_script.databinding.ViewCommandTerminalBinding;
 import pub.carzy.auto_script.entity.CommandTerminalModel;
 import pub.carzy.auto_script.utils.ActivityUtils;
 import pub.carzy.auto_script.utils.ThreadUtil;
 
+@ExtTool(factory = CommandTerminalActivity.InnerExtToolRegister.class)
 public class CommandTerminalActivity extends BaseActivity {
     private ViewCommandTerminalBinding binding;
     private Process process;
@@ -95,12 +103,42 @@ public class CommandTerminalActivity extends BaseActivity {
         binding.killBtn.setOnClickListener(e -> {
             killShell();
         });
+        binding.goToLineBtn.setOnClickListener(e -> {
+            goToLine();
+        });
         model.setInit(true);
         startShell(() -> {
             //先运行获取pid
             getPid = true;
             writeCommand("echo pid:$$", false);
         });
+    }
+
+    private void goToLine() {
+        QMUIDialog.EditTextDialogBuilder builder = new QMUIDialog.EditTextDialogBuilder(this);
+        builder.setInputType(InputType.TYPE_CLASS_NUMBER)
+                .setTitle(R.string.go_to_line_number)
+                .setPlaceholder(1 + "~" + model.getLogLength())
+                .addAction(R.string.cancel, (dialog, index) -> dialog.dismiss())
+                .addAction(R.string.confirm, (dialog, index) -> {
+                    // 这里获取 EditText
+                    EditText editText = builder.getEditText();
+                    String input = editText.getText().toString().trim();
+                    dialog.dismiss();
+
+                    if (!input.isEmpty()) {
+                        try {
+                            int line = Integer.parseInt(input);
+                            if (line < 1) line = 1;
+                            if (line > model.getLogLength()) line = model.getLogLength();
+                            binding.rvOutput.scrollToPosition(line - 1);
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(this, "请输入有效数字", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .create()
+                .show();
     }
 
     private void showHistoryCommands() {
@@ -138,70 +176,60 @@ public class CommandTerminalActivity extends BaseActivity {
 
     private void stopShell(Runnable runnable) {
         model.setStopping(true);
+
         ThreadUtil.runOnCpu(() -> {
-            Process killerExec = null;
+            Process psProcess = null;
             BufferedReader reader = null;
+
             try {
                 int parentPid = model.getPid();
-                if (parentPid > 0) {
-                    killerExec = Runtime.getRuntime().exec("sh");
-                    OutputStream stream = killerExec.getOutputStream();
-                    String end = createCmdEnd();
-                    String findChildCmd = "ps -A -o PID,PPID | grep " + parentPid + "\n";
-                    stream.write(findChildCmd.getBytes());
-                    stream.write("exit\n".getBytes());
-                    stream.flush();
-                    stream.close();
-                    reader = new BufferedReader(new InputStreamReader(killerExec.getInputStream()));
-                    String line;
-                    int targetChildPid = -1;
-                    while ((line = reader.readLine()) != null) {
-                        if (line.equals(end)) {
-                            break;
+                if (parentPid <= 0) return;
+                // ❗不用 grep，避免 ps / grep 干扰
+                // 直接输出 PID PPID
+                psProcess = Runtime.getRuntime().exec(new String[]{
+                        "sh", "-c", "ps -A -o PID,PPID"
+                });
+                reader = new BufferedReader(
+                        new InputStreamReader(psProcess.getInputStream())
+                );
+                String line;
+                int targetChildPid = -1;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    // 跳过表头
+                    if (line.startsWith("PID")) continue;
+                    String[] parts = line.split("\\s+");
+                    if (parts.length < 2) continue;
+                    try {
+                        int curPid = Integer.parseInt(parts[0]);
+                        int curPpid = Integer.parseInt(parts[1]);
+                        // ❗只找直接子进程
+                        if (curPpid == parentPid && curPid != parentPid) {
+                            // 取“最后一个”（通常是前台阻塞任务）
+                            targetChildPid = Math.max(targetChildPid, curPid);
                         }
-                        String[] parts = line.trim().split("\\s+");
-                        if (parts.length >= 2) {
-                            try {
-                                int curPid = Integer.parseInt(parts[0]);
-                                int curPpid = Integer.parseInt(parts[1]);
-                                if (curPpid == parentPid && curPid != parentPid) {
-                                    targetChildPid = curPid;
-                                    break;
-                                }
-                            } catch (NumberFormatException ignored) {
-                            }
-                        }
+
+                    } catch (NumberFormatException ignored) {
                     }
-                    killerExec.waitFor();
-                    if (targetChildPid > 0) {
-                        Process killAction = Runtime.getRuntime().exec("sh");
-                        OutputStream actionStream = killAction.getOutputStream();
-                        actionStream.write(("kill -2 " + targetChildPid + "\n").getBytes());
-                        actionStream.write("exit\n".getBytes());
-                        actionStream.flush();
-                        actionStream.close();
-                        killAction.waitFor();
-                        killAction.destroy();
-                    } else {
-                        Log.w("CommandTerminal", "未找到前台阻塞的子进程");
-                    }
+                }
+                psProcess.waitFor();
+                if (targetChildPid > 0) {
+                    Runtime.getRuntime().exec(new String[]{
+                            "sh", "-c", "kill -2 " + targetChildPid
+                    });
+                } else {
+                    Log.w("CommandTerminal", "未找到前台阻塞的子进程");
                 }
             } catch (Exception ex) {
-                Log.e("CommandTerminal", "精准查找并结束子进程失败", ex);
+                Log.e("CommandTerminal", "停止shell失败", ex);
             } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException ignored) {
-                    }
+                try {
+                    if (reader != null) reader.close();
+                } catch (IOException ignored) {
                 }
-                if (killerExec != null) {
-                    killerExec.destroy();
-                }
+                if (psProcess != null) psProcess.destroy();
                 ThreadUtil.runOnUi(() -> model.setStopping(false));
-                if (runnable != null) {
-                    runnable.run();
-                }
+                if (runnable != null) runnable.run();
             }
         });
     }
@@ -220,7 +248,7 @@ public class CommandTerminalActivity extends BaseActivity {
             if (file.exists()) {
                 if (!file.delete()) {
                     ThreadUtil.runOnUi(() -> {
-                        Toast.makeText(this, "删除旧文件失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.message_delete_old_file_error, Toast.LENGTH_SHORT).show();
                         model.setExporting(false);
                     });
                     return;
@@ -230,7 +258,7 @@ public class CommandTerminalActivity extends BaseActivity {
                 } catch (IOException e) {
                     Log.e("exportLog", "删除文件失败!", e);
                     ThreadUtil.runOnUi(() -> {
-                        Toast.makeText(this, "创建新文件失败:" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.message_create_new_file_error, e.getLocalizedMessage()), Toast.LENGTH_SHORT).show();
                         model.setExporting(false);
                     });
                     return;
@@ -249,7 +277,8 @@ public class CommandTerminalActivity extends BaseActivity {
             } finally {
                 boolean finalSuccess = success;
                 ThreadUtil.runOnUi(() -> {
-                    Toast.makeText(this, "导出" + (finalSuccess ? "成功" : "失败") + ": " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getString(finalSuccess ? R.string.message_export_file_success : R.string.message_export_file_error, file.getAbsolutePath())
+                            , Toast.LENGTH_LONG).show();
                     model.setExporting(false);
                 });
             }
@@ -258,7 +287,6 @@ public class CommandTerminalActivity extends BaseActivity {
 
     private void copyLog() {
         if (adapter == null || adapter.getItemCount() == 0) {
-            Toast.makeText(this, "没有日志可复制", Toast.LENGTH_SHORT).show();
             return;
         }
         // 拼接所有日志内容
@@ -268,7 +296,7 @@ public class CommandTerminalActivity extends BaseActivity {
         }
         // 复制到剪贴板
         ActivityUtils.copyToClipboard(this, "text", sb.toString());
-        Toast.makeText(this, "日志已复制到剪贴板", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show();
     }
 
     private String cmdEnd = "";
@@ -315,7 +343,7 @@ public class CommandTerminalActivity extends BaseActivity {
                 writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             } catch (IOException e) {
                 Log.e("startShell", "打开shell失败", e);
-                ThreadUtil.runOnUi(() -> Toast.makeText(this, "打开shell失败:" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show());
+                ThreadUtil.runOnUi(() -> Toast.makeText(this, getString(R.string.message_open_terminal_error, e.getLocalizedMessage()), Toast.LENGTH_LONG).show());
             }
             // stdout线程
             new Thread(() -> readStream(stdout), "process stdout").start();
@@ -325,7 +353,7 @@ public class CommandTerminalActivity extends BaseActivity {
                 try {
                     int exitCode = process.waitFor();
                     ThreadUtil.runOnUi(() -> {
-                        Toast.makeText(this, "shell退出:" + exitCode, Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, getString(R.string.message_closed_terminal, exitCode), Toast.LENGTH_LONG).show();
                     });
                 } catch (InterruptedException e) {
                     Log.e("startShell", "等待shell结束异常", e);
@@ -475,6 +503,18 @@ public class CommandTerminalActivity extends BaseActivity {
                 super(binding.getRoot());
                 this.binding = binding;
             }
+        }
+    }
+
+    public static class InnerExtToolRegister extends AbstractExtToolRegister {
+
+        @Override
+        public ExtToolEntity create(Context context) {
+            return new ExtToolEntity(CommandTerminalActivity.class,
+                    true,
+                    getIcon(context, R.drawable.terminal, ContextCompat.getColor(context, R.color.link))
+                    , context.getString(R.string.command_tools_title),
+                    "");
         }
     }
 }

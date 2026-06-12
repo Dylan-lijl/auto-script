@@ -4,7 +4,7 @@
 
         <variable
             name="data"
-            type="pub.carzy.auto_script.entity.ExtToolEntity" />
+            type="pub.carzy.auto_script.common_library.entity.ExtToolEntity" />
     </data>
 
     <LinearLayout

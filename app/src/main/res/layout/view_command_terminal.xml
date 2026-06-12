@@ -111,6 +111,16 @@
                         android:src="@drawable/number_line"
                         app:tint="@{model.showLineNumber?@color/black:@color/secondary2}" />
 
+                    <ImageButton
+                        android:id="@+id/go_to_line_btn"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="10dp"
+                        android:contentDescription="@string/go_to_line_number"
+                        android:enabled="@{model.logLength>0}"
+                        android:src="@drawable/location"
+                        app:tint="@{model.logLength>0?@color/purple_200:@color/secondary2}" />
+
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
